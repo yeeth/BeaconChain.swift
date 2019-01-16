@@ -140,8 +140,8 @@ class BeaconChain {
             validatorRegistryLatestChangeSlot: GENESIS_SLOT,
             validatorRegistryExitCount: 0,
             validatorRegistryDeltaChainTip: ZERO_HASH,
-            latestRandaoMixes: [](), // @todo
-            latestVdfOutputs: [](), // @todo
+            latestRandaoMixes: [Data](repeating: ZERO_HASH, count: LATEST_RANDAO_MIXES_LENGTH),
+            latestVdfOutputs: [Data](repeating: ZERO_HASH, count: LATEST_RANDAO_MIXES_LENGTH / EPOCH_LENGTH),
             previousEpochStartShard: GENESIS_START_SHARD,
             currentEpochStartShard: GENESIS_START_SHARD,
             previousEpochCalculationSlot: GENESIS_SLOT,
@@ -153,8 +153,8 @@ class BeaconChain {
             justificationBitfield: 0,
             finalizedSlot: GENESIS_SLOT,
             latestCrosslinks: [CrosslinkRecord(slot: GENESIS_SLOT, shardBlockRoot: ZERO_HASH)], // for _ in range(SHARD_COUNT)],
-            latestBlockRoots: [ZERO_HASH], // [ZERO_HASH for _ in range(LATEST_BLOCK_ROOTS_LENGTH)],
-            latestPenalizedExitBalances: [0], // #[0 for _ in range(LATEST_PENALIZED_EXIT_LENGTH)],
+            latestBlockRoots: [Data](repeating: ZERO_HASH, count: LATEST_BLOCK_ROOTS_LENGTH),
+            latestPenalizedExitBalances: [Int](repeating: 0, count: LATEST_PENALIZED_EXIT_LENGTH),
             latestAttestations: [Attestation](),
             batchedBlockRoots: [Data](),
 

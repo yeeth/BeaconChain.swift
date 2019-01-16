@@ -11,8 +11,8 @@ class BeaconState {
     var validatorRegistryExitCount: Int
     let validatorRegistryDeltaChainTip: Data
 
-    let latestRandaoMixes: Data
-    let latestVdfOutputs: Data
+    let latestRandaoMixes: [Data]
+    let latestVdfOutputs: [Data]
     let previousEpochStartShard: Int
     let currentEpochStartShard: Int
     let previousEpochCalculationSlot: Int
