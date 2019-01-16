@@ -77,7 +77,7 @@ extension BeaconChain {
         // @todo
     }
 
-    func validateProofOfPossession {
+    func validateProofOfPossession() {
         // @todo
     }
 }
