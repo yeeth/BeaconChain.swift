@@ -6,7 +6,7 @@ class BeaconState {
     let forkData: ForkData
 
     var validatorRegistry: [ValidatorRecord]
-    let validatorBalances: [Int]
+    var validatorBalances: [Int] // @todo move balances into Validator class
     var validatorRegistryLatestChangeSlot: Int
     var validatorRegistryExitCount: Int
     let validatorRegistryDeltaChainTip: Data

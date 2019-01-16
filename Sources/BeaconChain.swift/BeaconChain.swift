@@ -66,10 +66,37 @@ class BeaconChain {
 extension BeaconChain {
 
     func processDeposit(state: BeaconState, deposit: Deposit) {
-        // @todo
+        assert(validateProofOfPossession())
+
+        let pubkeys = state.validatorRegistry.enumerated().map{(_, validator: ValidatorRecord) in return validator.pubkey}
+
+        if let index = pubkeys.firstIndex(of: deposit.depositData.depositInput.pubkey) {
+            assert(state.validatorRegistry[index].withdrawalCredentials == deposit.depositData.depositInput.withdrawalCredentials)
+            state.validatorBalances[index] += deposit.depositData.amount
+            return
+        }
+
+        let validator = ValidatorRecord(
+            pubkey: deposit.depositData.depositInput.pubkey,
+            withdrawalCredentials: deposit.depositData.depositInput.withdrawalCredentials,
+            randaoCommitment: deposit.depositData.depositInput.randaoCommitment,
+            randaoLayers: 0,
+            activationSlot: FAR_FUTURE_SLOT,
+            exitSlot: FAR_FUTURE_SLOT,
+            withdrawalSlot: FAR_FUTURE_SLOT,
+            penalizedSlot: FAR_FUTURE_SLOT,
+            exitCount: 0,
+            statusFlags: 0,
+            custodyCommitment: deposit.depositData.depositInput.custodyCommitment,
+            latestCustodyReseedSlot: GENESIS_SLOT,
+            penultimateCustodyReseedSlot: GENESIS_SLOT
+        )
+
+        state.validatorRegistry.append(validator)
+        state.validatorBalances.append(deposit.depositData.amount)
     }
 
-    func validateProofOfPossession() {
+    func validateProofOfPossession() -> Bool {
         // @todo
     }
 }
