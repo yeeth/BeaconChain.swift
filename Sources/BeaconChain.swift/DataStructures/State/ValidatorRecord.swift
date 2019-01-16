@@ -8,7 +8,7 @@ struct ValidatorRecord {
     var activationSlot: Int
     var exitSlot: Int
     let withdrawalSlot: Int
-    let penalizedSlot: Int
+    var penalizedSlot: Int
     let exitCount: Int
     var statusFlags: Int
     let custodyCommitment: Data
