@@ -235,7 +235,7 @@ extension BeaconChain {
     }
 
     func penalizeValidator(state: BeaconState, index: Int) {
-        exitValidator(state: state, index: index)
+        BeaconChain.exitValidator(state: state, index: index)
 
         state.latestPenalizedExitBalances[(state.slot / EPOCH_LENGTH) % LATEST_PENALIZED_EXIT_LENGTH] += BeaconChain.getEffectiveBalance(state: state, index: index)
 
@@ -283,7 +283,7 @@ extension BeaconChain {
                     break
                 }
 
-                exitValidator(state: state, index: i)
+                BeaconChain.exitValidator(state: state, index: i)
             }
         }
 
