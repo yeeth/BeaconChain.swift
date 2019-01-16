@@ -50,6 +50,24 @@ class BeaconChain {
 //        }
 //    }
 
+    static func verifySlashableVoteData() -> Bool {
+
+    }
+
+    static func integerSquareRoot(n: Int) -> Int {
+        assert(n >= 0)
+
+        var x = n
+        var y = (x + 1) / 2
+
+        while y < x {
+            x = y
+            y = (x + n / x) / 2
+        }
+
+        return x
+    }
+
     static func getForkVersion(data: ForkData, slot: Int) -> Int {
         if slot < data.forkSlot {
             return data.preForkVersion

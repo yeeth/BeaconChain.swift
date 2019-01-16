@@ -10,4 +10,7 @@ class BLS {
         return true // @todo
     }
 
+    static func aggregate(pubkeys: [Data]) -> Data {
+
+    }
 }
