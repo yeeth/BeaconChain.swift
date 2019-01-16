@@ -36,12 +36,12 @@ class BeaconChain {
         return state.latestBlockRoots[slot % LATEST_RANDAO_MIXES_LENGTH]
     }
 
-//    static func getBeaconProposerIndex(state: BeaconState, slot: Int) -> Int {
+    static func getBeaconProposerIndex(state: BeaconState, slot: Int) -> Int {
 //        let committees = BeaconChain.getShardCommitteesAtSlot(state: state, slot: slot)
 //        if let first = committees.first?.first {
 //            return first.key[slot % first.key.count]
 //        }
-//    }
+    }
 //
 //    static func getAttestationParticipants(state: BeaconState, data: AttestationData, participationBitfield: Int) -> [Int] {
 //        let committees = getShardCommitteesAtSlot(state: state, slot: data.slot)
@@ -160,6 +160,22 @@ extension BeaconChain {
         state.validatorRegistryExitCount += 1
 
         // @todo state.validator_registry_delta_chain_tip = hash_tree_root
+    }
+
+    func penalizeValidator(state: BeaconState, index: Int) {
+        exitValidator(state: state, index: index)
+
+        state.latestPenalizedExitBalances[(state.slot / EPOCH_LENGTH) % LATEST_PENALIZED_EXIT_LENGTH] += BeaconChain.getEffectiveBalance(state: state, index: index)
+
+        let whistleblowerIndex = BeaconChain.getBeaconProposerIndex(state: state, slot: state.slot)
+        let whistleblowerReward = BeaconChain.getEffectiveBalance(state: state, index: index) / WHISTLEBLOWER_REWARD_QUOTIENT
+        state.validatorBalances[whistleblowerIndex] += whistleblowerReward
+        state.validatorBalances[index] -= whistleblowerReward
+        state.validatorRegistry[index].penalizedSlot = state.slot
+    }
+
+    func prepareValidatorForWithdrawal(state: BeaconState, index: Int) {
+        state.validatorRegistry[index].statusFlags |= WITHDRAWABLE
     }
 }
 
