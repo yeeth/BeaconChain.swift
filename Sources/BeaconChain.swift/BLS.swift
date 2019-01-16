@@ -1,10 +1,3 @@
-//
-//  BLS.swift
-//  BeaconChain.swift
-//
-//  Created by Dean Eigenmann on 16.01.19.
-//
-
 import Foundation
 
 class BLS {
