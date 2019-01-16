@@ -168,7 +168,16 @@ class BeaconChain {
 extension BeaconChain {
 
     static func processDeposit(state: BeaconState, deposit: Deposit) {
-        assert(BeaconChain.validateProofOfPossession())
+        assert(
+            BeaconChain.validateProofOfPossession(
+                state: state,
+                pubkey: deposit.depositData.depositInput.pubkey,
+                proof: deposit.depositData.depositInput.proofOfPossession,
+                withdrawalCredentials: deposit.depositData.depositInput.withdrawalCredentials,
+                randaoCommitment: deposit.depositData.depositInput.randaoCommitment,
+                custodyCommitment: deposit.depositData.depositInput.custodyCommitment
+            )
+        )
 
         let pubkeys = state.validatorRegistry.enumerated().map{(_, validator: ValidatorRecord) in return validator.pubkey}
 
@@ -198,8 +207,22 @@ extension BeaconChain {
         state.validatorBalances.append(deposit.depositData.amount)
     }
 
-    static func validateProofOfPossession() -> Bool {
-        // @todo
+    static func validateProofOfPossession(state: BeaconState, pubkey: Data, proof: Data, withdrawalCredentials: Data, randaoCommitment: Data, custodyCommitment: Data) -> Bool {
+
+        let input = DepositInput(
+            pubkey: pubkey,
+            withdrawalCredentials: withdrawalCredentials,
+            randaoCommitment: randaoCommitment,
+            custodyCommitment: custodyCommitment,
+            proofOfPossession: EMPTY_SIGNATURE
+        )
+
+        return BLS.verify(
+            pubkey: pubkey,
+            message: hashTreeRoot(data: input),
+            signature: proof,
+            domain: BeaconChain.getDomain(data: state.forkData, slot: state.slot, domainType: DOMAIN_DEPOSIT)
+        )
     }
 
     static func processEjections(state: BeaconState) {
