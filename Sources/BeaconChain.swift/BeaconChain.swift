@@ -24,10 +24,6 @@ class BeaconChain {
         return min(state.validatorBalances[index], MAX_DEPOSIT * GWEI_PER_ETH)
     }
 
-    func getActiveValidatorIndices(validators: [ValidatorRecord], slot: Int) -> [Int] {
-
-    }
-
     private func genesisState(genesisTime: TimeInterval, lastDepositRoot: Data) -> BeaconState {
         return BeaconState(
             slot: GENESIS_SLOT,
@@ -139,6 +135,21 @@ extension BeaconChain {
         }
 
         state.validatorRegistryLatestChangeSlot = state.slot
+    }
+
+    func getActiveValidatorIndices(validators: [ValidatorRecord], slot: Int) -> [Int] {
+        return validators.enumerated().compactMap{
+            (arg) -> Int? in
+            let (i, validator) = arg
+            if isActiveValidator(validator: validator, slot: slot) {
+                return i
+            }
+        }
+    }
+
+    // @todo move these functions into validator record
+    func isActiveValidator(validator: ValidatorRecord, slot: Int) -> Bool {
+        return validator.activationSlot <= slot && slot < validator.exitSlot
     }
 
 }
