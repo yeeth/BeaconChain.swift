@@ -168,14 +168,14 @@ extension BeaconChain {
         return validators.enumerated().compactMap{
             (arg) -> Int? in
             let (i, validator) = arg
-            if isActiveValidator(validator: validator, slot: slot) {
+            if isActive(validator: validator, slot: slot) {
                 return i
             }
         }
     }
 
     // @todo move these functions into validator record
-    func isActiveValidator(validator: ValidatorRecord, slot: Int) -> Bool {
+    func isActive(validator: ValidatorRecord, slot: Int) -> Bool {
         return validator.activationSlot <= slot && slot < validator.exitSlot
     }
 }
