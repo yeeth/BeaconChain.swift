@@ -28,10 +28,6 @@ class BeaconChain {
         return state
     }
 
-    func processDeposit(state: BeaconState, deposit: Deposit) {
-        // @todo
-    }
-
     func getEffectiveBalance(state: BeaconState, index: Int) -> Int {
         return min(state.validatorBalances[index], MAX_DEPOSIT * GWEI_PER_ETH)
     }
@@ -73,6 +69,17 @@ class BeaconChain {
         )
     }
 
+}
+
+extension BeaconChain {
+
+    func processDeposit(state: BeaconState, deposit: Deposit) {
+        // @todo
+    }
+
+    func validateProofOfPossession {
+        // @todo
+    }
 }
 
 extension BeaconChain {
