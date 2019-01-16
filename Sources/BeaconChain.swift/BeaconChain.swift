@@ -37,18 +37,30 @@ class BeaconChain {
     }
 
     static func getBeaconProposerIndex(state: BeaconState, slot: Int) -> Int {
-//        let committees = BeaconChain.getShardCommitteesAtSlot(state: state, slot: slot)
-//        if let first = committees.first?.first {
-//            return first.key[slot % first.key.count]
-//        }
+        let (committee, _) = BeaconChain.getCrosslinkCommitteesAtSlot(state: state, slot: slot)[0]
+        return committee[slot % committee.count]
     }
-//
-//    static func getAttestationParticipants(state: BeaconState, data: AttestationData, participationBitfield: Int) -> [Int] {
-//        let committees = getShardCommitteesAtSlot(state: state, slot: data.slot)
-//        for (_, shard) in committees.enumerated() {
-//            assert(shard.v == data.shard)
-//        }
-//    }
+
+    static func getAttestationParticipants(state: BeaconState, data: AttestationData, participationBitfield: Int) -> [Int] {
+        let committees = BeaconChain.getCrosslinkCommitteesAtSlot(state: state, slot: data.slot)
+        for (_, (_, shard)) in committees.enumerated() {
+            assert(shard == data.shard)
+        }
+
+        let crosslinkCommittee = committees.first(where: {
+            $1 == data.shard
+        })?.0
+
+        var participants = [Int]()
+        for (i, validatorIndex) in (crosslinkCommittee?.enumerated())! {
+            let participationBit = (participationBitfield[i / 8] >> (7 - (i % 8))) % 2
+            if participationBit == 1 {
+                participants.append(validatorIndex)
+            }
+        }
+
+        return participants
+    }
 
     static func verifySlashableVoteData() -> Bool {
 
@@ -287,7 +299,7 @@ extension BeaconChain {
     }
 
     // @todo return type here needs fixing
-    static func getCrosslinkCommitteesAtSlot(state: BeaconState, slot: Int) -> [Dictionary<Array<Int>, Int>] {
+    static func getCrosslinkCommitteesAtSlot(state: BeaconState, slot: Int) -> [([Int], Int)] {
         // @todo
     }
 }
