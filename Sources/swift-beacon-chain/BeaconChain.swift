@@ -32,12 +32,6 @@ class BeaconChain {
         // @todo
     }
 
-    func activateValidator(state: BeaconState, index: Int, genesis: Bool) {
-        state.validatorRegistry[index].activationSlot = genesis ? GENESIS_SLOT : state.slot + ENTRY_EXIT_DELAY
-
-        // @todo
-    }
-
     func getEffectiveBalance(state: BeaconState, index: Int) -> Int {
         return min(state.validatorBalances[index], MAX_DEPOSIT * GWEI_PER_ETH)
     }
@@ -79,4 +73,28 @@ class BeaconChain {
         )
     }
 
+}
+
+extension BeaconChain {
+
+    func activateValidator(state: BeaconState, index: Int, genesis: Bool) {
+        state.validatorRegistry[index].activationSlot = genesis ? GENESIS_SLOT : state.slot + ENTRY_EXIT_DELAY
+
+        // @todo
+    }
+
+    func initiateValidatorExit(state: BeaconState, index: Int) {
+        state.validatorRegistry[index].statusFlags |= INITIATED_EXIT
+    }
+
+    func exitValidator(state: BeaconState, index: Int) {
+        if (state.validatorRegistry[index].exitSlot <= state.slot + ENTRY_EXIT_DELAY) {
+            return
+        }
+
+        state.validatorRegistry[index].exitSlot = state.slot + ENTRY_EXIT_DELAY
+        state.validatorRegistryExitCount += 1
+
+        // @todo state.validator_registry_delta_chain_tip = hash_tree_root
+    }
 }

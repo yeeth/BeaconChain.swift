@@ -14,11 +14,11 @@ struct ValidatorRecord {
     let randaoCommitment: Data
     let randaoLayers: Int
     var activationSlot: Int
-    let exitSlot: Int
+    var exitSlot: Int
     let withdrawalSlot: Int
     let penalizedSlot: Int
     let exitCount: Int
-    let statusFlags: Int
+    var statusFlags: Int
     let custodyCommitment: Int
     let latestCustodyReseedSlot: Int
     let penultimateCustodyReseedSlot: Int
