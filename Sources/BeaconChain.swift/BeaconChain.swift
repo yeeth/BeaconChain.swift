@@ -367,7 +367,7 @@ extension BeaconChain {
         var o = [Data](repeating: Data(repeating: 0, count: 1), count: values.count - 1)
         o.append(contentsOf: values)
 
-        for i in  stride(from: values.count - 1, through: 0, by: -1) {
+        for i in stride(from: values.count - 1, through: 0, by: -1) {
             o[i] = hash(data: o[i * 2] + o[i * 2 + 1])
         }
 
