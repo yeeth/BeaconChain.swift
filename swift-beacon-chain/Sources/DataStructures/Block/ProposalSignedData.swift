@@ -9,7 +9,7 @@
 import Foundation
 
 struct ProposalSignedData {
-    let slot: uint64;
-    let shard: uint64;
+    let slot: Int;
+    let shard: Int;
     let blockRoot: Data;
 }

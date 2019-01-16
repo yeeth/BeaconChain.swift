@@ -10,8 +10,8 @@ import Foundation
 
 struct ValidatorRegistryDeltaBlock {
     let lateRegistryDeltaRoot: Data;
-    let validatorIndex: uint; // definition says 24 but whatever
+    let validatorIndex: Int;
     let pubkey: Data;
-    let slot: uint64;
-    let flag: uint64;
+    let slot: Int;
+    let flag: Int;
 }

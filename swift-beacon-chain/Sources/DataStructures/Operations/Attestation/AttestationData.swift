@@ -9,8 +9,8 @@
 import Foundation
 
 struct AttestationData {
-    let slot: uint64;
-    let shard: uint64;
+    let slot: Int;
+    let shard: Int;
     let beaconBlockRoot: Data;
     let epochBoundryRoot: Data;
     let shardBlockRoot: Data;

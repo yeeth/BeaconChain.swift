@@ -9,7 +9,7 @@
 import Foundation
 
 struct Exit {
-    let slot: uint64;
-    let validatorIndex: uint; // says 24 but whatever;
+    let slot: Int;
+    let validatorIndex: Int;
     let signature: Data;
 }

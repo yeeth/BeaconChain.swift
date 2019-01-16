@@ -9,7 +9,7 @@
 import Foundation
 
 struct DepositData {
-    let amount: uint64;
+    let amount: Int;
     let timestamp: TimeInterval;
     let depositInput: DepositInput;
 }

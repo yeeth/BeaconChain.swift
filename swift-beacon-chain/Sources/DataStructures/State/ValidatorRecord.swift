@@ -12,14 +12,14 @@ struct ValidatorRecord {
     let pubkey: Data;
     let withdrawalCredentials: Data;
     let randaoCommitment: Data;
-    let randaoLayers: uint64;
-    let activationSlot: uint64;
-    let exitSlot: uint64;
-    let withdrawalSlot: uint64;
-    let penalizedSlot: uint64;
-    let exitCount: uint64;
-    let statusFlags: uint64;
-    let custodyCommitment: uint64;
-    let latestCustodyReseedSlot: uint64;
-    let penultimateCustodyReseedSlot: uint64;
+    let randaoLayers: Int;
+    let activationSlot: Int;
+    let exitSlot: Int;
+    let withdrawalSlot: Int;
+    let penalizedSlot: Int;
+    let exitCount: Int;
+    let statusFlags: Int;
+    let custodyCommitment: Int;
+    let latestCustodyReseedSlot: Int;
+    let penultimateCustodyReseedSlot: Int;
 }

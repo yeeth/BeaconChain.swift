@@ -9,6 +9,6 @@
 import Foundation
 
 struct CrosslinkRecord {
-    let slot: uint64;
+    let slot: Int;
     let shardBlockRoot: Data;
 }

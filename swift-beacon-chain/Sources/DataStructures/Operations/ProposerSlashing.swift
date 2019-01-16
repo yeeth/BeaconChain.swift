@@ -9,7 +9,7 @@
 import Foundation
 
 struct ProposerSlashing {
-    let proposerIndex: uint32; // says 24 but whatever
+    let proposerIndex: Int; // says 24 but whatever
     let proposalData1: ProposalSignedData;
     let proposalSignature1: Data;
     let proposalData2: ProposalSignedData;

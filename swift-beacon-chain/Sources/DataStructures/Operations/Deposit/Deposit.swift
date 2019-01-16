@@ -10,6 +10,6 @@ import Foundation
 
 struct Deposit {
     let branch: Data; // not sure if good
-    let index: uint64;
+    let index: Int;
     let depositData: DepositData;
 }

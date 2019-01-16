@@ -12,5 +12,5 @@ struct PendingAttestationRecord {
     let data: Data;
     let participationBitfield: Data;
     let custodyBitfield: Data;
-    let slotIncluded: uint64;
+    let slotIncluded: Int;
 }

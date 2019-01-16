@@ -9,7 +9,7 @@
 import Foundation
 
 struct Block {
-    let slot: uint64;
+    let slot: Int;
     let parentRoot: Data;
     let stateRoot: Data;
     let randaoReveal: Data;
