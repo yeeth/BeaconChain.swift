@@ -151,5 +151,4 @@ extension BeaconChain {
     func isActiveValidator(validator: ValidatorRecord, slot: Int) -> Bool {
         return validator.activationSlot <= slot && slot < validator.exitSlot
     }
-
 }
