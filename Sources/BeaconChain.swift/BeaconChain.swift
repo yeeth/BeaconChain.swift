@@ -292,8 +292,7 @@ extension BeaconChain {
 
     static func getActiveValidatorIndices(validators: [ValidatorRecord], slot: Int) -> [Int] {
         return validators.enumerated().compactMap{
-            (arg) -> Int? in
-            let (i, validator) = arg
+            (i, validator) -> Int? in
             if BeaconChain.isActive(validator: validator, slot: slot) {
                 return i
             }
