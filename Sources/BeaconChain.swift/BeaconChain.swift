@@ -254,7 +254,7 @@ extension BeaconChain {
     }
 
     // @todo return type here needs fixing
-    static func getShardCommitteesAtSlot(state: BeaconState, slot: Int) -> [Dictionary<Array<Int>, Int>] {
+    static func getCrosslinkCommitteesAtSlot(state: BeaconState, slot: Int) -> [Dictionary<Array<Int>, Int>] {
         // @todo
     }
 }
