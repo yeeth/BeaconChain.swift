@@ -10,36 +10,36 @@ import Foundation
 
 class BeaconChain {
 
-    // var state: BeaconState!!; // @todo we may not need this here if we make the chain "stateless" and require the state to be passed with function calls
+    // var state: BeaconState!! // @todo we may not need this here if we make the chain "stateless" and require the state to be passed with function calls
 
     func getInitialBeaconState(initialValidatorDeposits: [Deposit], genesisTime: TimeInterval, lastDepositRoot: Data) -> BeaconState {
-        var state = genesisState(genesisTime, lastDepositRoot);
+        var state = genesisState(genesisTime: enesisTime, llastDepositRoot: astDepositRoot)
 
         for deposit in initialValidatorDeposits {
-            processDeposit(state: state, deposit: deposit);
+            processDeposit(state: state, deposit: deposit)
         }
 
         for (i, _) in state.validatorRegistry {
             if (getEffectiveBalance(state: state, index: i) >= MAX_DEPOSIT * GWEI_PER_ETH) {
-                activateValidator(state: state, index: i, genisis: true);
+                activateValidator(state: state, index: i, genesis: true)
             }
         }
 
-        return state;
+        return state
     }
 
     func processDeposit(state: BeaconState, deposit: Deposit) {
-
         // @todo
-
     }
 
-    func activateValidator(state: BeaconState, index: Int, genisis: Bool) {
+    func activateValidator(state: BeaconState, index: Int, genesis: Bool) {
+        state.validatorRegistry[index].activationSlot = genesis ? GENESIS_SLOT : state.slot + ENTRY_EXIT_DELAY
+
         // @todo
     }
 
     func getEffectiveBalance(state: BeaconState, index: Int) -> Int {
-        return min(state.validatorBalances[index], MAX_DEPOSIT * GWEI_PER_ETH);
+        return min(state.validatorBalances[index], MAX_DEPOSIT * GWEI_PER_ETH)
     }
 
     private func genesisState(genesisTime: TimeInterval, lastDepositRoot: Data) -> BeaconState {
@@ -76,7 +76,7 @@ class BeaconChain {
 
             latestDepositRoot: lastDepositRoot,
             depositRootVotes: [DepositRootVote]()
-        );
+        )
     }
 
 }

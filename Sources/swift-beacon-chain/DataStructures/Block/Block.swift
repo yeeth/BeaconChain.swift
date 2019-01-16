@@ -9,11 +9,11 @@
 import Foundation
 
 struct Block {
-    let slot: Int;
-    let parentRoot: Data;
-    let stateRoot: Data;
-    let randaoReveal: Data;
-    let depositRoot: Data;
-    let signature: Data;
-    let body: BlockBody;
+    let slot: Int
+    let parentRoot: Data
+    let stateRoot: Data
+    let randaoReveal: Data
+    let depositRoot: Data
+    let signature: Data
+    let body: BlockBody
 }
