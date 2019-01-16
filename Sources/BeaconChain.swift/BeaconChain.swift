@@ -24,6 +24,32 @@ class BeaconChain {
         return min(state.validatorBalances[index], MAX_DEPOSIT * GWEI_PER_ETH)
     }
 
+    static func getBlockRoot(state: BeaconState, slot: Int) -> Data {
+        assert(state.slot <= slot + LATEST_BLOCK_ROOTS_LENGTH)
+        assert(slot < state.slot)
+        return state.latestBlockRoots[slot % LATEST_BLOCK_ROOTS_LENGTH]
+    }
+
+    static func getRandaoMix(state: BeaconState, slot: Int) -> Data {
+        assert(state.slot <= slot + LATEST_RANDAO_MIXES_LENGTH)
+        assert(slot < state.slot)
+        return state.latestBlockRoots[slot % LATEST_RANDAO_MIXES_LENGTH]
+    }
+
+//    static func getBeaconProposerIndex(state: BeaconState, slot: Int) -> Int {
+//        let committees = BeaconChain.getShardCommitteesAtSlot(state: state, slot: slot)
+//        if let first = committees.first?.first {
+//            return first.key[slot % first.key.count]
+//        }
+//    }
+//
+//    static func getAttestationParticipants(state: BeaconState, data: AttestationData, participationBitfield: Int) -> [Int] {
+//        let committees = getShardCommitteesAtSlot(state: state, slot: data.slot)
+//        for (_, shard) in committees.enumerated() {
+//            assert(shard.v == data.shard)
+//        }
+//    }
+
     private static func genesisState(genesisTime: TimeInterval, lastDepositRoot: Data) -> BeaconState {
         return BeaconState(
             slot: GENESIS_SLOT,
@@ -197,5 +223,10 @@ extension BeaconChain {
     func getCurrentEpochCommitteeCountPerSlot(state: BeaconState) -> Int {
         let validators = getActiveValidatorIndices(validators: state.validatorRegistry, slot: state.currentEpochCalculationSlot)
         return getCommitteeCountPerSlot(activeValidatorCount: validators.count)
+    }
+
+    // @todo return type here needs fixing
+    static func getShardCommitteesAtSlot(state: BeaconState, slot: Int) -> [Dictionary<Array<Int>, Int>] {
+        // @todo
     }
 }
