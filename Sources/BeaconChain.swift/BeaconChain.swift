@@ -182,6 +182,14 @@ extension BeaconChain {
     static func validateProofOfPossession() -> Bool {
         // @todo
     }
+
+    static func processEjections(state: BeaconState) {
+        for i in BeaconChain.getActiveValidatorIndices(state.validatorRegistry, state.slot) {
+            if state.validatorBalances[i] < EJECTION_BALANCE * GWEI_PER_ETH {
+                exitValidator(state: state, index: i)
+            }
+        }
+    }
 }
 
 extension BeaconChain {
@@ -227,7 +235,7 @@ extension BeaconChain {
 extension BeaconChain {
 
     func updateValidatorRegistry(state: BeaconState) {
-        let activeValidatorIndices = getActiveValidatorIndices(validators: state.validatorRegistry, slot: state.slot)
+        let activeValidatorIndices = BeaconChain.getActiveValidatorIndices(validators: state.validatorRegistry, slot: state.slot)
 
         let totalBalance = activeValidatorIndices.map({
             (i: Int) -> Int in
@@ -263,18 +271,18 @@ extension BeaconChain {
         state.validatorRegistryLatestChangeSlot = state.slot
     }
 
-    func getActiveValidatorIndices(validators: [ValidatorRecord], slot: Int) -> [Int] {
+    static func getActiveValidatorIndices(validators: [ValidatorRecord], slot: Int) -> [Int] {
         return validators.enumerated().compactMap{
             (arg) -> Int? in
             let (i, validator) = arg
-            if isActive(validator: validator, slot: slot) {
+            if BeaconChain.isActive(validator: validator, slot: slot) {
                 return i
             }
         }
     }
 
     // @todo move these functions into validator record
-    func isActive(validator: ValidatorRecord, slot: Int) -> Bool {
+    static func isActive(validator: ValidatorRecord, slot: Int) -> Bool {
         return validator.activationSlot <= slot && slot < validator.exitSlot
     }
 }
@@ -289,12 +297,20 @@ extension BeaconChain {
     }
 
     func getPreviousEpochCommitteeCountPerSlot(state: BeaconState) -> Int {
-        let validators = getActiveValidatorIndices(validators: state.validatorRegistry, slot: state.previousEpochCalculationSlot)
+        let validators = BeaconChain.getActiveValidatorIndices(
+            validators: state.validatorRegistry,
+            slot: state.previousEpochCalculationSlot
+        )
+
         return getCommitteeCountPerSlot(activeValidatorCount: validators.count)
     }
 
     func getCurrentEpochCommitteeCountPerSlot(state: BeaconState) -> Int {
-        let validators = getActiveValidatorIndices(validators: state.validatorRegistry, slot: state.currentEpochCalculationSlot)
+        let validators = BeaconChain.getActiveValidatorIndices(
+            validators: state.validatorRegistry,
+            slot: state.currentEpochCalculationSlot
+        )
+
         return getCommitteeCountPerSlot(activeValidatorCount: validators.count)
     }
 
