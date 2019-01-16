@@ -62,6 +62,21 @@ class BeaconChain {
         return BeaconChain.getForkVersion(data: data, slot: slot) * 2^32 + domainType
     }
 
+    static func isDoubleVote(first: AttestationData, second: AttestationData) -> Bool {
+        return (first.slot / EPOCH_LENGTH) == (second.slot / EPOCH_LENGTH)
+    }
+
+    static func isSurroundVote(first: AttestationData, second: AttestationData) -> Bool {
+        let firstSourceEpoch = first.justifiedSlot / EPOCH_LENGTH
+        let secondSourceEpoch = second.justifiedSlot / EPOCH_LENGTH
+        let firstTargetEpoch = first.slot / EPOCH_LENGTH
+        let secondTargetEpoch = second.slot / EPOCH_LENGTH
+
+        return firstSourceEpoch < secondSourceEpoch
+            && secondSourceEpoch + 1 == secondTargetEpoch
+            && secondTargetEpoch < firstTargetEpoch
+    }
+
     private static func genesisState(genesisTime: TimeInterval, lastDepositRoot: Data) -> BeaconState {
         return BeaconState(
             slot: GENESIS_SLOT,
