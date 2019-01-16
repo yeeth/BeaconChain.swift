@@ -203,7 +203,7 @@ extension BeaconChain {
     }
 
     static func processEjections(state: BeaconState) {
-        for i in BeaconChain.getActiveValidatorIndices(state.validatorRegistry, state.slot) {
+        for i in BeaconChain.getActiveValidatorIndices(validators: state.validatorRegistry, slot: state.slot) {
             if state.validatorBalances[i] < EJECTION_BALANCE * GWEI_PER_ETH {
                 exitValidator(state: state, index: i)
             }
@@ -223,7 +223,7 @@ extension BeaconChain {
         state.validatorRegistry[index].statusFlags |= INITIATED_EXIT
     }
 
-    func exitValidator(state: BeaconState, index: Int) {
+    static func exitValidator(state: BeaconState, index: Int) {
         if state.validatorRegistry[index].exitSlot <= state.slot + ENTRY_EXIT_DELAY {
             return
         }
