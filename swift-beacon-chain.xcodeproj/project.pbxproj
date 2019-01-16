@@ -1,0 +1,432 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 50;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		2E7C9F2621EE99BF0082A03F /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2E7C9F2521EE99BF0082A03F /* main.swift */; };
+		2E7C9F3021EE9B320082A03F /* AttestationData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2E7C9F2F21EE9B320082A03F /* AttestationData.swift */; };
+		2E7C9F3221EE9C240082A03F /* ValidatorRecord.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2E7C9F3121EE9C240082A03F /* ValidatorRecord.swift */; };
+		2E7C9F3621EE9EDB0082A03F /* Attestation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2E7C9F3521EE9EDB0082A03F /* Attestation.swift */; };
+		2E7C9F3821EE9F870082A03F /* AttestationDataAndCustodyBit.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2E7C9F3721EE9F870082A03F /* AttestationDataAndCustodyBit.swift */; };
+		2E7C9F3B21EEA0E10082A03F /* DepositData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2E7C9F3A21EEA0E10082A03F /* DepositData.swift */; };
+		2E7C9F3D21EEA0FC0082A03F /* DepositInput.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2E7C9F3C21EEA0FC0082A03F /* DepositInput.swift */; };
+		2E7C9F3F21EEA1EF0082A03F /* Deposit.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2E7C9F3E21EEA1EF0082A03F /* Deposit.swift */; };
+		2E7C9F4421EEA27E0082A03F /* BlockBody.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2E7C9F4321EEA27E0082A03F /* BlockBody.swift */; };
+		2E7C9F4721EEA40B0082A03F /* ProposalSignedData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2E7C9F4621EEA40B0082A03F /* ProposalSignedData.swift */; };
+		2E7C9F4921EEA4570082A03F /* Block.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2E7C9F4821EEA4570082A03F /* Block.swift */; };
+		2E7C9F4B21EEA6240082A03F /* CrosslinkRecord.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2E7C9F4A21EEA6240082A03F /* CrosslinkRecord.swift */; };
+		2E7C9F4D21EEA6E40082A03F /* DepositRootVote.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2E7C9F4C21EEA6E40082A03F /* DepositRootVote.swift */; };
+		2E7C9F4F21EEA7BD0082A03F /* PendingAttestationRecord.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2E7C9F4E21EEA7BD0082A03F /* PendingAttestationRecord.swift */; };
+		2E7C9F5121EEA7F00082A03F /* ForkData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2E7C9F5021EEA7F00082A03F /* ForkData.swift */; };
+		2E7C9F5321EEA8430082A03F /* ValidatorRegistryDeltaBlock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2E7C9F5221EEA8430082A03F /* ValidatorRegistryDeltaBlock.swift */; };
+		2E7C9F5521EEA8FC0082A03F /* ProposerSlashing.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2E7C9F5421EEA8FC0082A03F /* ProposerSlashing.swift */; };
+		2E7C9F5721EEA97D0082A03F /* SlashableVoteData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2E7C9F5621EEA97D0082A03F /* SlashableVoteData.swift */; };
+		2E7C9F5921EEA9BC0082A03F /* CasperSlashing.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2E7C9F5821EEA9BC0082A03F /* CasperSlashing.swift */; };
+		2E7C9F5B21EEA9F60082A03F /* Exit.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2E7C9F5A21EEA9F60082A03F /* Exit.swift */; };
+		2E7C9F5E21EEAB200082A03F /* BeaconState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2E7C9F5D21EEAB200082A03F /* BeaconState.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		2E7C9F2021EE99BF0082A03F /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = /usr/share/man/man1/;
+			dstSubfolderSpec = 0;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 1;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		2E7C9F2221EE99BF0082A03F /* swift-beacon-chain */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = "swift-beacon-chain"; sourceTree = BUILT_PRODUCTS_DIR; };
+		2E7C9F2521EE99BF0082A03F /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
+		2E7C9F2F21EE9B320082A03F /* AttestationData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AttestationData.swift; sourceTree = "<group>"; };
+		2E7C9F3121EE9C240082A03F /* ValidatorRecord.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ValidatorRecord.swift; sourceTree = "<group>"; };
+		2E7C9F3521EE9EDB0082A03F /* Attestation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Attestation.swift; sourceTree = "<group>"; };
+		2E7C9F3721EE9F870082A03F /* AttestationDataAndCustodyBit.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AttestationDataAndCustodyBit.swift; sourceTree = "<group>"; };
+		2E7C9F3A21EEA0E10082A03F /* DepositData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DepositData.swift; sourceTree = "<group>"; };
+		2E7C9F3C21EEA0FC0082A03F /* DepositInput.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DepositInput.swift; sourceTree = "<group>"; };
+		2E7C9F3E21EEA1EF0082A03F /* Deposit.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Deposit.swift; sourceTree = "<group>"; };
+		2E7C9F4321EEA27E0082A03F /* BlockBody.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlockBody.swift; sourceTree = "<group>"; };
+		2E7C9F4621EEA40B0082A03F /* ProposalSignedData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProposalSignedData.swift; sourceTree = "<group>"; };
+		2E7C9F4821EEA4570082A03F /* Block.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Block.swift; sourceTree = "<group>"; };
+		2E7C9F4A21EEA6240082A03F /* CrosslinkRecord.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrosslinkRecord.swift; sourceTree = "<group>"; };
+		2E7C9F4C21EEA6E40082A03F /* DepositRootVote.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DepositRootVote.swift; sourceTree = "<group>"; };
+		2E7C9F4E21EEA7BD0082A03F /* PendingAttestationRecord.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PendingAttestationRecord.swift; sourceTree = "<group>"; };
+		2E7C9F5021EEA7F00082A03F /* ForkData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ForkData.swift; sourceTree = "<group>"; };
+		2E7C9F5221EEA8430082A03F /* ValidatorRegistryDeltaBlock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ValidatorRegistryDeltaBlock.swift; sourceTree = "<group>"; };
+		2E7C9F5421EEA8FC0082A03F /* ProposerSlashing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProposerSlashing.swift; sourceTree = "<group>"; };
+		2E7C9F5621EEA97D0082A03F /* SlashableVoteData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SlashableVoteData.swift; sourceTree = "<group>"; };
+		2E7C9F5821EEA9BC0082A03F /* CasperSlashing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CasperSlashing.swift; sourceTree = "<group>"; };
+		2E7C9F5A21EEA9F60082A03F /* Exit.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Exit.swift; sourceTree = "<group>"; };
+		2E7C9F5D21EEAB200082A03F /* BeaconState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BeaconState.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		2E7C9F1F21EE99BF0082A03F /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		2E7C9F1921EE99BF0082A03F = {
+			isa = PBXGroup;
+			children = (
+				2E7C9F2421EE99BF0082A03F /* swift-beacon-chain */,
+				2E7C9F2321EE99BF0082A03F /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		2E7C9F2321EE99BF0082A03F /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				2E7C9F2221EE99BF0082A03F /* swift-beacon-chain */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		2E7C9F2421EE99BF0082A03F /* swift-beacon-chain */ = {
+			isa = PBXGroup;
+			children = (
+				2E7C9F2C21EE99FD0082A03F /* Sources */,
+				2E7C9F2521EE99BF0082A03F /* main.swift */,
+			);
+			path = "swift-beacon-chain";
+			sourceTree = "<group>";
+		};
+		2E7C9F2C21EE99FD0082A03F /* Sources */ = {
+			isa = PBXGroup;
+			children = (
+				2E7C9F3321EE9EA50082A03F /* DataStructures */,
+			);
+			path = Sources;
+			sourceTree = "<group>";
+		};
+		2E7C9F3321EE9EA50082A03F /* DataStructures */ = {
+			isa = PBXGroup;
+			children = (
+				2E7C9F4121EEA25B0082A03F /* State */,
+				2E7C9F4521EEA39A0082A03F /* Operations */,
+				2E7C9F4221EEA26D0082A03F /* Block */,
+			);
+			path = DataStructures;
+			sourceTree = "<group>";
+		};
+		2E7C9F3421EE9ECD0082A03F /* Attestation */ = {
+			isa = PBXGroup;
+			children = (
+				2E7C9F2F21EE9B320082A03F /* AttestationData.swift */,
+				2E7C9F3521EE9EDB0082A03F /* Attestation.swift */,
+				2E7C9F3721EE9F870082A03F /* AttestationDataAndCustodyBit.swift */,
+			);
+			path = Attestation;
+			sourceTree = "<group>";
+		};
+		2E7C9F3921EEA0D60082A03F /* Deposit */ = {
+			isa = PBXGroup;
+			children = (
+				2E7C9F3A21EEA0E10082A03F /* DepositData.swift */,
+				2E7C9F3C21EEA0FC0082A03F /* DepositInput.swift */,
+				2E7C9F3E21EEA1EF0082A03F /* Deposit.swift */,
+			);
+			path = Deposit;
+			sourceTree = "<group>";
+		};
+		2E7C9F4121EEA25B0082A03F /* State */ = {
+			isa = PBXGroup;
+			children = (
+				2E7C9F3121EE9C240082A03F /* ValidatorRecord.swift */,
+				2E7C9F4A21EEA6240082A03F /* CrosslinkRecord.swift */,
+				2E7C9F4C21EEA6E40082A03F /* DepositRootVote.swift */,
+				2E7C9F4E21EEA7BD0082A03F /* PendingAttestationRecord.swift */,
+				2E7C9F5021EEA7F00082A03F /* ForkData.swift */,
+				2E7C9F5221EEA8430082A03F /* ValidatorRegistryDeltaBlock.swift */,
+				2E7C9F5D21EEAB200082A03F /* BeaconState.swift */,
+			);
+			path = State;
+			sourceTree = "<group>";
+		};
+		2E7C9F4221EEA26D0082A03F /* Block */ = {
+			isa = PBXGroup;
+			children = (
+				2E7C9F4321EEA27E0082A03F /* BlockBody.swift */,
+				2E7C9F4621EEA40B0082A03F /* ProposalSignedData.swift */,
+				2E7C9F4821EEA4570082A03F /* Block.swift */,
+			);
+			path = Block;
+			sourceTree = "<group>";
+		};
+		2E7C9F4521EEA39A0082A03F /* Operations */ = {
+			isa = PBXGroup;
+			children = (
+				2E7C9F5C21EEAAEA0082A03F /* CasparSlashing */,
+				2E7C9F3421EE9ECD0082A03F /* Attestation */,
+				2E7C9F3921EEA0D60082A03F /* Deposit */,
+				2E7C9F5421EEA8FC0082A03F /* ProposerSlashing.swift */,
+				2E7C9F5A21EEA9F60082A03F /* Exit.swift */,
+			);
+			path = Operations;
+			sourceTree = "<group>";
+		};
+		2E7C9F5C21EEAAEA0082A03F /* CasparSlashing */ = {
+			isa = PBXGroup;
+			children = (
+				2E7C9F5621EEA97D0082A03F /* SlashableVoteData.swift */,
+				2E7C9F5821EEA9BC0082A03F /* CasperSlashing.swift */,
+			);
+			path = CasparSlashing;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		2E7C9F2121EE99BF0082A03F /* swift-beacon-chain */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 2E7C9F2921EE99BF0082A03F /* Build configuration list for PBXNativeTarget "swift-beacon-chain" */;
+			buildPhases = (
+				2E7C9F1E21EE99BF0082A03F /* Sources */,
+				2E7C9F1F21EE99BF0082A03F /* Frameworks */,
+				2E7C9F2021EE99BF0082A03F /* CopyFiles */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "swift-beacon-chain";
+			productName = "swift-beacon-chain";
+			productReference = 2E7C9F2221EE99BF0082A03F /* swift-beacon-chain */;
+			productType = "com.apple.product-type.tool";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		2E7C9F1A21EE99BF0082A03F /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastSwiftUpdateCheck = 1010;
+				LastUpgradeCheck = 1010;
+				ORGANIZATIONNAME = "Dean Eigenmann";
+				TargetAttributes = {
+					2E7C9F2121EE99BF0082A03F = {
+						CreatedOnToolsVersion = 10.1;
+					};
+				};
+			};
+			buildConfigurationList = 2E7C9F1D21EE99BF0082A03F /* Build configuration list for PBXProject "swift-beacon-chain" */;
+			compatibilityVersion = "Xcode 9.3";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+			);
+			mainGroup = 2E7C9F1921EE99BF0082A03F;
+			productRefGroup = 2E7C9F2321EE99BF0082A03F /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				2E7C9F2121EE99BF0082A03F /* swift-beacon-chain */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXSourcesBuildPhase section */
+		2E7C9F1E21EE99BF0082A03F /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				2E7C9F5321EEA8430082A03F /* ValidatorRegistryDeltaBlock.swift in Sources */,
+				2E7C9F4421EEA27E0082A03F /* BlockBody.swift in Sources */,
+				2E7C9F4921EEA4570082A03F /* Block.swift in Sources */,
+				2E7C9F4721EEA40B0082A03F /* ProposalSignedData.swift in Sources */,
+				2E7C9F2621EE99BF0082A03F /* main.swift in Sources */,
+				2E7C9F4D21EEA6E40082A03F /* DepositRootVote.swift in Sources */,
+				2E7C9F3221EE9C240082A03F /* ValidatorRecord.swift in Sources */,
+				2E7C9F5521EEA8FC0082A03F /* ProposerSlashing.swift in Sources */,
+				2E7C9F3B21EEA0E10082A03F /* DepositData.swift in Sources */,
+				2E7C9F5E21EEAB200082A03F /* BeaconState.swift in Sources */,
+				2E7C9F5721EEA97D0082A03F /* SlashableVoteData.swift in Sources */,
+				2E7C9F3F21EEA1EF0082A03F /* Deposit.swift in Sources */,
+				2E7C9F3021EE9B320082A03F /* AttestationData.swift in Sources */,
+				2E7C9F3D21EEA0FC0082A03F /* DepositInput.swift in Sources */,
+				2E7C9F5921EEA9BC0082A03F /* CasperSlashing.swift in Sources */,
+				2E7C9F3821EE9F870082A03F /* AttestationDataAndCustodyBit.swift in Sources */,
+				2E7C9F5B21EEA9F60082A03F /* Exit.swift in Sources */,
+				2E7C9F3621EE9EDB0082A03F /* Attestation.swift in Sources */,
+				2E7C9F4B21EEA6240082A03F /* CrosslinkRecord.swift in Sources */,
+				2E7C9F4F21EEA7BD0082A03F /* PendingAttestationRecord.swift in Sources */,
+				2E7C9F5121EEA7F00082A03F /* ForkData.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		2E7C9F2721EE99BF0082A03F /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "Mac Developer";
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.14;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		2E7C9F2821EE99BF0082A03F /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "Mac Developer";
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.14;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = macosx;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+			};
+			name = Release;
+		};
+		2E7C9F2A21EE99BF0082A03F /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 9W792Z62E5;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 4.2;
+			};
+			name = Debug;
+		};
+		2E7C9F2B21EE99BF0082A03F /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 9W792Z62E5;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 4.2;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		2E7C9F1D21EE99BF0082A03F /* Build configuration list for PBXProject "swift-beacon-chain" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				2E7C9F2721EE99BF0082A03F /* Debug */,
+				2E7C9F2821EE99BF0082A03F /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		2E7C9F2921EE99BF0082A03F /* Build configuration list for PBXNativeTarget "swift-beacon-chain" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				2E7C9F2A21EE99BF0082A03F /* Debug */,
+				2E7C9F2B21EE99BF0082A03F /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 2E7C9F1A21EE99BF0082A03F /* Project object */;
+}
