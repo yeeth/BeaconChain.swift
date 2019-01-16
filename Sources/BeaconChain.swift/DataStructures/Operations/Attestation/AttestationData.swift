@@ -1,11 +1,3 @@
-//
-//  Attestation.swift
-//  swift-beacon-chain
-//
-//  Created by Dean Eigenmann on 15.01.19.
-//  Copyright © 2019 Dean Eigenmann. All rights reserved.
-//
-
 import Foundation
 
 struct AttestationData {
