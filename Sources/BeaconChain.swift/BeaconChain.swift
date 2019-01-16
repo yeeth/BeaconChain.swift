@@ -107,6 +107,25 @@ class BeaconChain {
             && secondTargetEpoch < firstTargetEpoch
     }
 
+    static func verifySlashableVoteData(state: BeaconState, data: SlashableVoteData) -> Bool {
+        if data.custodyBit0indices.count + data.custodyBit1indices.count > MAX_CASPER_VOTES {
+            return false
+        }
+
+        return BLS.verify(
+            pubkeys: [
+                BLS.aggregate(pubkeys: data.custodyBit0indices.map({ (index: Int) in return state.validatorRegistry[index].pubkey })),
+                BLS.aggregate(pubkeys: data.custodyBit1indices.map({ (index: Int) in return state.validatorRegistry[index].pubkey })),
+            ],
+            messages: [
+                BeaconChain.hashTreeRoot(data: AttestationDataAndCustodyBit(data: data.data, custodyBit: false)),
+                BeaconChain.hashTreeRoot(data: AttestationDataAndCustodyBit(data: data.data, custodyBit: true))
+            ],
+            signatures: data.aggregateSignature,
+            domain: getDomain(data: state.forkData, slot: state.slot, domainType: DOMAIN_ATTESTATION)
+        )
+    }
+
     private static func genesisState(genesisTime: TimeInterval, lastDepositRoot: Data) -> BeaconState {
         return BeaconState(
             slot: GENESIS_SLOT,
@@ -302,4 +321,16 @@ extension BeaconChain {
     static func getCrosslinkCommitteesAtSlot(state: BeaconState, slot: Int) -> [([Int], Int)] {
         // @todo
     }
+}
+
+extension BeaconChain {
+
+    static func hash(data: Any) -> Data {
+
+    }
+
+    static func hashTreeRoot(data: Any) -> Data {
+
+    }
+
 }
