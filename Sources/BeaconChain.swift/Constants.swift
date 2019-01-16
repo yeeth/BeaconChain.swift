@@ -20,7 +20,7 @@ let GENESIS_FORK_VERSION = 0
 let GENESIS_SLOT = 0
 let GENESIS_START_SHARD = 0
 let FAR_FUTURE_SLOT = 2^64 - 1
-let ZERO_HASH = 0x0 // @todo data
+let ZERO_HASH = Data(repeating: 0, count: 32) // @todo unsure if this is bytes32(0x0)
 let EMPTY_SIGNATURE = [0x0, 0x0] // @todo data
 let BLS_WITHDRAWAL_PREFIX_BYTE = 0x0
 
