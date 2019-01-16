@@ -179,3 +179,23 @@ extension BeaconChain {
         return validator.activationSlot <= slot && slot < validator.exitSlot
     }
 }
+
+extension BeaconChain {
+
+    func getCommitteeCountPerSlot(activeValidatorCount: Int) -> Int {
+        return max(
+            1,
+            min(SHARD_COUNT / EPOCH_LENGTH, activeValidatorCount / EPOCH_LENGTH / TARGET_COMMITTEE_SIZE)
+        )
+    }
+
+    func getPreviousEpochCommitteeCountPerSlot(state: BeaconState) -> Int {
+        let validators = getActiveValidatorIndices(validators: state.validatorRegistry, slot: state.previousEpochCalculationSlot)
+        return getCommitteeCountPerSlot(activeValidatorCount: validators.count)
+    }
+
+    func getCurrentEpochCommitteeCountPerSlot(state: BeaconState) -> Int {
+        let validators = getActiveValidatorIndices(validators: state.validatorRegistry, slot: state.currentEpochCalculationSlot)
+        return getCommitteeCountPerSlot(activeValidatorCount: validators.count)
+    }
+}
