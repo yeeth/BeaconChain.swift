@@ -30,10 +30,10 @@ struct BeaconState {
 
 //    let custodyChallenges: [CustodyChallenge]; defined in 1.0
 
-    let previousJustifiedSlot: uint64;
-    let justifiedSlot: uint64;
-    let justificationBitfield: uint64;
-    let finalizedSlot: uint64;
+    let previousJustifiedSlot: Int;
+    let justifiedSlot: Int;
+    let justificationBitfield: Int;
+    let finalizedSlot: Int;
 
     let latestCrosslinks: [CrosslinkRecord];
     let latestBlockRoots: [Data];
