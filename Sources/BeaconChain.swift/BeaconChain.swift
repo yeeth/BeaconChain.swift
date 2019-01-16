@@ -50,6 +50,18 @@ class BeaconChain {
 //        }
 //    }
 
+    static func getForkVersion(data: ForkData, slot: Int) -> Int {
+        if slot < data.forkSlot {
+            return data.preForkVersion
+        }
+
+        return data.postForkVersion
+    }
+
+    static func getDomain(data: ForkData, slot: Int, domainType: Int) -> Int {
+        return BeaconChain.getForkVersion(data: data, slot: slot) * 2^32 + domainType
+    }
+
     private static func genesisState(genesisTime: TimeInterval, lastDepositRoot: Data) -> BeaconState {
         return BeaconState(
             slot: GENESIS_SLOT,
