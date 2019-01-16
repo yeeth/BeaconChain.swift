@@ -9,7 +9,7 @@
 import Foundation
 
 struct ForkData {
-    let preForkVersion: uint64;
-    let postForkVersion: uint64;
-    let forkSlot: uint64;
+    let preForkVersion: Int;
+    let postForkVersion: Int;
+    let forkSlot: Int;
 }

@@ -8,25 +8,25 @@
 
 import Foundation
 
-class BeaconState {
-    let slot: uint64;
-    let genesisTime: uint64;
+struct BeaconState {
+    let slot: Int;
+    let genesisTime: TimeInterval;
     let forkData: ForkData;
 
     let validatorRegistry: [ValidatorRecord];
-    let validatorBalances: [uint64];
-    let validatorRegistryLatestChangeSlot: uint64;
-    let validatorRegistryExitCount: uint64;
+    let validatorBalances: [Int];
+    let validatorRegistryLatestChangeSlot: Int;
+    let validatorRegistryExitCount: Int;
     let validatorRegistryDeltaChainTip: Data;
 
     let latestRandaoMixes: Data;
     let latestVdfOutputs: Data;
-    let previousEpochStartShard: uint64;
-    let currentEpochStartShard: uint64;
-    let previousEpochCalculationSlot: uint64;
-    let currentEpochCalculationSlot: uint64;
-    let previousEpochRandaoMix: uint64;
-    let currentEpochRandaoMix: uint64;
+    let previousEpochStartShard: Int;
+    let currentEpochStartShard: Int;
+    let previousEpochCalculationSlot: Int;
+    let currentEpochCalculationSlot: Int;
+    let previousEpochRandaoMix: Int;
+    let currentEpochRandaoMix: Int; // @todo do these need be data?
 
 //    let custodyChallenges: [CustodyChallenge]; defined in 1.0
 
@@ -37,7 +37,7 @@ class BeaconState {
 
     let latestCrosslinks: [CrosslinkRecord];
     let latestBlockRoots: [Data];
-    let latestPenalizedExitBalances: [uint64];
+    let latestPenalizedExitBalances: [Int];
     let latestAttestations: [PendingAttestationRecord];
     let batchedBlockRoots: [Data];
 
