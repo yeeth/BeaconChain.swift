@@ -8,19 +8,19 @@ class BeaconChain {
         let state = genesisState(genesisTime: genesisTime, lastDepositRoot: lastDepositRoot)
 
         for deposit in initialValidatorDeposits {
-            processDeposit(state: state, deposit: deposit)
+            BeaconChain.processDeposit(state: state, deposit: deposit)
         }
 
         for (i, _) in state.validatorRegistry.enumerated() {
-            if (getEffectiveBalance(state: state, index: i) >= MAX_DEPOSIT * GWEI_PER_ETH) {
-                activateValidator(state: state, index: i, genesis: true)
+            if (BeaconChain.getEffectiveBalance(state: state, index: i) >= MAX_DEPOSIT * GWEI_PER_ETH) {
+                BeaconChain.activateValidator(state: state, index: i, genesis: true)
             }
         }
 
         return state
     }
 
-    func getEffectiveBalance(state: BeaconState, index: Int) -> Int {
+    static func getEffectiveBalance(state: BeaconState, index: Int) -> Int {
         return min(state.validatorBalances[index], MAX_DEPOSIT * GWEI_PER_ETH)
     }
 
@@ -65,8 +65,8 @@ class BeaconChain {
 
 extension BeaconChain {
 
-    func processDeposit(state: BeaconState, deposit: Deposit) {
-        assert(validateProofOfPossession())
+    static func processDeposit(state: BeaconState, deposit: Deposit) {
+        assert(BeaconChain.validateProofOfPossession())
 
         let pubkeys = state.validatorRegistry.enumerated().map{(_, validator: ValidatorRecord) in return validator.pubkey}
 
@@ -96,14 +96,14 @@ extension BeaconChain {
         state.validatorBalances.append(deposit.depositData.amount)
     }
 
-    func validateProofOfPossession() -> Bool {
+    static func validateProofOfPossession() -> Bool {
         // @todo
     }
 }
 
 extension BeaconChain {
 
-    func activateValidator(state: BeaconState, index: Int, genesis: Bool) {
+    static func activateValidator(state: BeaconState, index: Int, genesis: Bool) {
         state.validatorRegistry[index].activationSlot = genesis ? GENESIS_SLOT : state.slot + ENTRY_EXIT_DELAY
 
         // @todo
@@ -140,19 +140,19 @@ extension BeaconChain {
         var balanceChurn = 0
         for (i, validator) in state.validatorRegistry.enumerated() {
             if validator.activationSlot > state.slot + ENTRY_EXIT_DELAY && state.validatorBalances[i] >= MAX_DEPOSIT * GWEI_PER_ETH {
-                balanceChurn += getEffectiveBalance(state: state, index: i)
+                balanceChurn += BeaconChain.getEffectiveBalance(state: state, index: i)
                 if balanceChurn > maxBalanceChurn {
                     break
                 }
 
-                activateValidator(state: state, index: i, genesis: false)
+                BeaconChain.activateValidator(state: state, index: i, genesis: false)
             }
         }
 
         balanceChurn = 0
         for (i, validator) in state.validatorRegistry.enumerated() {
             if validator.exitSlot > state.slot + ENTRY_EXIT_DELAY && (validator.statusFlags & INITIATED_EXIT) == 1 {
-                balanceChurn += getEffectiveBalance(state: state, index: i)
+                balanceChurn += BeaconChain.getEffectiveBalance(state: state, index: i)
                 if balanceChurn > maxBalanceChurn {
                     break
                 }
