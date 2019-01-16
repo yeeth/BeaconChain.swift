@@ -24,6 +24,10 @@ class BeaconChain {
         return min(state.validatorBalances[index], MAX_DEPOSIT * GWEI_PER_ETH)
     }
 
+    func getActiveValidatorIndices(validators: [ValidatorRecord], slot: Int) -> [Int] {
+
+    }
+
     private func genesisState(genesisTime: TimeInterval, lastDepositRoot: Data) -> BeaconState {
         return BeaconState(
             slot: GENESIS_SLOT,
@@ -87,7 +91,7 @@ extension BeaconChain {
     }
 
     func exitValidator(state: BeaconState, index: Int) {
-        if (state.validatorRegistry[index].exitSlot <= state.slot + ENTRY_EXIT_DELAY) {
+        if state.validatorRegistry[index].exitSlot <= state.slot + ENTRY_EXIT_DELAY {
             return
         }
 
@@ -96,4 +100,45 @@ extension BeaconChain {
 
         // @todo state.validator_registry_delta_chain_tip = hash_tree_root
     }
+}
+
+extension BeaconChain {
+
+    func updateValidatorRegistry(state: BeaconState) {
+        let activeValidatorIndices = getActiveValidatorIndices(validators: state.validatorRegistry, slot: state.slot)
+
+        let totalBalance = activeValidatorIndices.map({
+            (i: Int) -> Int in
+            return getEffectiveBalance(state: state, index: i)
+        }).reduce(0, +)
+
+        let maxBalanceChurn = max(MAX_DEPOSIT * GWEI_PER_ETH, totalBalance / (2 * MAX_BALANCE_CHURN_QUOTIENT))
+
+        var balanceChurn = 0
+        for (i, validator) in state.validatorRegistry.enumerated() {
+            if validator.activationSlot > state.slot + ENTRY_EXIT_DELAY && state.validatorBalances[i] >= MAX_DEPOSIT * GWEI_PER_ETH {
+                balanceChurn += getEffectiveBalance(state: state, index: i)
+                if balanceChurn > maxBalanceChurn {
+                    break
+                }
+
+                activateValidator(state: state, index: i, genesis: false)
+            }
+        }
+
+        balanceChurn = 0
+        for (i, validator) in state.validatorRegistry.enumerated() {
+            if validator.exitSlot > state.slot + ENTRY_EXIT_DELAY && (validator.statusFlags & INITIATED_EXIT) == 1 {
+                balanceChurn += getEffectiveBalance(state: state, index: i)
+                if balanceChurn > maxBalanceChurn {
+                    break
+                }
+
+                exitValidator(state: state, index: i)
+            }
+        }
+
+        state.validatorRegistryLatestChangeSlot = state.slot
+    }
+
 }

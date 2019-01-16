@@ -7,7 +7,7 @@ class BeaconState {
 
     var validatorRegistry: [ValidatorRecord]
     let validatorBalances: [Int]
-    let validatorRegistryLatestChangeSlot: Int
+    var validatorRegistryLatestChangeSlot: Int
     var validatorRegistryExitCount: Int
     let validatorRegistryDeltaChainTip: Data
 
