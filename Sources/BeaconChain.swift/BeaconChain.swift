@@ -342,7 +342,7 @@ extension BeaconChain {
 extension BeaconChain {
 
     static func merkleRoot(values: [Data]) -> Data {
-        var o = [0] * values.count + values
+        var o = [Data](repeating: 0, count: values.count + values)
         for i in  stride(from: values.count - 1, through: 0, by: -1) {
             o[i] = hash(o[i * 2] + o[i * 2 + 1])
         }
