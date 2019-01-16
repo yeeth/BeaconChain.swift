@@ -122,7 +122,7 @@ class BeaconChain {
                 BeaconChain.hashTreeRoot(data: AttestationDataAndCustodyBit(data: data.data, custodyBit: true))
             ],
             signatures: data.aggregateSignature,
-            domain: getDomain(data: state.forkData, slot: state.slot, domainType: DOMAIN_ATTESTATION)
+            domain: BeaconChain.getDomain(data: state.forkData, slot: state.slot, domainType: DOMAIN_ATTESTATION)
         )
     }
 
