@@ -132,7 +132,7 @@ extension BeaconChain {
 
         let totalBalance = activeValidatorIndices.map({
             (i: Int) -> Int in
-            return getEffectiveBalance(state: state, index: i)
+            return BeaconChain.getEffectiveBalance(state: state, index: i)
         }).reduce(0, +)
 
         let maxBalanceChurn = max(MAX_DEPOSIT * GWEI_PER_ETH, totalBalance / (2 * MAX_BALANCE_CHURN_QUOTIENT))
