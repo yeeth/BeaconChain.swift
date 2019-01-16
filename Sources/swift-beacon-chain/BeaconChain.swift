@@ -13,13 +13,13 @@ class BeaconChain {
     // var state: BeaconState!! // @todo we may not need this here if we make the chain "stateless" and require the state to be passed with function calls
 
     func getInitialBeaconState(initialValidatorDeposits: [Deposit], genesisTime: TimeInterval, lastDepositRoot: Data) -> BeaconState {
-        var state = genesisState(genesisTime: enesisTime, lastDepositRoot: lastDepositRoot)
+        let state = genesisState(genesisTime: genesisTime, lastDepositRoot: lastDepositRoot)
 
         for deposit in initialValidatorDeposits {
             processDeposit(state: state, deposit: deposit)
         }
 
-        for (i, _) in state.validatorRegistry {
+        for (i, _) in state.validatorRegistry.enumerated() {
             if (getEffectiveBalance(state: state, index: i) >= MAX_DEPOSIT * GWEI_PER_ETH) {
                 activateValidator(state: state, index: i, genesis: true)
             }
