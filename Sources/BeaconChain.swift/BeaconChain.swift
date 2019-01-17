@@ -477,7 +477,7 @@ extension BeaconChain {
 
         let shuffledValidatorIndices = shuffle(
             values: activeValidatorIndices,
-            seed: seed.xor(key: Data(bytes: &slot, count: MemoryLayout.size(ofValue: slot)))
+            seed: (seed ^ Data(bytes: &slot, count: MemoryLayout.size(ofValue: slot)))
         )
 
         return split(values: shuffledValidatorIndices, count: committeesPerSlot * EPOCH_LENGTH)
