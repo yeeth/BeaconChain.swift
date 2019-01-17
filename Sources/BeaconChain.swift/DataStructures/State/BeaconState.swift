@@ -17,8 +17,8 @@ class BeaconState {
     let currentEpochStartShard: Int
     let previousEpochCalculationSlot: Int
     let currentEpochCalculationSlot: Int
-    let previousEpochRandaoMix: Int
-    let currentEpochRandaoMix: Int // @todo do these need be data?
+    let previousEpochRandaoMix: Data
+    let currentEpochRandaoMix: Data
 
 //    let custodyChallenges: [CustodyChallenge] defined in 1.0
 
@@ -52,8 +52,8 @@ class BeaconState {
         currentEpochStartShard: Int,
         previousEpochCalculationSlot: Int,
         currentEpochCalculationSlot: Int,
-        previousEpochRandaoMix: Int,
-        currentEpochRandaoMix: Int,
+        previousEpochRandaoMix: Data,
+        currentEpochRandaoMix: Data,
         previousJustifiedSlot: Int,
         justifiedSlot: Int,
         justificationBitfield: Int,

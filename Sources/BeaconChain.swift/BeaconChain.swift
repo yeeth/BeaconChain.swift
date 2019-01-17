@@ -353,7 +353,7 @@ extension BeaconChain {
         )
     }
 
-    func getPreviousEpochCommitteeCountPerSlot(state: BeaconState) -> Int {
+    static func getPreviousEpochCommitteeCountPerSlot(state: BeaconState) -> Int {
         let validators = BeaconChain.getActiveValidatorIndices(
             validators: state.validatorRegistry,
             slot: state.previousEpochCalculationSlot
@@ -362,7 +362,7 @@ extension BeaconChain {
         return BeaconChain.getCommitteeCountPerSlot(activeValidatorCount: validators.count)
     }
 
-    func getCurrentEpochCommitteeCountPerSlot(state: BeaconState) -> Int {
+    static func getCurrentEpochCommitteeCountPerSlot(state: BeaconState) -> Int {
         let validators = BeaconChain.getActiveValidatorIndices(
             validators: state.validatorRegistry,
             slot: state.currentEpochCalculationSlot
@@ -371,9 +371,35 @@ extension BeaconChain {
         return BeaconChain.getCommitteeCountPerSlot(activeValidatorCount: validators.count)
     }
 
-    // @todo return type here needs fixing
+    // @todo rthis is probably broken
     static func getCrosslinkCommitteesAtSlot(state: BeaconState, slot: Int) -> [([Int], Int)] {
-        // @todo
+        let earliestSlot = state.slot - (state.slot % EPOCH_LENGTH) - EPOCH_LENGTH
+        assert(earliestSlot <= slot && slot < earliestSlot + (EPOCH_LENGTH * 2))
+        let offest = slot % EPOCH_LENGTH
+
+        var committeesPerSlot: Int
+        var shuffling: [[Int]]
+        var slotStartShard: Int
+        if slot < earliestSlot + EPOCH_LENGTH {
+            committeesPerSlot = BeaconChain.getPreviousEpochCommitteeCountPerSlot(state: state)
+            shuffling = getShuffling(
+                seed: state.previousEpochRandaoMix,
+                validators: state.validatorRegistry, slot: state.previousEpochCalculationSlot
+            );
+            slotStartShard = (state.previousEpochStartShard + (committeesPerSlot * offest)) % SHARD_COUNT
+        } else {
+            committeesPerSlot = BeaconChain.getCurrentEpochCommitteeCountPerSlot(state: state)
+            shuffling = getShuffling(
+                seed: state.currentEpochRandaoMix,
+                validators: state.validatorRegistry, slot: state.currentEpochCalculationSlot
+            );
+            slotStartShard = (state.currentEpochStartShard + (committeesPerSlot * offest)) % SHARD_COUNT
+        }
+
+        return stride(from: 0, to: committeesPerSlot, by: 1).map {
+            (i: Int) -> ([Int], Int) in
+            return (shuffling[committeesPerSlot * (offest + i)], (slotStartShard + i) % SHARD_COUNT)
+        }
     }
 }
 
