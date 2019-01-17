@@ -12,7 +12,7 @@ class BeaconChain {
         }
 
         for (i, _) in state.validatorRegistry.enumerated() {
-            if (BeaconChain.getEffectiveBalance(state: state, index: i) >= MAX_DEPOSIT * GWEI_PER_ETH) {
+            if (BeaconChain.getEffectiveBalance(state: state, index: i) >= MAX_DEPOSIT_AMOUNT) {
                 BeaconChain.activateValidator(state: state, index: i, genesis: true)
             }
         }
@@ -21,7 +21,7 @@ class BeaconChain {
     }
 
     static func getEffectiveBalance(state: BeaconState, index: Int) -> Int {
-        return min(state.validatorBalances[index], MAX_DEPOSIT * GWEI_PER_ETH)
+        return min(state.validatorBalances[index], MAX_DEPOSIT_AMOUNT)
     }
 
     static func getBlockRoot(state: BeaconState, slot: Int) -> Data {
@@ -227,7 +227,7 @@ extension BeaconChain {
 
     static func processEjections(state: BeaconState) {
         for i in BeaconChain.getActiveValidatorIndices(validators: state.validatorRegistry, slot: state.slot) {
-            if state.validatorBalances[i] < EJECTION_BALANCE * GWEI_PER_ETH {
+            if state.validatorBalances[i] < EJECTION_BALANCE {
                 exitValidator(state: state, index: i)
             }
         }
@@ -300,11 +300,11 @@ extension BeaconChain {
             return BeaconChain.getEffectiveBalance(state: state, index: i)
         }).reduce(0, +)
 
-        let maxBalanceChurn = max(MAX_DEPOSIT * GWEI_PER_ETH, totalBalance / (2 * MAX_BALANCE_CHURN_QUOTIENT))
+        let maxBalanceChurn = max(MAX_DEPOSIT_AMOUNT, totalBalance / (2 * MAX_BALANCE_CHURN_QUOTIENT))
 
         var balanceChurn = 0
         for (i, validator) in state.validatorRegistry.enumerated() {
-            if validator.activationSlot > state.slot + ENTRY_EXIT_DELAY && state.validatorBalances[i] >= MAX_DEPOSIT * GWEI_PER_ETH {
+            if validator.activationSlot > state.slot + ENTRY_EXIT_DELAY && state.validatorBalances[i] >= MAX_DEPOSIT_AMOUNT {
                 balanceChurn += BeaconChain.getEffectiveBalance(state: state, index: i)
                 if balanceChurn > maxBalanceChurn {
                     break
