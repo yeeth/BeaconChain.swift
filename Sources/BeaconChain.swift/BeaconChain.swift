@@ -2,7 +2,7 @@ import Foundation
 
 class BeaconChain {
 
-    func getInitialBeaconState(initialValidatorDeposits: [Deposit], genesisTime: TimeInterval, latestEth1Data: Eth1Data) -> BeaconState {
+    static func getInitialBeaconState(initialValidatorDeposits: [Deposit], genesisTime: TimeInterval, latestEth1Data: Eth1Data) -> BeaconState {
         let state = BeaconChain.genesisState(genesisTime: genesisTime, latestEth1Data: latestEth1Data)
 
         for deposit in initialValidatorDeposits {
@@ -244,7 +244,7 @@ extension BeaconChain {
         )
     }
 
-    func initiateValidatorExit(state: BeaconState, index: Int) {
+    static func initiateValidatorExit(state: BeaconState, index: Int) {
         state.validatorRegistry[index].statusFlags |= INITIATED_EXIT
     }
 
@@ -267,7 +267,7 @@ extension BeaconChain {
         )
     }
 
-    func penalizeValidator(state: BeaconState, index: Int) {
+    static func penalizeValidator(state: BeaconState, index: Int) {
         BeaconChain.exitValidator(state: state, index: index)
 
         state.latestPenalizedBalances[(state.slot / EPOCH_LENGTH) % LATEST_PENALIZED_EXIT_LENGTH] += BeaconChain.getEffectiveBalance(state: state, index: index)
@@ -279,14 +279,14 @@ extension BeaconChain {
         state.validatorRegistry[index].penalizedSlot = state.slot
     }
 
-    func prepareValidatorForWithdrawal(state: BeaconState, index: Int) {
+    static func prepareValidatorForWithdrawal(state: BeaconState, index: Int) {
         state.validatorRegistry[index].statusFlags |= WITHDRAWABLE
     }
 }
 
 extension BeaconChain {
 
-    func updateValidatorRegistry(state: BeaconState) {
+    static func updateValidatorRegistry(state: BeaconState) {
         let activeValidatorIndices = BeaconChain.getActiveValidatorIndices(validators: state.validatorRegistry, slot: state.slot)
 
         let totalBalance = activeValidatorIndices.map({
