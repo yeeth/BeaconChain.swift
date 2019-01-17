@@ -399,3 +399,43 @@ extension BeaconChain {
     }
 
 }
+
+extension BeaconChain {
+
+    static func shuffle<T>(values: inout [T], seed: Data) -> T {
+        let randBytes = 3
+        let randMax = 2^(randBytes * 8) - 1
+
+        assert(values.count < randMax)
+
+        var output = values
+        var source = seed
+
+        var index = 0
+        while index < values.count - 1 {
+            source = BeaconChain.hash(data: source)
+
+            for i in stride(from: 0, through: 32 - (32 % randBytes), by: randBytes) {
+                let remaining = values.count - index
+                if remaining == 1 {
+                    break
+                }
+
+                let sampleFromSource = source.subdata(in: Range(i...(i + randBytes))).withUnsafeBytes {
+                    (ptr: UnsafePointer<Int>) -> Int in
+                    return ptr.pointee
+                }
+
+                let sampleMax = randMax - randMax % remaining
+
+                if sampleFromSource < sampleMax {
+                    let replacementPosition = (sampleFromSource % remaining) + index
+                    (output[index], output[replacementPosition]) = (output[replacementPosition], output[index])
+                    index += 1
+                }
+            }
+        }
+
+        return output
+    }
+}
