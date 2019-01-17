@@ -346,7 +346,7 @@ extension BeaconChain {
 
 extension BeaconChain {
 
-    func getCommitteeCountPerSlot(activeValidatorCount: Int) -> Int {
+    static func getCommitteeCountPerSlot(activeValidatorCount: Int) -> Int {
         return max(
             1,
             min(SHARD_COUNT / EPOCH_LENGTH, activeValidatorCount / EPOCH_LENGTH / TARGET_COMMITTEE_SIZE)
@@ -359,7 +359,7 @@ extension BeaconChain {
             slot: state.previousEpochCalculationSlot
         )
 
-        return getCommitteeCountPerSlot(activeValidatorCount: validators.count)
+        return BeaconChain.getCommitteeCountPerSlot(activeValidatorCount: validators.count)
     }
 
     func getCurrentEpochCommitteeCountPerSlot(state: BeaconState) -> Int {
@@ -368,7 +368,7 @@ extension BeaconChain {
             slot: state.currentEpochCalculationSlot
         )
 
-        return getCommitteeCountPerSlot(activeValidatorCount: validators.count)
+        return BeaconChain.getCommitteeCountPerSlot(activeValidatorCount: validators.count)
     }
 
     // @todo return type here needs fixing
@@ -444,5 +444,19 @@ extension BeaconChain {
         return stride(from: 0, to: values.count, by: count).map {
             Array(values[$0 ..< min($0 + count, values.count)])
         }
+    }
+
+    static func getShuffling(seed: Data, validators: [ValidatorRecord], slot: Int) -> [[Int]] {
+        var slot = slot - (slot % EPOCH_LENGTH)
+
+        let activeValidatorIndices = getActiveValidatorIndices(validators: validators, slot: slot)
+        let committeesPerSlot = BeaconChain.getCommitteeCountPerSlot(activeValidatorCount: activeValidatorIndices.count)
+
+        let shuffledValidatorIndices = shuffle(
+            values: activeValidatorIndices,
+            seed: seed.xor(key: Data(bytes: &slot, count: MemoryLayout.size(ofValue: slot)))
+        )
+
+        return split(values: shuffledValidatorIndices, count: committeesPerSlot * EPOCH_LENGTH)
     }
 }
