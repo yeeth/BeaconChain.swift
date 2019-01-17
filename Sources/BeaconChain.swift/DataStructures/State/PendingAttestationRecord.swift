@@ -1,6 +1,6 @@
 import Foundation
 
-struct PendingAttestationRecord {
+struct PendingAttestation {
     let data: Data
     let participationBitfield: Data
     let custodyBitfield: Data

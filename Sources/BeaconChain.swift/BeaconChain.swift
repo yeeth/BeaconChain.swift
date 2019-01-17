@@ -155,7 +155,7 @@ class BeaconChain {
             latestCrosslinks: [CrosslinkRecord(slot: GENESIS_SLOT, shardBlockRoot: ZERO_HASH)], // for _ in range(SHARD_COUNT)],
             latestBlockRoots: [Data](repeating: ZERO_HASH, count: LATEST_BLOCK_ROOTS_LENGTH),
             latestPenalizedExitBalances: [Int](repeating: 0, count: LATEST_PENALIZED_EXIT_LENGTH),
-            latestAttestations: [Attestation](),
+            latestAttestations: [PendingAttestation](),
             batchedBlockRoots: [Data](),
 
             latestDepositRoot: lastDepositRoot,

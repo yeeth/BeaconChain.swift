@@ -30,7 +30,7 @@ class BeaconState {
     let latestCrosslinks: [CrosslinkRecord]
     let latestBlockRoots: [Data]
     var latestPenalizedExitBalances: [Int]
-    let latestAttestations: [PendingAttestationRecord]
+    let latestAttestations: [PendingAttestation]
     let batchedBlockRoots: [Data]
 
     let latestDepositRoot: Data
@@ -61,7 +61,7 @@ class BeaconState {
         latestCrosslinks: [CrosslinkRecord],
         latestBlockRoots: [Data],
         latestPenalizedExitBalances: [Int],
-        latestAttestations: [PendingAttestationRecord],
+        latestAttestations: [PendingAttestation],
         batchedBlockRoots: [Data],
         latestDepositRoot: Data,
         depositRootVotes: [DepositRootVote]
