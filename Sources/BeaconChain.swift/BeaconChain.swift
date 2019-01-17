@@ -122,7 +122,7 @@ class BeaconChain {
                 BeaconChain.hashTreeRoot(data: AttestationDataAndCustodyBit(data: data.data, custodyBit: true))
             ],
             signatures: data.aggregateSignature,
-            domain: BeaconChain.getDomain(data: state.forkData, slot: state.slot, domainType: DOMAIN_ATTESTATION)
+            domain: BeaconChain.getDomain(data: state.forkData, slot: state.slot, domainType: Domain.ATTESTATION.rawValue)
         )
     }
 
@@ -221,7 +221,7 @@ extension BeaconChain {
             pubkey: pubkey,
             message: hashTreeRoot(data: input),
             signature: proof,
-            domain: BeaconChain.getDomain(data: state.forkData, slot: state.slot, domainType: DOMAIN_DEPOSIT)
+            domain: BeaconChain.getDomain(data: state.forkData, slot: state.slot, domainType: Domain.DEPOSIT.rawValue)
         )
     }
 
