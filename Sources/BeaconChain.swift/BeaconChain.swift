@@ -135,7 +135,7 @@ class BeaconChain {
                 currentVersion: GENESIS_FORK_VERSION,
                 slot: GENESIS_SLOT
             ),
-            validatorRegistry: [ValidatorRecord](),
+            validatorRegistry: [Validator](),
             validatorBalances: [Int](),
             validatorRegistryUpdateSlot: GENESIS_SLOT,
             validatorRegistryExitCount: 0,
@@ -152,7 +152,7 @@ class BeaconChain {
             justifiedSlot: GENESIS_SLOT,
             justificationBitfield: 0,
             finalizedSlot: GENESIS_SLOT,
-            latestCrosslinks: [CrosslinkRecord(slot: GENESIS_SLOT, shardBlockRoot: ZERO_HASH)], // for _ in range(SHARD_COUNT)],
+            latestCrosslinks: [Crosslink(slot: GENESIS_SLOT, shardBlockRoot: ZERO_HASH)], // for _ in range(SHARD_COUNT)],
             latestBlockRoots: [Data](repeating: ZERO_HASH, count: LATEST_BLOCK_ROOTS_LENGTH),
             latestPenalizedBalances: [Int](repeating: 0, count: LATEST_PENALIZED_EXIT_LENGTH),
             latestAttestations: [PendingAttestation](),
@@ -179,7 +179,7 @@ extension BeaconChain {
             )
         )
 
-        let pubkeys = state.validatorRegistry.enumerated().map{(_, validator: ValidatorRecord) in return validator.pubkey}
+        let pubkeys = state.validatorRegistry.enumerated().map{(_, validator: Validator) in return validator.pubkey}
 
         if let index = pubkeys.firstIndex(of: deposit.depositData.depositInput.pubkey) {
             assert(state.validatorRegistry[index].withdrawalCredentials == deposit.depositData.depositInput.withdrawalCredentials)
@@ -187,7 +187,7 @@ extension BeaconChain {
             return
         }
 
-        let validator = ValidatorRecord(
+        let validator = Validator(
             pubkey: deposit.depositData.depositInput.pubkey,
             withdrawalCredentials: deposit.depositData.depositInput.withdrawalCredentials,
             randaoCommitment: deposit.depositData.depositInput.randaoCommitment,
@@ -329,7 +329,7 @@ extension BeaconChain {
         state.validatorRegistryUpdateSlot = state.slot
     }
 
-    static func getActiveValidatorIndices(validators: [ValidatorRecord], slot: Int) -> [Int] {
+    static func getActiveValidatorIndices(validators: [Validator], slot: Int) -> [Int] {
         return validators.enumerated().compactMap{
             (i, validator) -> Int? in
             if BeaconChain.isActive(validator: validator, slot: slot) {
@@ -338,8 +338,8 @@ extension BeaconChain {
         }
     }
 
-    // @todo move these functions into validator record
-    static func isActive(validator: ValidatorRecord, slot: Int) -> Bool {
+    // @todo move these functions into validator 
+    static func isActive(validator: Validator, slot: Int) -> Bool {
         return validator.activationSlot <= slot && slot < validator.exitSlot
     }
 }
@@ -473,7 +473,7 @@ extension BeaconChain {
         }
     }
 
-    static func getShuffling(seed: Data, validators: [ValidatorRecord], slot: Int) -> [[Int]] {
+    static func getShuffling(seed: Data, validators: [Validator], slot: Int) -> [[Int]] {
         var slot = slot - (slot % EPOCH_LENGTH)
 
         let activeValidatorIndices = getActiveValidatorIndices(validators: validators, slot: slot)

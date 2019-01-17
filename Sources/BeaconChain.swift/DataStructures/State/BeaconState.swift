@@ -5,7 +5,7 @@ class BeaconState {
     let genesisTime: TimeInterval
     let fork: Fork
 
-    var validatorRegistry: [ValidatorRecord]
+    var validatorRegistry: [Validator]
     var validatorBalances: [Int] // @todo move balances into Validator class
     var validatorRegistryUpdateSlot: Int
     var validatorRegistryExitCount: Int
@@ -27,7 +27,7 @@ class BeaconState {
     let justificationBitfield: Int
     let finalizedSlot: Int
 
-    let latestCrosslinks: [CrosslinkRecord]
+    let latestCrosslinks: [Crosslink]
     let latestBlockRoots: [Data]
     var latestPenalizedBalances: [Int]
     let latestAttestations: [PendingAttestation]
@@ -41,7 +41,7 @@ class BeaconState {
         slot: Int,
         genesisTime: TimeInterval,
         fork: Fork,
-        validatorRegistry: [ValidatorRecord],
+        validatorRegistry: [Validator],
         validatorBalances: [Int],
         validatorRegistryUpdateSlot: Int,
         validatorRegistryExitCount: Int,
@@ -58,7 +58,7 @@ class BeaconState {
         justifiedSlot: Int,
         justificationBitfield: Int,
         finalizedSlot: Int,
-        latestCrosslinks: [CrosslinkRecord],
+        latestCrosslinks: [Crosslink],
         latestBlockRoots: [Data],
         latestPenalizedBalances: [Int],
         latestAttestations: [PendingAttestation],
