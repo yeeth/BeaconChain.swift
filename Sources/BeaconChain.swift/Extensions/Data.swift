@@ -3,11 +3,13 @@ import Foundation
 extension Data {
 
     func xor(key: Data) -> Data {
+        var temp = self;
+
         for i in 0..<self.count {
-            self[i] ^= key[i % key.count]
+            temp[i] ^= key[i % key.count]
         }
 
-        return self
+        return temp
     }
 
 }
