@@ -2,8 +2,6 @@ import Foundation
 
 class BeaconChain {
 
-    // var state: BeaconState!! // @todo we may not need this here if we make the chain "stateless" and require the state to be passed with function calls
-
     func getInitialBeaconState(initialValidatorDeposits: [Deposit], genesisTime: TimeInterval, latestEth1Data: Eth1Data) -> BeaconState {
         let state = BeaconChain.genesisState(genesisTime: genesisTime, latestEth1Data: latestEth1Data)
 
