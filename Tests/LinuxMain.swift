@@ -1,7 +1,7 @@
 import XCTest
 
-import swift_beacon_chainTests
+import BeaconChainTests
 
 var tests = [XCTestCaseEntry]()
-tests += swift_beacon_chainTests.allTests()
+tests += BeaconChainTests.allTests()
 XCTMain(tests)
