@@ -2,14 +2,26 @@ import XCTest
 @testable import BeaconChain
 
 final class BeaconChainTests: XCTestCase {
-    func testExample() {
-        // This is an example of a functional test case.
-        // Use XCTAssert and related functions to verify your tests produce the correct
-        // results.
-        XCTAssertEqual(BeaconChain().text, "Hello, World!")
+
+    func testGetForkVersion() {
+        let fork = Fork(previousVersion: 10, currentVersion: 20, slot: 1)
+        XCTAssertEqual(10, BeaconChain.getForkVersion(data: fork, slot: 0))
+        XCTAssertEqual(20, BeaconChain.getForkVersion(data: fork, slot: 2))
     }
 
-    static var allTests = [
-        ("testExample", testExample),
-    ]
+    func testIsDoubleVote() {
+        let dummy = Data(count: 1)
+        let attestation = AttestationData(
+            slot: 128,
+            shard: 0,
+            beaconBlockRoot: dummy,
+            epochBoundryRoot: dummy,
+            shardBlockRoot: dummy,
+            latestCrosslinkRoot: dummy,
+            justifiedSlot: 0,
+            justifiedBlockRoot: dummy
+        )
+
+        XCTAssert(BeaconChain.isDoubleVote(first: attestation, second: attestation))
+    }
 }
