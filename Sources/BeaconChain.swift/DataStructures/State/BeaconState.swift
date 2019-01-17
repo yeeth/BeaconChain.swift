@@ -3,11 +3,11 @@ import Foundation
 class BeaconState {
     let slot: Int
     let genesisTime: TimeInterval
-    let forkData: ForkData
+    let fork: Fork
 
-    var validatorRegistry: [ValidatorRecord]
+    var validatorRegistry: [Validator]
     var validatorBalances: [Int] // @todo move balances into Validator class
-    var validatorRegistryLatestChangeSlot: Int
+    var validatorRegistryUpdateSlot: Int
     var validatorRegistryExitCount: Int
     var validatorRegistryDeltaChainTip: Data
 
@@ -27,23 +27,23 @@ class BeaconState {
     let justificationBitfield: Int
     let finalizedSlot: Int
 
-    let latestCrosslinks: [CrosslinkRecord]
+    let latestCrosslinks: [Crosslink]
     let latestBlockRoots: [Data]
-    var latestPenalizedExitBalances: [Int]
-    let latestAttestations: [PendingAttestationRecord]
+    var latestPenalizedBalances: [Int]
+    let latestAttestations: [PendingAttestation]
     let batchedBlockRoots: [Data]
 
-    let latestDepositRoot: Data
-    let depositRootVotes: [DepositRootVote]
+    let latestEth1Data: Eth1Data
+    let eth1DataVotes: [Eth1DataVote]
 
     // @todo consider not passing those with default genesis values
     init(
         slot: Int,
         genesisTime: TimeInterval,
-        forkData: ForkData,
-        validatorRegistry: [ValidatorRecord],
+        fork: Fork,
+        validatorRegistry: [Validator],
         validatorBalances: [Int],
-        validatorRegistryLatestChangeSlot: Int,
+        validatorRegistryUpdateSlot: Int,
         validatorRegistryExitCount: Int,
         validatorRegistryDeltaChainTip: Data,
         latestRandaoMixes: [Data],
@@ -58,21 +58,21 @@ class BeaconState {
         justifiedSlot: Int,
         justificationBitfield: Int,
         finalizedSlot: Int,
-        latestCrosslinks: [CrosslinkRecord],
+        latestCrosslinks: [Crosslink],
         latestBlockRoots: [Data],
-        latestPenalizedExitBalances: [Int],
-        latestAttestations: [PendingAttestationRecord],
+        latestPenalizedBalances: [Int],
+        latestAttestations: [PendingAttestation],
         batchedBlockRoots: [Data],
-        latestDepositRoot: Data,
-        depositRootVotes: [DepositRootVote]
+        latestEth1Data: Eth1Data,
+        eth1DataVotes: [Eth1DataVote]
     )
     {
         self.slot = slot
         self.genesisTime = genesisTime
-        self.forkData = forkData
+        self.fork = fork
         self.validatorRegistry = validatorRegistry
         self.validatorBalances = validatorBalances
-        self.validatorRegistryLatestChangeSlot = validatorRegistryLatestChangeSlot
+        self.validatorRegistryUpdateSlot = validatorRegistryUpdateSlot
         self.validatorRegistryExitCount = validatorRegistryExitCount
         self.validatorRegistryDeltaChainTip = validatorRegistryDeltaChainTip
         self.latestRandaoMixes = latestRandaoMixes
@@ -89,10 +89,10 @@ class BeaconState {
         self.finalizedSlot = finalizedSlot
         self.latestCrosslinks = latestCrosslinks
         self.latestBlockRoots = latestBlockRoots
-        self.latestPenalizedExitBalances = latestPenalizedExitBalances
+        self.latestPenalizedBalances = latestPenalizedBalances
         self.latestAttestations = latestAttestations
         self.batchedBlockRoots = batchedBlockRoots
-        self.latestDepositRoot = latestDepositRoot
-        self.depositRootVotes = depositRootVotes
+        self.latestEth1Data = latestEth1Data
+        self.eth1DataVotes = eth1DataVotes
     }
 }

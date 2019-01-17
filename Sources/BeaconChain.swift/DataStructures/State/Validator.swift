@@ -1,6 +1,6 @@
 import Foundation
 
-struct ValidatorRecord {
+struct Validator {
     let pubkey: Data
     let withdrawalCredentials: Data
     let randaoCommitment: Data
