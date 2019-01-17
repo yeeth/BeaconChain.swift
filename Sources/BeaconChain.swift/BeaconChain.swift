@@ -428,6 +428,7 @@ extension BeaconChain {
 
 extension BeaconChain {
 
+    // @todo make this an extenstion to arrays
     static func shuffle<T>(values: [T], seed: Data) -> [T] {
         let randBytes = 3
         let randMax = 2^(randBytes * 8) - 1
