@@ -88,8 +88,8 @@ class BeaconChain {
         return data.postForkVersion
     }
 
-    static func getDomain(data: ForkData, slot: Int, domainType: Int) -> Int {
-        return BeaconChain.getForkVersion(data: data, slot: slot) * 2^32 + domainType
+    static func getDomain(data: ForkData, slot: Int, domainType: Domain) -> Int {
+        return BeaconChain.getForkVersion(data: data, slot: slot) * 2^32 + domainType.rawValue
     }
 
     static func isDoubleVote(first: AttestationData, second: AttestationData) -> Bool {
@@ -122,7 +122,7 @@ class BeaconChain {
                 BeaconChain.hashTreeRoot(data: AttestationDataAndCustodyBit(data: data.data, custodyBit: true))
             ],
             signatures: data.aggregateSignature,
-            domain: BeaconChain.getDomain(data: state.forkData, slot: state.slot, domainType: Domain.ATTESTATION.rawValue)
+            domain: BeaconChain.getDomain(data: state.forkData, slot: state.slot, domainType: Domain.ATTESTATION)
         )
     }
 
@@ -221,7 +221,7 @@ extension BeaconChain {
             pubkey: pubkey,
             message: hashTreeRoot(data: input),
             signature: proof,
-            domain: BeaconChain.getDomain(data: state.forkData, slot: state.slot, domainType: Domain.DEPOSIT.rawValue)
+            domain: BeaconChain.getDomain(data: state.forkData, slot: state.slot, domainType: Domain.DEPOSIT)
         )
     }
 
