@@ -60,10 +60,6 @@ class BeaconChain {
         return participants
     }
 
-    static func verifySlashableVoteData() -> Bool {
-
-    }
-
     static func integerSquareRoot(n: Int) -> Int {
         assert(n >= 0)
 
@@ -333,6 +329,8 @@ extension BeaconChain {
             if BeaconChain.isActive(validator: validator, slot: slot) {
                 return i
             }
+
+            return nil
         }
     }
 
@@ -415,11 +413,11 @@ extension BeaconChain {
     }
 
     static func hash(data: Any) -> Data {
-
+        return Data(repeating: 0, count: 32) // @todo
     }
 
     static func hashTreeRoot(data: Any) -> Data {
-
+        return Data(repeating: 0, count: 32) // @todo
     }
 
 }
