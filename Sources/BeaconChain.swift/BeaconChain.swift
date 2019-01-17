@@ -402,7 +402,7 @@ extension BeaconChain {
 
 extension BeaconChain {
 
-    static func shuffle<T>(values: inout [T], seed: Data) -> [T] {
+    static func shuffle<T>(values: [T], seed: Data) -> [T] {
         let randBytes = 3
         let randMax = 2^(randBytes * 8) - 1
 
@@ -437,5 +437,12 @@ extension BeaconChain {
         }
 
         return output
+    }
+
+    // @todo make this an extenstion to arrays
+    static func split<T>(values: [T], count: Int) -> [[T]] {
+        return stride(from: 0, to: values.count, by: count).map {
+            Array(values[$0 ..< min($0 + count, values.count)])
+        }
     }
 }
