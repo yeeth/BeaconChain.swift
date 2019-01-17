@@ -41,7 +41,7 @@ class BeaconChain {
         return committee[slot % committee.count]
     }
 
-    static func getAttestationParticipants(state: BeaconState, data: AttestationData, participationBitfield: Int) -> [Int] {
+    static func getAttestationParticipants(state: BeaconState, data: AttestationData, aggregationBitfield: Int) -> [Int] {
         let committees = BeaconChain.getCrosslinkCommitteesAtSlot(state: state, slot: data.slot)
         for (_, (_, shard)) in committees.enumerated() {
             assert(shard == data.shard)
@@ -53,7 +53,7 @@ class BeaconChain {
 
         var participants = [Int]()
         for (i, validatorIndex) in (crosslinkCommittee?.enumerated())! {
-            let participationBit = (participationBitfield[i / 8] >> (7 - (i % 8))) % 2
+            let participationBit = (aggregationBitfield[i / 8] >> (7 - (i % 8))) % 2
             if participationBit == 1 {
                 participants.append(validatorIndex)
             }
@@ -80,15 +80,15 @@ class BeaconChain {
         return x
     }
 
-    static func getForkVersion(data: ForkData, slot: Int) -> Int {
-        if slot < data.forkSlot {
-            return data.preForkVersion
+    static func getForkVersion(data: Fork, slot: Int) -> Int {
+        if slot < data.slot {
+            return data.previousVersion
         }
 
-        return data.postForkVersion
+        return data.currentVersion
     }
 
-    static func getDomain(data: ForkData, slot: Int, domainType: Int) -> Int {
+    static func getDomain(data: Fork, slot: Int, domainType: Int) -> Int {
         return BeaconChain.getForkVersion(data: data, slot: slot) * 2^32 + domainType
     }
 
@@ -122,7 +122,7 @@ class BeaconChain {
                 BeaconChain.hashTreeRoot(data: AttestationDataAndCustodyBit(data: data.data, custodyBit: true))
             ],
             signatures: data.aggregateSignature,
-            domain: BeaconChain.getDomain(data: state.forkData, slot: state.slot, domainType: DOMAIN_ATTESTATION)
+            domain: BeaconChain.getDomain(data: state.fork, slot: state.slot, domainType: DOMAIN_ATTESTATION)
         )
     }
 
@@ -130,14 +130,14 @@ class BeaconChain {
         return BeaconState(
             slot: GENESIS_SLOT,
             genesisTime: genesisTime,
-            forkData: ForkData(
-                preForkVersion: GENESIS_FORK_VERSION,
-                postForkVersion: GENESIS_FORK_VERSION,
-                forkSlot: GENESIS_SLOT
+            fork: Fork(
+                previousVersion: GENESIS_FORK_VERSION,
+                currentVersion: GENESIS_FORK_VERSION,
+                slot: GENESIS_SLOT
             ),
             validatorRegistry: [ValidatorRecord](),
             validatorBalances: [Int](),
-            validatorRegistryLatestChangeSlot: GENESIS_SLOT,
+            validatorRegistryUpdateSlot: GENESIS_SLOT,
             validatorRegistryExitCount: 0,
             validatorRegistryDeltaChainTip: ZERO_HASH,
             latestRandaoMixes: [Data](repeating: ZERO_HASH, count: LATEST_RANDAO_MIXES_LENGTH),
@@ -154,7 +154,7 @@ class BeaconChain {
             finalizedSlot: GENESIS_SLOT,
             latestCrosslinks: [CrosslinkRecord(slot: GENESIS_SLOT, shardBlockRoot: ZERO_HASH)], // for _ in range(SHARD_COUNT)],
             latestBlockRoots: [Data](repeating: ZERO_HASH, count: LATEST_BLOCK_ROOTS_LENGTH),
-            latestPenalizedExitBalances: [Int](repeating: 0, count: LATEST_PENALIZED_EXIT_LENGTH),
+            latestPenalizedBalances: [Int](repeating: 0, count: LATEST_PENALIZED_EXIT_LENGTH),
             latestAttestations: [PendingAttestation](),
             batchedBlockRoots: [Data](),
 
@@ -221,7 +221,7 @@ extension BeaconChain {
             pubkey: pubkey,
             message: hashTreeRoot(data: input),
             signature: proof,
-            domain: BeaconChain.getDomain(data: state.forkData, slot: state.slot, domainType: DOMAIN_DEPOSIT)
+            domain: BeaconChain.getDomain(data: state.fork, slot: state.slot, domainType: DOMAIN_DEPOSIT)
         )
     }
 
@@ -276,7 +276,7 @@ extension BeaconChain {
     func penalizeValidator(state: BeaconState, index: Int) {
         BeaconChain.exitValidator(state: state, index: index)
 
-        state.latestPenalizedExitBalances[(state.slot / EPOCH_LENGTH) % LATEST_PENALIZED_EXIT_LENGTH] += BeaconChain.getEffectiveBalance(state: state, index: index)
+        state.latestPenalizedBalances[(state.slot / EPOCH_LENGTH) % LATEST_PENALIZED_EXIT_LENGTH] += BeaconChain.getEffectiveBalance(state: state, index: index)
 
         let whistleblowerIndex = BeaconChain.getBeaconProposerIndex(state: state, slot: state.slot)
         let whistleblowerReward = BeaconChain.getEffectiveBalance(state: state, index: index) / WHISTLEBLOWER_REWARD_QUOTIENT
@@ -326,7 +326,7 @@ extension BeaconChain {
             }
         }
 
-        state.validatorRegistryLatestChangeSlot = state.slot
+        state.validatorRegistryUpdateSlot = state.slot
     }
 
     static func getActiveValidatorIndices(validators: [ValidatorRecord], slot: Int) -> [Int] {

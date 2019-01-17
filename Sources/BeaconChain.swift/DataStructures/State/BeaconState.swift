@@ -3,11 +3,11 @@ import Foundation
 class BeaconState {
     let slot: Int
     let genesisTime: TimeInterval
-    let forkData: ForkData
+    let fork: Fork
 
     var validatorRegistry: [ValidatorRecord]
     var validatorBalances: [Int] // @todo move balances into Validator class
-    var validatorRegistryLatestChangeSlot: Int
+    var validatorRegistryUpdateSlot: Int
     var validatorRegistryExitCount: Int
     var validatorRegistryDeltaChainTip: Data
 
@@ -29,7 +29,7 @@ class BeaconState {
 
     let latestCrosslinks: [CrosslinkRecord]
     let latestBlockRoots: [Data]
-    var latestPenalizedExitBalances: [Int]
+    var latestPenalizedBalances: [Int]
     let latestAttestations: [PendingAttestation]
     let batchedBlockRoots: [Data]
 
@@ -40,10 +40,10 @@ class BeaconState {
     init(
         slot: Int,
         genesisTime: TimeInterval,
-        forkData: ForkData,
+        fork: Fork,
         validatorRegistry: [ValidatorRecord],
         validatorBalances: [Int],
-        validatorRegistryLatestChangeSlot: Int,
+        validatorRegistryUpdateSlot: Int,
         validatorRegistryExitCount: Int,
         validatorRegistryDeltaChainTip: Data,
         latestRandaoMixes: [Data],
@@ -60,7 +60,7 @@ class BeaconState {
         finalizedSlot: Int,
         latestCrosslinks: [CrosslinkRecord],
         latestBlockRoots: [Data],
-        latestPenalizedExitBalances: [Int],
+        latestPenalizedBalances: [Int],
         latestAttestations: [PendingAttestation],
         batchedBlockRoots: [Data],
         latestDepositRoot: Data,
@@ -69,10 +69,10 @@ class BeaconState {
     {
         self.slot = slot
         self.genesisTime = genesisTime
-        self.forkData = forkData
+        self.fork = fork
         self.validatorRegistry = validatorRegistry
         self.validatorBalances = validatorBalances
-        self.validatorRegistryLatestChangeSlot = validatorRegistryLatestChangeSlot
+        self.validatorRegistryUpdateSlot = validatorRegistryUpdateSlot
         self.validatorRegistryExitCount = validatorRegistryExitCount
         self.validatorRegistryDeltaChainTip = validatorRegistryDeltaChainTip
         self.latestRandaoMixes = latestRandaoMixes
@@ -89,7 +89,7 @@ class BeaconState {
         self.finalizedSlot = finalizedSlot
         self.latestCrosslinks = latestCrosslinks
         self.latestBlockRoots = latestBlockRoots
-        self.latestPenalizedExitBalances = latestPenalizedExitBalances
+        self.latestPenalizedBalances = latestPenalizedBalances
         self.latestAttestations = latestAttestations
         self.batchedBlockRoots = batchedBlockRoots
         self.latestDepositRoot = latestDepositRoot
