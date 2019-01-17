@@ -7,6 +7,6 @@ struct AttestationData {
     let epochBoundryRoot: Data
     let shardBlockRoot: Data
     let latestCrosslinkRoot: Data
-    let justifiedSlot: uint64
+    let justifiedSlot: Int
     let justifiedBlockRoot: Data
 }

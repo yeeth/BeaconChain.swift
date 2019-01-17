@@ -9,7 +9,7 @@ class BeaconState {
     var validatorBalances: [Int] // @todo move balances into Validator class
     var validatorRegistryLatestChangeSlot: Int
     var validatorRegistryExitCount: Int
-    let validatorRegistryDeltaChainTip: Data
+    var validatorRegistryDeltaChainTip: Data
 
     let latestRandaoMixes: [Data]
     let latestVdfOutputs: [Data]

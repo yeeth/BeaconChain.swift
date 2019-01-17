@@ -239,7 +239,15 @@ extension BeaconChain {
     static func activateValidator(state: BeaconState, index: Int, genesis: Bool) {
         state.validatorRegistry[index].activationSlot = genesis ? GENESIS_SLOT : state.slot + ENTRY_EXIT_DELAY
 
-        // @todo
+        let validator = state.validatorRegistry[index] // @todo change when validator is a class so we read earler
+        state.validatorRegistryDeltaChainTip = hashTreeRoot(data: ValidatorRegistryDeltaBlock(
+                lateRegistryDeltaRoot: state.validatorRegistryDeltaChainTip,
+                validatorIndex: index,
+                pubkey: validator.pubkey,
+                slot: validator.activationSlot,
+                flag: ACTIVATION
+            )
+        )
     }
 
     func initiateValidatorExit(state: BeaconState, index: Int) {
@@ -254,7 +262,15 @@ extension BeaconChain {
         state.validatorRegistry[index].exitSlot = state.slot + ENTRY_EXIT_DELAY
         state.validatorRegistryExitCount += 1
 
-        // @todo state.validator_registry_delta_chain_tip = hash_tree_root
+        let validator = state.validatorRegistry[index] // @todo change when validator is a class so we read earler
+        state.validatorRegistryDeltaChainTip = hashTreeRoot(data: ValidatorRegistryDeltaBlock(
+                lateRegistryDeltaRoot: state.validatorRegistryDeltaChainTip,
+                validatorIndex: index,
+                pubkey: validator.pubkey,
+                slot: validator.exitSlot,
+                flag: EXIT
+            )
+        )
     }
 
     func penalizeValidator(state: BeaconState, index: Int) {
