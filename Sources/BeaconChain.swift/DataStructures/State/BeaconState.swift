@@ -33,8 +33,8 @@ class BeaconState {
     let latestAttestations: [PendingAttestation]
     let batchedBlockRoots: [Data]
 
-    let latestDepositRoot: Data
-    let depositRootVotes: [DepositRootVote]
+    let latestEth1Data: Eth1Data
+    let eth1DataVotes: [Eth1DataVote]
 
     // @todo consider not passing those with default genesis values
     init(
@@ -63,8 +63,8 @@ class BeaconState {
         latestPenalizedBalances: [Int],
         latestAttestations: [PendingAttestation],
         batchedBlockRoots: [Data],
-        latestDepositRoot: Data,
-        depositRootVotes: [DepositRootVote]
+        latestEth1Data: Eth1Data,
+        eth1DataVotes: [Eth1DataVote]
     )
     {
         self.slot = slot
@@ -92,7 +92,7 @@ class BeaconState {
         self.latestPenalizedBalances = latestPenalizedBalances
         self.latestAttestations = latestAttestations
         self.batchedBlockRoots = batchedBlockRoots
-        self.latestDepositRoot = latestDepositRoot
-        self.depositRootVotes = depositRootVotes
+        self.latestEth1Data = latestEth1Data
+        self.eth1DataVotes = eth1DataVotes
     }
 }
