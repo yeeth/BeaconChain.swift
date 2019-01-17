@@ -402,7 +402,7 @@ extension BeaconChain {
 
 extension BeaconChain {
 
-    static func shuffle<T>(values: inout [T], seed: Data) -> T {
+    static func shuffle<T>(values: inout [T], seed: Data) -> [T] {
         let randBytes = 3
         let randMax = 2^(randBytes * 8) - 1
 
