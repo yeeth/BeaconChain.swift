@@ -39,7 +39,7 @@ class BeaconChain {
         return committee[slot % committee.count]
     }
 
-    static func getAttestationParticipants(state: BeaconState, data: AttestationData, aggregationBitfield: Int) -> [Int] {
+    static func getAttestationParticipants(state: BeaconState, data: AttestationData, aggregationBitfield: Data) -> [Int] {
         let committees = BeaconChain.getCrosslinkCommitteesAtSlot(state: state, slot: data.slot)
         for (_, (_, shard)) in committees.enumerated() {
             assert(shard == data.shard)
