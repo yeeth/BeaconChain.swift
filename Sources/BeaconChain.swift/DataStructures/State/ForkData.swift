@@ -1,7 +1,7 @@
 import Foundation
 
-struct ForkData {
-    let preForkVersion: Int
-    let postForkVersion: Int
-    let forkSlot: Int
+struct Fork {
+    let previousVersion: Int
+    let currentVersion: Int
+    let slot: Int
 }

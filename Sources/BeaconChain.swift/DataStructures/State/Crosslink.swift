@@ -1,6 +1,6 @@
 import Foundation
 
-struct CrosslinkRecord {
+struct Crosslink {
     let slot: Int
     let shardBlockRoot: Data
 }

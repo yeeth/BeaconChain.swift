@@ -1,15 +1,12 @@
 import Foundation
 
-extension Data {
 
-    func xor(key: Data) -> Data {
-        var temp = self;
+func ^(left: Data, right: Data) -> Data {
+    var temp = left;
 
-        for i in 0..<self.count {
-            temp[i] ^= key[i % key.count]
-        }
-
-        return temp
+    for i in 0..<left.count {
+        temp[i] ^= right[i % right.count]
     }
 
+    return temp
 }

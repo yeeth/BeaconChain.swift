@@ -11,6 +11,6 @@ class BLS {
     }
 
     static func aggregate(pubkeys: [Data]) -> Data {
-
+        return Data(repeating: 0, count: 32) // @todo
     }
 }
