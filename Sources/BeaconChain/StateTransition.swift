@@ -323,14 +323,15 @@ extension StateTransition {
     {
         let epochsSinceFinality = (state.slot - state.finalizedSlot) / EPOCH_LENGTH
 
+        let activeValidators = Set(
+            BeaconChain.getActiveValidatorIndices(validators: state.validatorRegistry, slot: state.slot)
+        )
+
         if epochsSinceFinality <= 4 {
             for index in previousEpochJustifiedAttesterIndices {
                 state.validatorBalances[index] += baseReward(state: state, index: index, totalBalance: totalBalance) * previousEpochJustifiedAttestingBalance / totalBalance
             }
 
-            let activeValidators = Set(
-                BeaconChain.getActiveValidatorIndices(validators: state.validatorRegistry, slot: state.slot)
-            )
             activeValidators.subtracting(Set(previousEpochJustifiedAttesterIndices)).forEach({
                 (index) in
                 state.validatorBalances[index] -= baseReward(state: state, index: index, totalBalance: totalBalance)
@@ -356,6 +357,33 @@ extension StateTransition {
 
             for index in previousEpochAttesterIndices {
                 state.validatorBalances[index] += baseReward(state: state, index: index, totalBalance: totalBalance) + MIN_ATTESTATION_INCLUSION_DELAY / inclusionDistance(state: state, index: index)
+            }
+        } else {
+            activeValidators.subtracting(Set(previousEpochJustifiedAttesterIndices)).forEach({
+                (index) in
+                state.validatorBalances[index] -= inactivityPenalty(state: state, index: index, epochsSinceFinality: epochsSinceFinality, totalBalance: totalBalance)
+            })
+
+            activeValidators.subtracting(Set(previousEpochBoundaryAttesterIndices)).forEach({
+                (index) in
+                state.validatorBalances[index] -= inactivityPenalty(state: state, index: index, epochsSinceFinality: epochsSinceFinality, totalBalance: totalBalance)
+            })
+
+            activeValidators.subtracting(Set(previousEpochHeadAttesterIndices)).forEach({
+                (index) in
+                state.validatorBalances[index] -= baseReward(state: state, index: index, totalBalance: totalBalance)
+            })
+
+            activeValidators.forEach({
+                index in
+                if state.validatorRegistry[index].penalizedSlot <= state.slot {
+                    state.validatorBalances[index] -= 2 * inactivityPenalty(state: state, index: index, epochsSinceFinality: epochsSinceFinality, totalBalance: totalBalance) + baseReward(state: state, index: index, totalBalance: totalBalance)
+                }
+            })
+
+            for index in previousEpochAttesterIndices {
+                let base = baseReward(state: state, index: index, totalBalance: totalBalance)
+                state.validatorBalances[index] -= base - base * MIN_ATTESTATION_INCLUSION_DELAY / inclusionDistance(state: state, index: index)
             }
         }
     }
