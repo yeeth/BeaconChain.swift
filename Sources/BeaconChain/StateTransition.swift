@@ -208,6 +208,9 @@ extension StateTransition {
             return BeaconChain.getEffectiveBalance(state: state, index: i)
         }).reduce(0, +)
 
+        // @TODO
+        // For every slot in range(state.slot - 2 * EPOCH_LENGTH, state.slot), let crosslink_committee_at_slot = get_crosslink_committees_at_slot(slot). For every (crosslink_committee, shard) in crosslink_committee_at_slot, compute:
+
         eth1Data(state: &state)
         justification(
             state: &state,
@@ -265,6 +268,26 @@ extension StateTransition {
             || (state.previousJustifiedSlot == state.slot - 4 * EPOCH_LENGTH && [15, 14].contains(state.justificationBitfield % 16))
         {
             state.finalizedSlot = state.previousJustifiedSlot
+        }
+    }
+
+    private func crosslink(
+        state: inout BeaconState,
+        totalBalance: Int,
+        totalAttesstingBalance: [Data:Int],
+        winningRoot: [Data:Data]
+    )
+    {
+        for slot in (state.slot - 2 * EPOCH_LENGTH)...state.slot {
+            let crosslinkCommitteeAtSlot = BeaconChain.getCrosslinkCommitteesAtSlot(state: state, slot: slot)
+            for (crosslinkCommittee, shard) in crosslinkCommitteeAtSlot {
+                if 3 * totalAttesstingBalance(crosslinkCommittee) >= 2 * totalBalance(crosslinkCommittee) {
+                    state.latestCrosslinks[shard] = Crosslink(
+                        slot: state.slot,
+                        shardBlockRoot: winningRoot[crosslinkCommittee]
+                    )
+                }
+            }
         }
     }
 

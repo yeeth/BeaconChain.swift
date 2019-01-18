@@ -27,7 +27,7 @@ class BeaconState {
     var justificationBitfield: Int
     var finalizedSlot: Int
 
-    let latestCrosslinks: [Crosslink]
+    var latestCrosslinks: [Crosslink]
     var latestBlockRoots: [Data]
     var latestPenalizedBalances: [Int]
     var latestAttestations: [PendingAttestation]
