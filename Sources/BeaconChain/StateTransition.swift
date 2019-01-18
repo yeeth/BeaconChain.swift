@@ -390,6 +390,14 @@ extension StateTransition {
             let proposer = BeaconChain.getBeaconProposerIndex(state: state, slot: inclusionSlot(state: state, index: index))
             state.validatorBalances[proposer] += baseReward(state: state, index: index, totalBalance: totalBalance)
         }
+
+        for i in (state.slot - 2 * EPOCH_LENGTH)...(state.slot - EPOCH_LENGTH) {
+//            let crosslinkCommitteAtSlot = BeaconChain.getCrosslinkCommitteesAtSlot(state: state, slot: i)
+//
+//            for (j, crosslinkCommitte) in crosslinkCommitteAtSlot {
+//
+//            }
+        }
     }
 
     private func inclusionDistance(state: BeaconState, index: Int) -> Int {
