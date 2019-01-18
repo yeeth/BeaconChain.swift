@@ -14,6 +14,9 @@ class StateTransition {
 
         return state
     }
+}
+
+extension StateTransition {
 
     static func processBlock(state: BeaconState, block: Block) -> BeaconState {
         assert(state.slot == block.slot) // @todo not sure if assert or other error handling
@@ -30,7 +33,7 @@ class StateTransition {
         return state
     }
 
-    static func eth1Data(state: BeaconState, block: Block) {
+    private static func eth1Data(state: BeaconState, block: Block) {
         for (i, eth1VoteData) in state.eth1DataVotes.enumerated() {
             if eth1VoteData.eth1Data == block.eth1Data { // @todo make equatable
                 state.eth1DataVotes[i].voteCount += 1
@@ -40,7 +43,7 @@ class StateTransition {
         }
     }
 
-    static func proposerSlashings(state: BeaconState, block: Block) {
+    private static func proposerSlashings(state: BeaconState, block: Block) {
         for slashing in block.body.proposerSlashings {
             assert(slashing.proposalData1.slot == slashing.proposalData2.slot) // @todo not sure if asserts
             assert(slashing.proposalData1.shard == slashing.proposalData2.shard) // @todo not sure if asserts
@@ -70,7 +73,7 @@ class StateTransition {
         }
     }
 
-    static func casperSlashings(state: BeaconState, block: Block) {
+    private static func casperSlashings(state: BeaconState, block: Block) {
         assert(block.body.casperSlashings.count <= MAX_CASPER_SLASHINGS)
 
         for slashing in block.body.casperSlashings {
@@ -78,7 +81,7 @@ class StateTransition {
         }
     }
 
-    static func exits(state: BeaconState, block: Block) {
+    private static func exits(state: BeaconState, block: Block) {
         assert(block.body.exits.count <= MAX_EXITS)
 
         for exit in block.body.exits {
@@ -97,4 +100,45 @@ class StateTransition {
             BeaconChain.initiateValidatorExit(state: state, index: exit.validatorIndex)
         }
     }
+}
+
+extension StateTransition {
+
+    func processEpoch(state: BeaconState) -> BeaconState {
+        assert(state.slot % EPOCH_LENGTH == 1)
+        let activeValidators = BeaconChain.getActiveValidatorIndices(validators: state.validatorRegistry, slot: state.slot)
+        let totalBalance = activeValidators.map({
+            (i: Int) -> Int in
+            return BeaconChain.getEffectiveBalance(state: state, index: i)
+        }).reduce(0, +)
+
+        let currentEpochAttestations = state.latestAttestations.filter({
+            state.slot - EPOCH_LENGTH <= $0.data.slot && $0.data.slot < state.slot
+        })
+
+        let currentEpochBoundryAttestations = currentEpochAttestations.filter({
+            $0.data.epochBoundryRoot == BeaconChain.getBlockRoot(state: state, slot: state.slot - EPOCH_LENGTH)
+                && $0.data.justifiedSlot == state.justifiedSlot
+        })
+
+        var currentEpochBoundaryAttesterIndices = Set<Int>()
+        for attestation in currentEpochAttestations {
+            currentEpochBoundaryAttesterIndices = currentEpochBoundaryAttesterIndices.union(
+                BeaconChain.getAttestationParticipants(
+                    state: state,
+                    data: attestation.data,
+                    aggregationBitfield: attestation.aggregationBitfield
+                )
+            )
+        }
+
+        let currentEpochBoundaryAttestingBalance = currentEpochBoundaryAttesterIndices.map({
+            (i: Int) -> Int in
+            return BeaconChain.getEffectiveBalance(state: state, index: i)
+        }).reduce(0, +)
+
+        return state
+
+    }
+
 }
