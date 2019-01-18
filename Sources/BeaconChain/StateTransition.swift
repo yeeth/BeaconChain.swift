@@ -19,19 +19,41 @@ extension StateTransition {
     static func processBlock(state: inout BeaconState, block: Block) {
         assert(state.slot == block.slot) // @todo not sure if assert or other error handling
 
-        // @todo Proposer signature
+        proposerSignature(state: state, block: block)
         // @todo RANDAO
         eth1Data(state: &state, block: block)
         proposerSlashings(state: &state, block: block)
         casperSlashings(state: &state, block: block)
-        // @todo Attestations
+        attestations(state: &state, block: block)
         // @todo Deposits
         exits(state: &state, block: block)
     }
 
+    private static func proposerSignature(state: BeaconState, block: Block) {
+        var signatureBlock = block
+        signatureBlock.signature = EMPTY_SIGNATURE
+
+        let blockWithoutSignatureRoot = BeaconChain.hashTreeRoot(data: signatureBlock)
+        let proposalRoot = BeaconChain.hashTreeRoot(data: ProposalSignedData(
+                slot: state.slot,
+                shard: BEACON_CHAIN_SHARD_NUMBER,
+                blockRoot: blockWithoutSignatureRoot
+            )
+        )
+
+        assert(
+            BLS.verify(
+                pubkey: state.validatorRegistry[BeaconChain.getBeaconProposerIndex(state: state, slot: state.slot)].pubkey,
+                message: proposalRoot,
+                signature: block.signature,
+                domain: BeaconChain.getDomain(data: state.fork, slot: state.slot, domainType: DOMAIN_PROPOSAL)
+            )
+        )
+    }
+
     private static func eth1Data(state: inout BeaconState, block: Block) {
         for (i, eth1VoteData) in state.eth1DataVotes.enumerated() {
-            if eth1VoteData.eth1Data == block.eth1Data { // @todo make equatable
+            if eth1VoteData.eth1Data == block.eth1Data {
                 state.eth1DataVotes[i].voteCount += 1
             } else {
                 state.eth1DataVotes.append(Eth1DataVote(eth1Data: block.eth1Data, voteCount: 1))
@@ -102,6 +124,47 @@ extension StateTransition {
             )
 
             BeaconChain.initiateValidatorExit(state: &state, index: exit.validatorIndex)
+        }
+    }
+
+    private static func attestations(state: inout BeaconState, block: Block) {
+        assert(block.body.attestations.count <= MAX_ATTESTATIONS)
+
+        for (_, attestation) in block.body.attestations.enumerated() {
+            assert(attestation.data.slot + MIN_ATTESTATION_INCLUSION_DELAY <= state.slot)
+            assert(attestation.data.slot + EPOCH_LENGTH >= state.slot)
+
+            if attestation.data.slot >= state.slot - (state.slot % EPOCH_LENGTH) {
+                assert(attestation.data.justifiedSlot == state.justifiedSlot)
+            } else {
+                assert(attestation.data.justifiedSlot == state.previousJustifiedSlot)
+            }
+
+            // wow this is ugly
+            assert(
+                attestation.data.justifiedBlockRoot == BeaconChain.getBlockRoot(
+                    state: state,
+                    slot: attestation.data.justifiedSlot
+                )
+            )
+
+            assert(
+                attestation.data.latestCrosslinkRoot == state.latestCrosslinks[attestation.data.shard].shardBlockRoot
+                    || attestation.data.shardBlockRoot == state.latestCrosslinks[attestation.data.shard].shardBlockRoot
+            )
+
+            // @todo aggregate_signature verification
+
+            assert(attestation.data.shardBlockRoot == ZERO_HASH)
+
+            state.latestAttestations.append(
+                PendingAttestation(
+                    data: attestation.data,
+                    aggregationBitfield: attestation.aggregationBitfield,
+                    custodyBitfield: attestation.custodyBitfield,
+                    slotIncluded: state.slot
+                )
+            )
         }
     }
 }
@@ -413,11 +476,13 @@ extension StateTransition {
         }
 
         for i in (state.slot - 2 * EPOCH_LENGTH)...(state.slot - EPOCH_LENGTH) {
-//            let crosslinkCommitteAtSlot = For every `slot in range(state.slot - 2 * EPOCH_LENGTH, state.slot)`, let `crosslink_committees_at_slot = get_crosslink_committees_at_slot(slot)`.
-//
-//            for (j, crosslinkCommitte) in crosslinkCommitteAtSlot {
-//
-//            }
+            let crosslinkCommitteesAtSlot = BeaconChain.getCrosslinkCommitteesAtSlot(state: state, slot: state.slot)
+
+            for (_, (committee, shard)) in crosslinkCommitteesAtSlot.enumerated() {
+//                state.latestCrosslinks[shard] = Crosslink(
+//                    slot: state.slot,
+//                    shardBlockRoot: winni)
+            }
         }
     }
 
@@ -513,5 +578,17 @@ extension StateTransition {
                 }
             }
         }
+    }
+
+    func attestingValidatorIndices(committee: [Int], shardBlockRoot: Data) -> [Int] {
+        var indices = [Int]()
+
+//        for
+
+        return indices // @todo
+    }
+
+    func winningRoot(committee: [Int]) -> Data {
+        return Data(count: 0) // @todo
     }
 }
