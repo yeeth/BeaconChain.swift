@@ -13,12 +13,12 @@ class BeaconState {
 
     var latestRandaoMixes: [Data]
     let latestVdfOutputs: [Data]
-    let previousEpochStartShard: Int
-    let currentEpochStartShard: Int
-    let previousEpochCalculationSlot: Int
-    let currentEpochCalculationSlot: Int
-    let previousEpochRandaoMix: Data
-    let currentEpochRandaoMix: Data
+    var previousEpochStartShard: Int
+    var currentEpochStartShard: Int
+    var previousEpochCalculationSlot: Int
+    var currentEpochCalculationSlot: Int
+    var previousEpochRandaoMix: Data
+    var currentEpochRandaoMix: Data
 
 //    let custodyChallenges: [CustodyChallenge] defined in 1.0
 

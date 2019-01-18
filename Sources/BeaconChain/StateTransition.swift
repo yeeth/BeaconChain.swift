@@ -410,7 +410,27 @@ extension StateTransition {
 
     private func validatorRegistry(state: inout BeaconState) {
         // @todo if
-        BeaconChain.updateValidatorRegistry(state: &state)
+        if true {
+            BeaconChain.updateValidatorRegistry(state: &state)
+            state.previousEpochCalculationSlot = state.currentEpochCalculationSlot
+            state.previousEpochStartShard = state.currentEpochStartShard
+            state.previousEpochRandaoMix = state.currentEpochRandaoMix
+            state.currentEpochCalculationSlot = state.slot
+            state.currentEpochStartShard = (state.currentEpochStartShard + BeaconChain.getCurrentEpochCommitteeCountPerSlot(state: state) % EPOCH_LENGTH) % SHARD_COUNT
+            state.currentEpochRandaoMix = BeaconChain.getRandaoMix(
+                state: state,
+                slot: state.currentEpochCalculationSlot - SEED_LOOKAHEAD
+            )
+        } else {
+            state.previousEpochCalculationSlot = state.currentEpochCalculationSlot
+            state.previousEpochStartShard = state.currentEpochStartShard
+
+            let epochsSinceLastRegistryChange = (state.slot - state.validatorRegistryUpdateSlot) / EPOCH_LENGTH
+            if isPowerOfTwo(epochsSinceLastRegistryChange) {
+                state.currentEpochCalculationSlot = state.slot
+                state.currentEpochRandaoMix = state.latestRandaoMixes[(state.currentEpochCalculationSlot - SEED_LOOKAHEAD) % LATEST_RANDAO_MIXES_LENGTH]
+            }
+        }
     }
 
     private func inclusionDistance(state: BeaconState, index: Int) -> Int {
@@ -428,5 +448,13 @@ extension StateTransition {
 
     private func inactivityPenalty(state: BeaconState, index: Int, epochsSinceFinality: Int, totalBalance: Int) -> Int {
         return baseReward(state: state, index: index, totalBalance: totalBalance) * epochsSinceFinality / INACTIVITY_PENALTY_QUOTIENT / 2
+    }
+
+    private func isPowerOfTwo(_ n: Int) -> Bool {
+        return ceil(log2(n)) == floor(log2(n))
+    }
+
+    private func log2(_ n: Int) -> Double {
+        return log10(Double(n)) / log10(2.0)
     }
 }
