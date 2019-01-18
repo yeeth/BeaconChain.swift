@@ -193,7 +193,6 @@ extension StateTransition {
         }).reduce(0, +)
 
         return state
-
     }
 
 }
