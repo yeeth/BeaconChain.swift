@@ -232,4 +232,32 @@ extension StateTransition {
         state.eth1DataVotes = [Eth1DataVote]()
     }
 
+    private func justification(
+        state: inout BeaconState,
+        totalBalance: Int,
+        previousEpochBoundaryAttestingBalance: Int,
+        currentEpochBoundaryAttestingBalance: Int
+    )
+    {
+        state.previousJustifiedSlot = state.justifiedSlot
+        state.justificationBitfield = (state.justificationBitfield * 2) % 2^64
+
+        if 3 * previousEpochBoundaryAttestingBalance >= 2 * totalBalance {
+            state.justificationBitfield |= 2
+            state.justifiedSlot = state.slot - 2 * EPOCH_LENGTH
+        }
+
+        if 3 * currentEpochBoundaryAttestingBalance >= 2 * totalBalance {
+            state.justificationBitfield |= 1
+            state.justifiedSlot = state.slot - 1 * EPOCH_LENGTH
+        }
+
+        if (state.previousJustifiedSlot == state.slot - 2 * EPOCH_LENGTH && state.justificationBitfield % 4 == 3) ||
+            (state.previousJustifiedSlot == state.slot - 3 * EPOCH_LENGTH && state.justificationBitfield % 8 == 7) ||
+            (state.previousJustifiedSlot == state.slot - 4 * EPOCH_LENGTH && [15, 14].contains(state.justificationBitfield % 16))
+        {
+            state.finalizedSlot = state.previousJustifiedSlot
+        }
+    }
+
 }

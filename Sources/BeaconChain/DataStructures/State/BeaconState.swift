@@ -22,10 +22,10 @@ class BeaconState {
 
 //    let custodyChallenges: [CustodyChallenge] defined in 1.0
 
-    let previousJustifiedSlot: Int
-    let justifiedSlot: Int
-    let justificationBitfield: Int
-    let finalizedSlot: Int
+    var previousJustifiedSlot: Int
+    var justifiedSlot: Int
+    var justificationBitfield: Int
+    var finalizedSlot: Int
 
     let latestCrosslinks: [Crosslink]
     var latestBlockRoots: [Data]
