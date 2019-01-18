@@ -228,7 +228,6 @@ extension StateTransition {
         }
 
         // @todo Validator registry
-        // @todo Final updates
 
         let e = state.slot / EPOCH_LENGTH
         state.latestPenalizedBalances[(e + 1) % LATEST_PENALIZED_EXIT_LENGTH] = state.latestPenalizedBalances[e % LATEST_PENALIZED_EXIT_LENGTH]
