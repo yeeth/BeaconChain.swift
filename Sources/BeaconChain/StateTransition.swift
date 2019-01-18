@@ -2,7 +2,7 @@ import Foundation
 
 class StateTransition {
 
-    static func processSlot(state: BeaconState, previousBlockRoot: Data) -> BeaconState {
+    static func processSlot(state: inout BeaconState, previousBlockRoot: Data) {
         state.slot += 1
         state.validatorRegistry[BeaconChain.getBeaconProposerIndex(state: state, slot: state.slot)].randaoLayers += 1
         state.latestRandaoMixes[state.slot % LATEST_RANDAO_MIXES_LENGTH] = state.latestRandaoMixes[(state.slot - 1) % LATEST_RANDAO_MIXES_LENGTH]
@@ -11,29 +11,25 @@ class StateTransition {
         if state.slot % LATEST_BLOCK_ROOTS_LENGTH == 0 {
             state.batchedBlockRoots.append(BeaconChain.merkleRoot(values: state.latestBlockRoots))
         }
-
-        return state
     }
 }
 
 extension StateTransition {
 
-    static func processBlock(state: BeaconState, block: Block) -> BeaconState {
+    static func processBlock(state: inout BeaconState, block: Block) {
         assert(state.slot == block.slot) // @todo not sure if assert or other error handling
 
         // @todo Proposer signature
         // @todo RANDAO
-        eth1Data(state: state, block: block)
-        proposerSlashings(state: state, block: block)
-        casperSlashings(state: state, block: block)
+        eth1Data(state: &state, block: block)
+        proposerSlashings(state: &state, block: block)
+        casperSlashings(state: &state, block: block)
         // @todo Attestations
         // @todo Deposits
-        exits(state: state, block: block)
-
-        return state
+        exits(state: &state, block: block)
     }
 
-    private static func eth1Data(state: BeaconState, block: Block) {
+    private static func eth1Data(state: inout BeaconState, block: Block) {
         for (i, eth1VoteData) in state.eth1DataVotes.enumerated() {
             if eth1VoteData.eth1Data == block.eth1Data { // @todo make equatable
                 state.eth1DataVotes[i].voteCount += 1
@@ -43,7 +39,7 @@ extension StateTransition {
         }
     }
 
-    private static func proposerSlashings(state: BeaconState, block: Block) {
+    private static func proposerSlashings(state: inout BeaconState, block: Block) {
         for slashing in block.body.proposerSlashings {
             assert(slashing.proposalData1.slot == slashing.proposalData2.slot) // @todo not sure if asserts
             assert(slashing.proposalData1.shard == slashing.proposalData2.shard) // @todo not sure if asserts
@@ -69,11 +65,11 @@ extension StateTransition {
                 )
             )
 
-            BeaconChain.penalizeValidator(state: state, index: slashing.proposerIndex)
+            BeaconChain.penalizeValidator(state: &state, index: slashing.proposerIndex)
         }
     }
 
-    private static func casperSlashings(state: BeaconState, block: Block) {
+    private static func casperSlashings(state: inout BeaconState, block: Block) {
         assert(block.body.casperSlashings.count <= MAX_CASPER_SLASHINGS)
 
         for slashing in block.body.casperSlashings {
@@ -81,7 +77,7 @@ extension StateTransition {
         }
     }
 
-    private static func exits(state: BeaconState, block: Block) {
+    private static func exits(state: inout BeaconState, block: Block) {
         assert(block.body.exits.count <= MAX_EXITS)
 
         for exit in block.body.exits {
@@ -97,14 +93,14 @@ extension StateTransition {
                 )
             )
 
-            BeaconChain.initiateValidatorExit(state: state, index: exit.validatorIndex)
+            BeaconChain.initiateValidatorExit(state: &state, index: exit.validatorIndex)
         }
     }
 }
 
 extension StateTransition {
 
-    func processEpoch(state: BeaconState) -> BeaconState {
+    func processEpoch(state: inout BeaconState) {
         assert(state.slot % EPOCH_LENGTH == 1)
         let activeValidators = BeaconChain.getActiveValidatorIndices(validators: state.validatorRegistry, slot: state.slot)
         let totalBalance = activeValidators.map({
@@ -212,7 +208,28 @@ extension StateTransition {
             return BeaconChain.getEffectiveBalance(state: state, index: i)
         }).reduce(0, +)
 
-        return state
+        eth1Data(state: &state)
+        // @todo Justification
+        // @todo Crosslinks
+        // @todo Rewards and penalties
+        // @todo Ejections
+        // @todo Validator registry
+        // @todo Final updates
+
+    }
+
+    private func eth1Data(state: inout BeaconState) {
+        if (state.slot % ETH1_DATA_VOTING_PERIOD != 0) {
+            return
+        }
+
+        for eth1DataVote in state.eth1DataVotes {
+            if eth1DataVote.voteCount * 2 > ETH1_DATA_VOTING_PERIOD {
+                state.latestEth1Data = eth1DataVote.eth1Data
+            }
+        }
+
+        state.eth1DataVotes = [Eth1DataVote]()
     }
 
 }
