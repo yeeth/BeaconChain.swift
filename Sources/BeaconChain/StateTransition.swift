@@ -226,8 +226,20 @@ extension StateTransition {
             previousEpochBoundaryAttestingBalance: previousEpochBoundaryAttestingBalance,
             currentEpochBoundaryAttestingBalance: currentEpochBoundaryAttestingBalance
         )
+
         // @todo Crosslinks
-        // @todo Rewards and penalties
+
+        rewardsAndPenalties(
+            state: &state,
+            totalBalance: totalBalance,
+            previousEpochJustifiedAttesterIndices: Array(previousEpochJustifiedAttesterIndices),
+            previousEpochJustifiedAttestingBalance: previousEpochJustifiedAttestingBalance,
+            previousEpochBoundaryAttesterIndices: Array(previousEpochBoundaryAttesterIndices),
+            previousEpochBoundaryAttestingBalance: previousEpochBoundaryAttestingBalance,
+            previousEpochHeadAttesterIndices: Array(previousEpochHeadAttesterIndices),
+            previousEpochHeadAttestingBalance: previousEpochHeadAttestingBalance,
+            previousEpochAttesterIndices: Array(previousEpochAttesterIndices)
+        )
 
         for i in BeaconChain.getActiveValidatorIndices(validators: state.validatorRegistry, slot: state.slot) {
             if state.validatorBalances[i] < EJECTION_BALANCE {
@@ -317,7 +329,7 @@ extension StateTransition {
         }
     }
 
-    private func rewardsAndPenalities(
+    private func rewardsAndPenalties(
         state: inout BeaconState,
         totalBalance: Int,
         previousEpochJustifiedAttesterIndices: [Int],
@@ -439,7 +451,7 @@ extension StateTransition {
     }
 
     private func inclusionSlot(state: BeaconState, index: Int) -> Int {
-        return 0 //
+        return 0 // @todo
     }
 
     private func baseReward(state: BeaconState, index: Int, totalBalance: Int) -> Int {
