@@ -20,7 +20,7 @@ extension StateTransition {
         assert(state.slot == block.slot) // @todo not sure if assert or other error handling
 
         proposerSignature(state: state, block: block)
-        randao(state: state)
+        randao(state: &state, block: block)
         eth1Data(state: &state, block: block)
         proposerSlashings(state: &state, block: block)
         casperSlashings(state: &state, block: block)
@@ -29,8 +29,25 @@ extension StateTransition {
         exits(state: &state, block: block)
     }
 
-    private static func randao(state: BeaconState) {
-        // @todo
+    private static func randao(state: inout BeaconState, block: Block) {
+        let proposerIndex = BeaconChain.getBeaconProposerIndex(state: state, slot: state.slot)
+        let proposer = state.validatorRegistry[proposerIndex]
+        assert(repeatHash(data: block.randaoReveal, n: proposer.randaoLayers) == proposer.randaoCommitment)
+
+        state.latestRandaoMixes[state.slot % LATEST_RANDAO_MIXES_LENGTH] = BeaconChain.hash(
+            data: state.latestRandaoMixes[state.slot % LATEST_RANDAO_MIXES_LENGTH] ^ block.randaoReveal
+        )
+
+        state.validatorRegistry[proposerIndex].randaoCommitment = block.randaoReveal
+        state.validatorRegistry[proposerIndex].randaoLayers = 0
+    }
+
+    private static func repeatHash(data: Data, n: Int) -> Data {
+        if n == 0 {
+            return data
+        }
+
+        return repeatHash(data: BeaconChain.hash(data: data), n: n - 1)
     }
 
     private static func proposerSignature(state: BeaconState, block: Block) {

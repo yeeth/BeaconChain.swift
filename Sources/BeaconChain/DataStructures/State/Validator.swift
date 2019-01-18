@@ -3,7 +3,7 @@ import Foundation
 struct Validator {
     let pubkey: Data
     let withdrawalCredentials: Data
-    let randaoCommitment: Data
+    var randaoCommitment: Data
     var randaoLayers: Int
     var activationSlot: Int
     var exitSlot: Int
