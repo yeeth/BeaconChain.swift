@@ -192,6 +192,26 @@ extension StateTransition {
             return BeaconChain.getEffectiveBalance(state: state, index: i)
         }).reduce(0, +)
 
+        let previousEpochHeadAttestations = previousEpochAttestations.filter({
+            $0.data.beaconBlockRoot == BeaconChain.getBlockRoot(state: state, slot: state.slot)
+        })
+
+        var previousEpochHeadAttesterIndices = Set<Int>()
+        for attestation in previousEpochHeadAttestations {
+            previousEpochHeadAttesterIndices = previousEpochHeadAttesterIndices.union(
+                BeaconChain.getAttestationParticipants(
+                    state: state,
+                    data: attestation.data,
+                    aggregationBitfield: attestation.aggregationBitfield
+                )
+            )
+        }
+
+        let previousEpochHeadAttestingBalance = previousEpochHeadAttesterIndices.map({
+            (i: Int) -> Int in
+            return BeaconChain.getEffectiveBalance(state: state, index: i)
+        }).reduce(0, +)
+
         return state
     }
 
