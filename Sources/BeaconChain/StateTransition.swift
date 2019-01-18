@@ -152,6 +152,27 @@ extension StateTransition {
             )
         }
 
+        let previousEpochJustifiedAttestations = (currentEpochBoundryAttestations + previousEpochAttestations).filter({
+            $0.data.justifiedSlot == state.justifiedSlot
+        })
+
+        var previousEpochJustifiedAttesterIndices = Set<Int>()
+        for attestation in previousEpochAttestations {
+            previousEpochJustifiedAttesterIndices = previousEpochJustifiedAttesterIndices.union(
+                BeaconChain.getAttestationParticipants(
+                    state: state,
+                    data: attestation.data,
+                    aggregationBitfield: attestation.aggregationBitfield
+                )
+            )
+        }
+
+        let previousEpochJustifiedAttestingBalance = previousEpochJustifiedAttesterIndices.map({
+            (i: Int) -> Int in
+            return BeaconChain.getEffectiveBalance(state: state, index: i)
+        }).reduce(0, +)
+
+
         return state
 
     }
