@@ -323,7 +323,7 @@ extension StateTransition {
                 state.validatorBalances[index] += baseReward(state: state, index: index, totalBalance: totalBalance) * previousEpochJustifiedAttestingBalance / totalBalance
             }
 
-            var activeValidators = Set(
+            let activeValidators = Set(
                 BeaconChain.getActiveValidatorIndices(validators: state.validatorRegistry, slot: state.slot)
             )
             activeValidators.subtracting(Set(previousEpochJustifiedAttesterIndices)).forEach({
