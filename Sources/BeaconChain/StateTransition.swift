@@ -263,9 +263,9 @@ extension StateTransition {
             state.justifiedSlot = state.slot - 1 * EPOCH_LENGTH
         }
 
-        if (state.previousJustifiedSlot == state.slot - 2 * EPOCH_LENGTH && state.justificationBitfield % 4 == 3) ||
-            (state.previousJustifiedSlot == state.slot - 3 * EPOCH_LENGTH && state.justificationBitfield % 8 == 7) ||
-            (state.previousJustifiedSlot == state.slot - 4 * EPOCH_LENGTH && [15, 14].contains(state.justificationBitfield % 16))
+        if (state.previousJustifiedSlot == state.slot - 2 * EPOCH_LENGTH && state.justificationBitfield % 4 == 3)
+            || (state.previousJustifiedSlot == state.slot - 3 * EPOCH_LENGTH && state.justificationBitfield % 8 == 7)
+            || (state.previousJustifiedSlot == state.slot - 4 * EPOCH_LENGTH && [15, 14].contains(state.justificationBitfield % 16))
         {
             state.finalizedSlot = state.previousJustifiedSlot
         }
