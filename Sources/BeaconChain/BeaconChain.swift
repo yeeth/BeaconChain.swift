@@ -369,14 +369,15 @@ extension BeaconChain {
 
     // @todo rthis is probably broken
     static func getCrosslinkCommitteesAtSlot(state: BeaconState, slot: Int) -> [([Int], Int)] {
-        let earliestSlot = state.slot - (state.slot % EPOCH_LENGTH) - EPOCH_LENGTH
-        assert(earliestSlot <= slot && slot < earliestSlot + (EPOCH_LENGTH * 2))
+        let stateEpochSlot = state.slot - (state.slot % EPOCH_LENGTH)
+        assert(stateEpochSlot <= slot + EPOCH_LENGTH)
+        assert(slot < stateEpochSlot + EPOCH_LENGTH)
         let offest = slot % EPOCH_LENGTH
 
         var committeesPerSlot: Int
         var shuffling: [[Int]]
         var slotStartShard: Int
-        if slot < earliestSlot + EPOCH_LENGTH {
+        if slot < stateEpochSlot {
             committeesPerSlot = BeaconChain.getPreviousEpochCommitteeCountPerSlot(state: state)
             shuffling = getShuffling(
                 seed: state.previousEpochRandaoMix,
