@@ -20,13 +20,17 @@ extension StateTransition {
         assert(state.slot == block.slot) // @todo not sure if assert or other error handling
 
         proposerSignature(state: state, block: block)
-        // @todo RANDAO
+        randao(state: state)
         eth1Data(state: &state, block: block)
         proposerSlashings(state: &state, block: block)
         casperSlashings(state: &state, block: block)
         attestations(state: &state, block: block)
         // @todo Deposits
         exits(state: &state, block: block)
+    }
+
+    private static func randao(state: BeaconState) {
+        // @todo
     }
 
     private static func proposerSignature(state: BeaconState, block: Block) {
