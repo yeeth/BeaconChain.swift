@@ -236,6 +236,7 @@ extension StateTransition {
         }
 
         validatorRegistry(state: &state)
+        processPenaltiesAndExits(state: &state)
 
         let e = state.slot / EPOCH_LENGTH
         state.latestPenalizedBalances[(e + 1) % LATEST_PENALIZED_EXIT_LENGTH] = state.latestPenalizedBalances[e % LATEST_PENALIZED_EXIT_LENGTH]
@@ -456,5 +457,49 @@ extension StateTransition {
 
     private func log2(_ n: Int) -> Double {
         return log10(Double(n)) / log10(2.0)
+    }
+
+    private func processPenaltiesAndExits(state: inout BeaconState) {
+        let activeValidators = BeaconChain.getActiveValidatorIndices(validators: state.validatorRegistry, slot: state.slot)
+        let totalBalance = activeValidators.map({
+            (i: Int) -> Int in
+            return BeaconChain.getEffectiveBalance(state: state, index: i)
+        }).reduce(0, +)
+
+        for (i, validator) in state.validatorRegistry.enumerated() {
+            if (state.slot / EPOCH_LENGTH) != (validator.penalizedSlot / EPOCH_LENGTH) + LATEST_PENALIZED_EXIT_LENGTH / 2 {
+                continue
+            }
+
+            let e = (state.slot / EPOCH_LENGTH) % LATEST_PENALIZED_EXIT_LENGTH
+            let totalAtStart = state.latestPenalizedBalances[(e + 1) % LATEST_PENALIZED_EXIT_LENGTH]
+            let totalAtEnd = state.latestPenalizedBalances[e]
+            let totalPenalties = totalAtEnd - totalAtStart
+            let penalty = BeaconChain.getEffectiveBalance(state: state, index: i) * min(totalPenalties * 3, totalBalance) / totalBalance
+            state.validatorBalances[i] -= penalty
+
+            var eligibleIndices = (0...state.validatorRegistry.count).filter({
+                let validator = state.validatorRegistry[$0]
+                if validator.penalizedSlot <= state.slot {
+                    let PENALIZED_WITHDRAWAL_TIME = LATEST_PENALIZED_EXIT_LENGTH * EPOCH_LENGTH // 2
+                    return state.slot >= validator.penalizedSlot + PENALIZED_WITHDRAWAL_TIME
+                } else {
+                    return state.slot >= validator.exitSlot + MIN_VALIDATOR_WITHDRAWAL_TIME
+                }
+            })
+
+            eligibleIndices.sort {
+                state.validatorRegistry[$0].exitCount > state.validatorRegistry[$1].exitCount
+            }
+
+            var withdrawan = 0
+            for i in eligibleIndices {
+                BeaconChain.prepareValidatorForWithdrawal(state: &state, index: i)
+                withdrawan += 1
+                if withdrawan >= MAX_WITHDRAWALS_PER_EPOCH {
+                    break
+                }
+            }
+        }
     }
 }
