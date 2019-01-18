@@ -220,7 +220,13 @@ extension StateTransition {
         )
         // @todo Crosslinks
         // @todo Rewards and penalties
-        // @todo Ejections
+
+        for i in BeaconChain.getActiveValidatorIndices(validators: state.validatorRegistry, slot: state.slot) {
+            if state.validatorBalances[i] < EJECTION_BALANCE {
+                BeaconChain.exitValidator(state: &state, index: i)
+            }
+        }
+
         // @todo Validator registry
         // @todo Final updates
 
