@@ -30,7 +30,7 @@ class BeaconState {
     let latestCrosslinks: [Crosslink]
     var latestBlockRoots: [Data]
     var latestPenalizedBalances: [Int]
-    let latestAttestations: [PendingAttestation]
+    var latestAttestations: [PendingAttestation]
     var batchedBlockRoots: [Data]
 
     var latestEth1Data: Eth1Data
