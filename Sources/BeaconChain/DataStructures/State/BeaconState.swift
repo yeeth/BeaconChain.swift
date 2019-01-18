@@ -1,7 +1,7 @@
 import Foundation
 
 class BeaconState {
-    let slot: Int
+    var slot: Int
     let genesisTime: TimeInterval
     let fork: Fork
 
@@ -11,7 +11,7 @@ class BeaconState {
     var validatorRegistryExitCount: Int
     var validatorRegistryDeltaChainTip: Data
 
-    let latestRandaoMixes: [Data]
+    var latestRandaoMixes: [Data]
     let latestVdfOutputs: [Data]
     let previousEpochStartShard: Int
     let currentEpochStartShard: Int
@@ -28,10 +28,10 @@ class BeaconState {
     let finalizedSlot: Int
 
     let latestCrosslinks: [Crosslink]
-    let latestBlockRoots: [Data]
+    var latestBlockRoots: [Data]
     var latestPenalizedBalances: [Int]
     let latestAttestations: [PendingAttestation]
-    let batchedBlockRoots: [Data]
+    var batchedBlockRoots: [Data]
 
     let latestEth1Data: Eth1Data
     var eth1DataVotes: [Eth1DataVote]

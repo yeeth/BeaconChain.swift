@@ -2,6 +2,19 @@ import Foundation
 
 class StateTransition {
 
+    static func processSlot(state: BeaconState, previousBlockRoot: Data) -> BeaconState {
+        state.slot += 1
+        state.validatorRegistry[BeaconChain.getBeaconProposerIndex(state: state, slot: state.slot)].randaoLayers += 1
+        state.latestRandaoMixes[state.slot % LATEST_RANDAO_MIXES_LENGTH] = state.latestRandaoMixes[(state.slot - 1) % LATEST_RANDAO_MIXES_LENGTH]
+
+        state.latestBlockRoots[(state.slot - 1) % LATEST_BLOCK_ROOTS_LENGTH] = previousBlockRoot
+        if state.slot % LATEST_BLOCK_ROOTS_LENGTH == 0 {
+            state.batchedBlockRoots.append(BeaconChain.merkleRoot(values: state.latestBlockRoots))
+        }
+
+        return state
+    }
+
     static func processBlock(state: BeaconState, block: Block) -> BeaconState {
         assert(state.slot == block.slot) // @todo not sure if assert or other error handling
 

@@ -4,7 +4,7 @@ struct Validator {
     let pubkey: Data
     let withdrawalCredentials: Data
     let randaoCommitment: Data
-    let randaoLayers: Int
+    var randaoLayers: Int
     var activationSlot: Int
     var exitSlot: Int
     let withdrawalSlot: Int
