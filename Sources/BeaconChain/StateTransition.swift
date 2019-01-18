@@ -230,7 +230,7 @@ extension StateTransition {
     }
 
     private func eth1Data(state: inout BeaconState) {
-        if (state.slot % ETH1_DATA_VOTING_PERIOD != 0) {
+        if state.slot % ETH1_DATA_VOTING_PERIOD != 0 {
             return
         }
 

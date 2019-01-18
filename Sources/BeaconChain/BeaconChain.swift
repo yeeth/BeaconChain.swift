@@ -10,7 +10,7 @@ class BeaconChain {
         }
 
         for (i, _) in state.validatorRegistry.enumerated() {
-            if (BeaconChain.getEffectiveBalance(state: state, index: i) >= MAX_DEPOSIT_AMOUNT) {
+            if BeaconChain.getEffectiveBalance(state: state, index: i) >= MAX_DEPOSIT_AMOUNT {
                 BeaconChain.activateValidator(state: &state, index: i, genesis: true)
             }
         }
