@@ -313,7 +313,12 @@ extension StateTransition {
         state: inout BeaconState,
         totalBalance: Int,
         previousEpochJustifiedAttesterIndices: [Int],
-        previousEpochJustifiedAttestingBalance: Int
+        previousEpochJustifiedAttestingBalance: Int,
+        previousEpochBoundaryAttesterIndices: [Int],
+        previousEpochBoundaryAttestingBalance: Int,
+        previousEpochHeadAttesterIndices: [Int],
+        previousEpochHeadAttestingBalance: Int,
+        previousEpochAttesterIndices: [Int]
     )
     {
         let epochsSinceFinality = (state.slot - state.finalizedSlot) / EPOCH_LENGTH
@@ -331,7 +336,32 @@ extension StateTransition {
                 state.validatorBalances[index] -= baseReward(state: state, index: index, totalBalance: totalBalance)
             })
 
+            for index in previousEpochBoundaryAttesterIndices {
+                state.validatorBalances[index] += baseReward(state: state, index: index, totalBalance: totalBalance) * previousEpochBoundaryAttestingBalance / totalBalance
+            }
+
+            activeValidators.subtracting(Set(previousEpochBoundaryAttesterIndices)).forEach({
+                (index) in
+                state.validatorBalances[index] -= baseReward(state: state, index: index, totalBalance: totalBalance)
+            })
+
+            for index in previousEpochHeadAttesterIndices {
+                state.validatorBalances[index] += baseReward(state: state, index: index, totalBalance: totalBalance) * previousEpochHeadAttestingBalance / totalBalance
+            }
+
+            activeValidators.subtracting(Set(previousEpochHeadAttesterIndices)).forEach({
+                (index) in
+                state.validatorBalances[index] -= baseReward(state: state, index: index, totalBalance: totalBalance)
+            })
+
+            for index in previousEpochAttesterIndices {
+                state.validatorBalances[index] += baseReward(state: state, index: index, totalBalance: totalBalance) + MIN_ATTESTATION_INCLUSION_DELAY / inclusionDistance(state: state, index: index)
+            }
         }
+    }
+
+    private func inclusionDistance(state: BeaconState, index: Int) -> Int {
+        return 0 // @todo
     }
 
     private func baseReward(state: BeaconState, index: Int, totalBalance: Int) -> Int {
