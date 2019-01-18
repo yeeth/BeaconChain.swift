@@ -7,11 +7,7 @@ class StateTransition {
 
         // @todo Proposer signature
         // @todo RANDAO
-        // @todo Eth1 data
-        for eth1VoteData in state.eth1DataVotes {
-            if eth1VoteData.eth1Data == block.eth
-        }
-
+        eth1Data(state: state, block: block)
         proposerSlashings(state: state, block: block)
         casperSlashings(state: state, block: block)
         // @todo Attestations
@@ -19,6 +15,16 @@ class StateTransition {
         exits(state: state, block: block)
 
         return state
+    }
+
+    static func eth1Data(state: BeaconState, block: Block) {
+        for (i, eth1VoteData) in state.eth1DataVotes.enumerated() {
+            if eth1VoteData.eth1Data == block.eth1Data { // @todo make equatable
+                state.eth1DataVotes[i].voteCount += 1
+            } else {
+                state.eth1DataVotes.append(Eth1DataVote(eth1Data: block.eth1Data, voteCount: 1))
+            }
+        }
     }
 
     static func proposerSlashings(state: BeaconState, block: Block) {

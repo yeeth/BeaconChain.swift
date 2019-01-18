@@ -34,7 +34,7 @@ class BeaconState {
     let batchedBlockRoots: [Data]
 
     let latestEth1Data: Eth1Data
-    let eth1DataVotes: [Eth1DataVote]
+    var eth1DataVotes: [Eth1DataVote]
 
     // @todo consider not passing those with default genesis values
     init(
