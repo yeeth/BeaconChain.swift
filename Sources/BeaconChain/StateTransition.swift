@@ -137,6 +137,21 @@ extension StateTransition {
             return BeaconChain.getEffectiveBalance(state: state, index: i)
         }).reduce(0, +)
 
+        let previousEpochAttestations = state.latestAttestations.filter({
+            state.slot - (2 * EPOCH_LENGTH) <= $0.data.slot && $0.data.slot < state.slot - EPOCH_LENGTH
+        })
+
+        var previousEpochAttesterIndices = Set<Int>()
+        for attestation in previousEpochAttestations {
+            previousEpochAttesterIndices = previousEpochAttesterIndices.union(
+                BeaconChain.getAttestationParticipants(
+                    state: state,
+                    data: attestation.data,
+                    aggregationBitfield: attestation.aggregationBitfield
+                )
+            )
+        }
+
         return state
 
     }
