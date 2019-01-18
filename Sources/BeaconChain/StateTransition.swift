@@ -386,10 +386,19 @@ extension StateTransition {
                 state.validatorBalances[index] -= base - base * MIN_ATTESTATION_INCLUSION_DELAY / inclusionDistance(state: state, index: index)
             }
         }
+
+        for index in previousEpochAttesterIndices {
+            let proposer = BeaconChain.getBeaconProposerIndex(state: state, slot: inclusionSlot(state: state, index: index))
+            state.validatorBalances[proposer] += baseReward(state: state, index: index, totalBalance: totalBalance)
+        }
     }
 
     private func inclusionDistance(state: BeaconState, index: Int) -> Int {
         return 0 // @todo
+    }
+
+    private func inclusionSlot(state: BeaconState, index: Int) -> Int {
+        return 0 //
     }
 
     private func baseReward(state: BeaconState, index: Int, totalBalance: Int) -> Int {
