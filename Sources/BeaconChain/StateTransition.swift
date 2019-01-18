@@ -273,22 +273,29 @@ extension StateTransition {
 
     private func crosslink(
         state: inout BeaconState,
-        totalBalance: Int,
+        totalBalance: [Data:Int],
         totalAttesstingBalance: [Data:Int],
         winningRoot: [Data:Data]
     )
     {
+
+        // @todo define totalBalance, totalAttestingBalance, winningRoot as functions
+        // Let winning_root(crosslink_committee) be equal to the value of shard_block_root such that sum([get_effective_balance(state, i) for i in attesting_validator_indices(crosslink_committee, shard_block_root)]) is maximized (ties broken by favoring lower shard_block_root values).
+        // Let attesting_validators(crosslink_committee) be equal to attesting_validator_indices(crosslink_committee, winning_root(crosslink_committee)) for convenience.
+        // Let total_attesting_balance(crosslink_committee) = sum([get_effective_balance(state, i) for i in attesting_validators(crosslink_committee)]).
+        // Let total_balance(crosslink_committee) = sum([get_effective_balance(state, i) for i in crosslink_committee]).
+
         for slot in (state.slot - 2 * EPOCH_LENGTH)...state.slot {
             let crosslinkCommitteeAtSlot = BeaconChain.getCrosslinkCommitteesAtSlot(state: state, slot: slot)
-            for (crosslinkCommittee, shard) in crosslinkCommitteeAtSlot {
-                if 3 * totalAttesstingBalance(crosslinkCommittee) >= 2 * totalBalance(crosslinkCommittee) {
+            for (committee, shard) in crosslinkCommitteeAtSlot {
+                let crosslinkCommittee = committee.withUnsafeBufferPointer { Data(buffer: $0) }
+                if 3 * totalAttesstingBalance[crosslinkCommittee]! >= 2 * totalBalance[crosslinkCommittee]! {
                     state.latestCrosslinks[shard] = Crosslink(
                         slot: state.slot,
-                        shardBlockRoot: winningRoot[crosslinkCommittee]
+                        shardBlockRoot: winningRoot[crosslinkCommittee]!
                     )
                 }
             }
         }
     }
-
 }
