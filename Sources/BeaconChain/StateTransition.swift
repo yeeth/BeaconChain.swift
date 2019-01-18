@@ -84,10 +84,18 @@ extension StateTransition {
             let validator = state.validatorRegistry[exit.validatorIndex]
             assert(validator.exitSlot > state.slot + ENTRY_EXIT_DELAY)
             assert(state.slot >= exit.slot)
+
+            let exitMessage = BeaconChain.hashTreeRoot(data: Exit(
+                    slot: exit.slot,
+                    validatorIndex: exit.validatorIndex,
+                    signature: EMPTY_SIGNATURE
+                )
+            )
+
             assert(
                 BLS.verify(
                     pubkey: validator.pubkey,
-                    message: ZERO_HASH,
+                    message: exitMessage,
                     signature: exit.signature,
                     domain: BeaconChain.getDomain(data: state.fork, slot: state.slot, domainType: DOMAIN_EXIT)
                 )
