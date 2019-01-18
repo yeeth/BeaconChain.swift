@@ -33,11 +33,10 @@ extension StateTransition {
         var signatureBlock = block
         signatureBlock.signature = EMPTY_SIGNATURE
 
-        let blockWithoutSignatureRoot = BeaconChain.hashTreeRoot(data: signatureBlock)
         let proposalRoot = BeaconChain.hashTreeRoot(data: ProposalSignedData(
                 slot: state.slot,
                 shard: BEACON_CHAIN_SHARD_NUMBER,
-                blockRoot: blockWithoutSignatureRoot
+                blockRoot: BeaconChain.hashTreeRoot(data: signatureBlock)
             )
         )
 
