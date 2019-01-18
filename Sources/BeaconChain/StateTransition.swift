@@ -400,7 +400,7 @@ extension StateTransition {
         }
 
         for i in (state.slot - 2 * EPOCH_LENGTH)...(state.slot - EPOCH_LENGTH) {
-//            let crosslinkCommitteAtSlot = BeaconChain.getCrosslinkCommitteesAtSlot(state: state, slot: i)
+//            let crosslinkCommitteAtSlot = For every `slot in range(state.slot - 2 * EPOCH_LENGTH, state.slot)`, let `crosslink_committees_at_slot = get_crosslink_committees_at_slot(slot)`.
 //
 //            for (j, crosslinkCommitte) in crosslinkCommitteAtSlot {
 //
@@ -423,5 +423,42 @@ extension StateTransition {
 
     private func inactivityPenalty(state: BeaconState, index: Int, epochsSinceFinality: Int, totalBalance: Int) -> Int {
         return baseReward(state: state, index: index, totalBalance: totalBalance) * epochsSinceFinality / INACTIVITY_PENALTY_QUOTIENT / 2
+    }
+
+    private func updateValidatorRegistry(state: inout BeaconState) {
+        let activeValidatorIndices = BeaconChain.getActiveValidatorIndices(validators: state.validatorRegistry, slot: state.slot)
+
+        let totalBalance = activeValidatorIndices.map({
+            (i: Int) -> Int in
+            return BeaconChain.getEffectiveBalance(state: state, index: i)
+        }).reduce(0, +)
+
+        let maxBalanceChurn = max(MAX_DEPOSIT_AMOUNT, totalBalance / (2 * MAX_BALANCE_CHURN_QUOTIENT))
+
+        var balanceChurn = 0
+        for (i, validator) in state.validatorRegistry.enumerated() {
+            if validator.activationSlot > state.slot + ENTRY_EXIT_DELAY && state.validatorBalances[i] >= MAX_DEPOSIT_AMOUNT {
+                balanceChurn += BeaconChain.getEffectiveBalance(state: state, index: i)
+                if balanceChurn > maxBalanceChurn {
+                    break
+                }
+
+                BeaconChain.activateValidator(state: &state, index: i, genesis: false)
+            }
+        }
+
+        balanceChurn = 0
+        for (i, validator) in state.validatorRegistry.enumerated() {
+            if validator.exitSlot > state.slot + ENTRY_EXIT_DELAY && (validator.statusFlags & INITIATED_EXIT) == 1 {
+                balanceChurn += BeaconChain.getEffectiveBalance(state: state, index: i)
+                if balanceChurn > maxBalanceChurn {
+                    break
+                }
+
+                BeaconChain.exitValidator(state: &state, index: i)
+            }
+        }
+
+        state.validatorRegistryUpdateSlot = state.slot
     }
 }
