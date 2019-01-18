@@ -235,6 +235,7 @@ extension StateTransition {
             }
         }
 
+        // @todo if
         BeaconChain.updateValidatorRegistry(state: &state)
 
         let e = state.slot / EPOCH_LENGTH
