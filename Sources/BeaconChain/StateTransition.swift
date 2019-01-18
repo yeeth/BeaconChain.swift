@@ -235,8 +235,7 @@ extension StateTransition {
             }
         }
 
-        // @todo if
-        BeaconChain.updateValidatorRegistry(state: &state)
+        validatorRegistry(state: &state)
 
         let e = state.slot / EPOCH_LENGTH
         state.latestPenalizedBalances[(e + 1) % LATEST_PENALIZED_EXIT_LENGTH] = state.latestPenalizedBalances[e % LATEST_PENALIZED_EXIT_LENGTH]
@@ -407,6 +406,11 @@ extension StateTransition {
 //
 //            }
         }
+    }
+
+    private func validatorRegistry(state: inout BeaconState) {
+        // @todo if
+        BeaconChain.updateValidatorRegistry(state: &state)
     }
 
     private func inclusionDistance(state: BeaconState, index: Int) -> Int {
