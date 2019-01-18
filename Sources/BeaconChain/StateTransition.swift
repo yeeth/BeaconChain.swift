@@ -209,7 +209,12 @@ extension StateTransition {
         }).reduce(0, +)
 
         eth1Data(state: &state)
-        // @todo Justification
+        justification(
+            state: &state,
+            totalBalance: totalBalance,
+            previousEpochBoundaryAttestingBalance: previousEpochBoundaryAttestingBalance,
+            currentEpochBoundaryAttestingBalance: currentEpochBoundaryAttestingBalance
+        )
         // @todo Crosslinks
         // @todo Rewards and penalties
         // @todo Ejections
