@@ -223,9 +223,6 @@ extension StateTransition {
 
         let e = state.slot / EPOCH_LENGTH
         state.latestPenalizedBalances[(e + 1) % LATEST_PENALIZED_EXIT_LENGTH] = state.latestPenalizedBalances[e % LATEST_PENALIZED_EXIT_LENGTH]
-
-        // @todo not sure if correct
-        // Remove any attestation in state.latest_attestations such that attestation.data.slot < state.slot - EPOCH_LENGTH
         state.latestAttestations.removeAll { $0.data.slot < state.slot - EPOCH_LENGTH }
     }
 
