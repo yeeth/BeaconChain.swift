@@ -280,9 +280,13 @@ extension StateTransition {
     {
 
         // @todo define totalBalance, totalAttestingBalance, winningRoot as functions
-        // Let winning_root(crosslink_committee) be equal to the value of shard_block_root such that sum([get_effective_balance(state, i) for i in attesting_validator_indices(crosslink_committee, shard_block_root)]) is maximized (ties broken by favoring lower shard_block_root values).
-        // Let attesting_validators(crosslink_committee) be equal to attesting_validator_indices(crosslink_committee, winning_root(crosslink_committee)) for convenience.
-        // Let total_attesting_balance(crosslink_committee) = sum([get_effective_balance(state, i) for i in attesting_validators(crosslink_committee)]).
+        // Let winning_root(crosslink_committee) be equal to the value of shard_block_root such that
+        //   sum([get_effective_balance(state, i) for i in attesting_validator_indices(crosslink_committee,
+        //   shard_block_root)]) is maximized (ties broken by favoring lower shard_block_root values).
+        // Let attesting_validators(crosslink_committee) be equal to attesting_validator_indices(crosslink_committee,
+        //    winning_root(crosslink_committee)) for convenience.
+        // Let total_attesting_balance(crosslink_committee) = sum([get_effective_balance(state, i) for i in
+        //    attesting_validators(crosslink_committee)]).
         // Let total_balance(crosslink_committee) = sum([get_effective_balance(state, i) for i in crosslink_committee]).
 
         for slot in (state.slot - 2 * EPOCH_LENGTH)...state.slot {
