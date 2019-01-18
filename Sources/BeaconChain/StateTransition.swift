@@ -308,4 +308,38 @@ extension StateTransition {
             }
         }
     }
+
+    private func rewardsAndPenalities(
+        state: inout BeaconState,
+        totalBalance: Int,
+        previousEpochJustifiedAttesterIndices: [Int],
+        previousEpochJustifiedAttestingBalance: Int
+    )
+    {
+        let epochsSinceFinality = (state.slot - state.finalizedSlot) / EPOCH_LENGTH
+
+        if epochsSinceFinality <= 4 {
+            for index in previousEpochJustifiedAttesterIndices {
+                state.validatorBalances[index] += baseReward(state: state, index: index, totalBalance: totalBalance) * previousEpochJustifiedAttestingBalance / totalBalance
+            }
+
+            var activeValidators = Set(
+                BeaconChain.getActiveValidatorIndices(validators: state.validatorRegistry, slot: state.slot)
+            )
+            activeValidators.subtracting(Set(previousEpochJustifiedAttesterIndices)).forEach({
+                (index) in
+                state.validatorBalances[index] -= baseReward(state: state, index: index, totalBalance: totalBalance)
+            })
+
+        }
+    }
+
+    private func baseReward(state: BeaconState, index: Int, totalBalance: Int) -> Int {
+        let baseRewardQoutient = BeaconChain.integerSquareRoot(n: totalBalance) / BASE_REWARD_QUOTIENT
+        return BeaconChain.getEffectiveBalance(state: state, index: index) / baseRewardQoutient / 5
+    }
+
+    private func inactivityPenalty(state: BeaconState, index: Int, epochsSinceFinality: Int, totalBalance: Int) -> Int {
+        return baseReward(state: state, index: index, totalBalance: totalBalance) * epochsSinceFinality / INACTIVITY_PENALTY_QUOTIENT / 2
+    }
 }
