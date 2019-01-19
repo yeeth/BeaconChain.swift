@@ -116,7 +116,7 @@ class BeaconChain {
                 BeaconChain.hashTreeRoot(data: AttestationDataAndCustodyBit(data: data.data, custodyBit: true))
             ],
             signatures: data.aggregateSignature,
-            domain: BeaconChain.getDomain(data: state.fork, slot: state.slot, domainType: DOMAIN_ATTESTATION)
+            domain: BeaconChain.getDomain(data: state.fork, slot: data.data.slot, domainType: DOMAIN_ATTESTATION)
         )
     }
 
@@ -146,7 +146,7 @@ class BeaconChain {
             justifiedSlot: GENESIS_SLOT,
             justificationBitfield: 0,
             finalizedSlot: GENESIS_SLOT,
-            latestCrosslinks: [Crosslink(slot: GENESIS_SLOT, shardBlockRoot: ZERO_HASH)], // for _ in range(SHARD_COUNT)],
+            latestCrosslinks: (0...SHARD_COUNT).map{ _ in return Crosslink(slot: GENESIS_SLOT, shardBlockRoot: ZERO_HASH) },
             latestBlockRoots: [Data](repeating: ZERO_HASH, count: LATEST_BLOCK_ROOTS_LENGTH),
             latestPenalizedBalances: [Int](repeating: 0, count: LATEST_PENALIZED_EXIT_LENGTH),
             latestAttestations: [PendingAttestation](),
