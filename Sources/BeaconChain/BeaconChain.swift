@@ -146,7 +146,7 @@ class BeaconChain {
             justifiedSlot: GENESIS_SLOT,
             justificationBitfield: 0,
             finalizedSlot: GENESIS_SLOT,
-            latestCrosslinks: (0...SHARD_COUNT).map({ Crosslink(slot: GENESIS_SLOT, shardBlockRoot: ZERO_HASH) }),
+            latestCrosslinks: (0...SHARD_COUNT).map({ return Crosslink(slot: GENESIS_SLOT, shardBlockRoot: ZERO_HASH) }),
             latestBlockRoots: [Data](repeating: ZERO_HASH, count: LATEST_BLOCK_ROOTS_LENGTH),
             latestPenalizedBalances: [Int](repeating: 0, count: LATEST_PENALIZED_EXIT_LENGTH),
             latestAttestations: [PendingAttestation](),
