@@ -115,8 +115,41 @@ extension StateTransition {
         assert(block.body.casperSlashings.count <= MAX_CASPER_SLASHINGS)
 
         for slashing in block.body.casperSlashings {
-            // @todo
+            let slashableVoteData1 = slashing.slashableVoteData1
+            let slashableVoteData2 = slashing.slashableVoteData2
+
+            let slashableVoteData2Indices = indices(slashableVoteData: slashableVoteData2)
+            let intersection = indices(slashableVoteData: slashableVoteData1).compactMap({
+                (x) -> Int? in
+
+                if slashableVoteData2Indices.firstIndex(of: x) != nil {
+                    return x
+                }
+
+                return nil
+            })
+
+            assert(intersection.count >= 1)
+            assert(slashableVoteData1.data != slashableVoteData2.data)
+
+            assert(
+                BeaconChain.isDoubleVote(first: slashableVoteData1.data, second: slashableVoteData2.data)
+                || BeaconChain.isSurroundVote(first: slashableVoteData1.data, second: slashableVoteData2.data)
+            )
+
+            assert(BeaconChain.verifySlashableVoteData(state: state, data: slashableVoteData1))
+            assert(BeaconChain.verifySlashableVoteData(state: state, data: slashableVoteData2))
+
+            for i in intersection {
+                if (state.validatorRegistry[i].penalizedSlot > state.slot) {
+                    BeaconChain.penalizeValidator(state: &state, index: i)
+                }
+            }
         }
+    }
+
+    private static func indices(slashableVoteData data: SlashableVoteData) -> [Int] {
+        return data.custodyBit0indices + data.custodyBit1indices
     }
 
     private static func exits(state: inout BeaconState, block: Block) {
