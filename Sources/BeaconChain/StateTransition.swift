@@ -571,8 +571,22 @@ extension StateTransition {
     }
 
     private func validatorRegistry(state: inout BeaconState) {
-        // @todo if
-        if true {
+        let shards = (0...BeaconChain.getCurrentEpochCommitteeCountPerSlot(state: state) * EPOCH_LENGTH).map({
+            (i) -> Int in
+            return (state.currentEpochStartShard + i) % SHARD_COUNT
+        })
+
+        var satisfied = true
+        for shard in shards {
+            if (state.latestCrosslinks[shard].slot > state.validatorRegistryUpdateSlot) {
+                continue
+            }
+
+            satisfied = false
+            break
+        }
+
+        if state.finalizedSlot > state.validatorRegistryUpdateSlot && satisfied {
             BeaconChain.updateValidatorRegistry(state: &state)
             state.previousEpochCalculationSlot = state.currentEpochCalculationSlot
             state.previousEpochStartShard = state.currentEpochStartShard
