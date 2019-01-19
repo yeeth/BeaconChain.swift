@@ -187,6 +187,19 @@ extension StateTransition {
             )
         }
     }
+
+    func verifyMerkleBranch(leaf: Data, branch: [Data], depth: Int, index: Int, root: Data) -> Bool {
+        var value = leaf
+        for i in 0....depth {
+            if index / (2^i) % 2 {
+                value = BeaconChain.hash(data: branch[i] + value)
+            } else {
+                value = BeaconChain.hash(data: value + branch[i])
+            }
+        }
+
+        return value == root
+    }
 }
 
 extension StateTransition {
