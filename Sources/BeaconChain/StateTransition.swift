@@ -838,7 +838,7 @@ extension StateTransition {
             return nil
         }
 
-        var winnerRoot: Data
+        var winnerRoot = Data(count: 0)
         var winnerBalance = 0
         for root in candidateRoots {
             let indices = attestingValidatorIndices(
@@ -856,14 +856,11 @@ extension StateTransition {
 
             }
 
-            // @todo do LowerThan
-            // https://github.com/prysmaticlabs/prysm/blob/c86bd54ad19eec8b9db55d026660e5e789354ff4/shared/bytes/bytes.go#L52
             if rootBalance > winnerBalance || (rootBalance == winnerBalance && root < winnerRoot) {
                 winnerBalance = rootBalance
                 winnerRoot = root
             }
         }
-
 
         return winnerRoot
     }
