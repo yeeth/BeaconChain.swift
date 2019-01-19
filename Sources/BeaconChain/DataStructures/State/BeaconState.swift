@@ -65,8 +65,7 @@ class BeaconState {
         batchedBlockRoots: [Data],
         latestEth1Data: Eth1Data,
         eth1DataVotes: [Eth1DataVote]
-    )
-    {
+    ) {
         self.slot = slot
         self.genesisTime = genesisTime
         self.fork = fork

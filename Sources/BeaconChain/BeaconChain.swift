@@ -109,7 +109,7 @@ class BeaconChain {
         return BLS.verify(
             pubkeys: [
                 BLS.aggregate(pubkeys: data.custodyBit0indices.map({ (index: Int) in return state.validatorRegistry[index].pubkey })),
-                BLS.aggregate(pubkeys: data.custodyBit1indices.map({ (index: Int) in return state.validatorRegistry[index].pubkey })),
+                BLS.aggregate(pubkeys: data.custodyBit1indices.map({ (index: Int) in return state.validatorRegistry[index].pubkey }))
             ],
             messages: [
                 BeaconChain.hashTreeRoot(data: AttestationDataAndCustodyBit(data: data.data, custodyBit: false)),
@@ -146,7 +146,7 @@ class BeaconChain {
             justifiedSlot: GENESIS_SLOT,
             justificationBitfield: 0,
             finalizedSlot: GENESIS_SLOT,
-            latestCrosslinks: (0...SHARD_COUNT).map{ _ in return Crosslink(slot: GENESIS_SLOT, shardBlockRoot: ZERO_HASH) },
+            latestCrosslinks: (0...SHARD_COUNT).map { _ in return Crosslink(slot: GENESIS_SLOT, shardBlockRoot: ZERO_HASH) },
             latestBlockRoots: [Data](repeating: ZERO_HASH, count: LATEST_BLOCK_ROOTS_LENGTH),
             latestPenalizedBalances: [Int](repeating: 0, count: LATEST_PENALIZED_EXIT_LENGTH),
             latestAttestations: [PendingAttestation](),
@@ -173,7 +173,7 @@ extension BeaconChain {
             )
         )
 
-        let pubkeys = state.validatorRegistry.enumerated().map{(_, validator: Validator) in return validator.pubkey}
+        let pubkeys = state.validatorRegistry.enumerated().map {(_, validator: Validator) in return validator.pubkey}
 
         if let index = pubkeys.firstIndex(of: deposit.depositData.depositInput.pubkey) {
             assert(state.validatorRegistry[index].withdrawalCredentials == deposit.depositData.depositInput.withdrawalCredentials)
@@ -324,7 +324,7 @@ extension BeaconChain {
     }
 
     static func getActiveValidatorIndices(validators: [Validator], slot: Int) -> [Int] {
-        return validators.enumerated().compactMap{
+        return validators.enumerated().compactMap {
             (i, validator) -> Int? in
             if BeaconChain.isActive(validator: validator, slot: slot) {
                 return i
@@ -382,14 +382,14 @@ extension BeaconChain {
             shuffling = getShuffling(
                 seed: state.previousEpochRandaoMix,
                 validators: state.validatorRegistry, slot: state.previousEpochCalculationSlot
-            );
+            )
             slotStartShard = (state.previousEpochStartShard + (committeesPerSlot * offest)) % SHARD_COUNT
         } else {
             committeesPerSlot = BeaconChain.getCurrentEpochCommitteeCountPerSlot(state: state)
             shuffling = getShuffling(
                 seed: state.currentEpochRandaoMix,
                 validators: state.validatorRegistry, slot: state.currentEpochCalculationSlot
-            );
+            )
             slotStartShard = (state.currentEpochStartShard + (committeesPerSlot * offest)) % SHARD_COUNT
         }
 

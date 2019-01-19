@@ -1,8 +1,7 @@
 import Foundation
 
-
 func ^(left: Data, right: Data) -> Data {
-    var temp = left;
+    var temp = left
 
     for i in 0..<left.count {
         temp[i] ^= right[i % right.count]
