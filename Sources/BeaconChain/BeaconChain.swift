@@ -6,7 +6,7 @@ class BeaconChain {
         var state = BeaconChain.genesisState(genesisTime: genesisTime, latestEth1Data: latestEth1Data)
 
         for deposit in initialValidatorDeposits {
-            BeaconChain.processDeposit(state: state, deposit: deposit)
+            BeaconChain.processDeposit(state: &state, deposit: deposit)
         }
 
         for (i, _) in state.validatorRegistry.enumerated() {
@@ -161,7 +161,7 @@ class BeaconChain {
 
 extension BeaconChain {
 
-    static func processDeposit(state: BeaconState, deposit: Deposit) {
+    static func processDeposit(state: inout BeaconState, deposit: Deposit) {
         assert(
             BeaconChain.validateProofOfPossession(
                 state: state,

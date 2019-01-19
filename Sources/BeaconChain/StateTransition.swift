@@ -25,7 +25,7 @@ extension StateTransition {
         proposerSlashings(state: &state, block: block)
         casperSlashings(state: &state, block: block)
         attestations(state: &state, block: block)
-        // @todo Deposits
+        deposits(state: &state, block: block)
         exits(state: &state, block: block)
     }
 
@@ -152,6 +152,24 @@ extension StateTransition {
         return data.custodyBit0indices + data.custodyBit1indices
     }
 
+    private static func deposits(state: inout BeaconState, block: Block) {
+        assert(block.body.deposits.count <= MAX_DEPOSIT_AMOUNT)
+        let serializedDepositData = Data(count: 64) // @todo when we have SSZ
+
+        for deposit in block.body.deposits {
+            assert(verifyMerkleBranch(
+                    leaf: BeaconChain.hash(data: serializedDepositData),
+                    branch: deposit.branch,
+                    depth: DEPOSIT_CONTRACT_TREE_DEPTH,
+                    index: deposit.index,
+                    root: state.latestEth1Data.depositRoot
+                )
+            )
+
+            BeaconChain.processDeposit(state: &state, deposit: deposit)
+        }
+    }
+
     private static func exits(state: inout BeaconState, block: Block) {
         assert(block.body.exits.count <= MAX_EXITS)
 
@@ -221,7 +239,7 @@ extension StateTransition {
         }
     }
 
-    func verifyMerkleBranch(leaf: Data, branch: [Data], depth: Int, index: Int, root: Data) -> Bool {
+    private static func verifyMerkleBranch(leaf: Data, branch: [Data], depth: Int, index: Int, root: Data) -> Bool {
         var value = leaf
         for i in 0...depth {
             if index / (2^i) % 2 == 1 {
