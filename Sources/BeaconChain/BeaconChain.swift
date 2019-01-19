@@ -438,7 +438,6 @@ extension BeaconChain {
         let committeesPerSlot = BeaconChain.getCommitteeCountPerSlot(activeValidatorCount: activeValidatorIndices.count)
 
         let shuffledValidatorIndices = activeValidatorIndices.shuffle(
-            values: activeValidatorIndices,
             seed: (seed ^ Data(bytes: &slot, count: MemoryLayout.size(ofValue: slot)))
         )
 
