@@ -437,8 +437,7 @@ extension StateTransition {
         totalBalance: Int,
         previousEpochBoundaryAttestingBalance: Int,
         currentEpochBoundaryAttestingBalance: Int
-    )
-    {
+    ) {
         state.previousJustifiedSlot = state.justifiedSlot
         state.justificationBitfield = (state.justificationBitfield * 2) % 2^64
 
@@ -454,8 +453,7 @@ extension StateTransition {
 
         if (state.previousJustifiedSlot == state.slot - 2 * EPOCH_LENGTH && state.justificationBitfield % 4 == 3)
             || (state.previousJustifiedSlot == state.slot - 3 * EPOCH_LENGTH && state.justificationBitfield % 8 == 7)
-            || (state.previousJustifiedSlot == state.slot - 4 * EPOCH_LENGTH && [15, 14].contains(state.justificationBitfield % 16))
-        {
+            || (state.previousJustifiedSlot == state.slot - 4 * EPOCH_LENGTH && [15, 14].contains(state.justificationBitfield % 16)) {
             state.finalizedSlot = state.previousJustifiedSlot
         }
     }
@@ -464,8 +462,7 @@ extension StateTransition {
         state: inout BeaconState,
         currentEpochAttestations: [PendingAttestation],
         previousEpochAttestations: [PendingAttestation]
-    )
-    {
+    ) {
         for slot in (state.slot - 2 * EPOCH_LENGTH)...state.slot {
             let crosslinkCommitteeAtSlot = BeaconChain.getCrosslinkCommitteesAtSlot(state: state, slot: slot)
             for (committee, shard) in crosslinkCommitteeAtSlot {
@@ -505,8 +502,7 @@ extension StateTransition {
         previousEpochAttesterIndices: [Int],
         previousEpochAttestations: [PendingAttestation],
         currentEpochAttestations: [PendingAttestation]
-    )
-    {
+    ) {
         let epochsSinceFinality = (state.slot - state.finalizedSlot) / EPOCH_LENGTH
 
         let activeValidators = Set(
@@ -744,8 +740,7 @@ extension StateTransition {
         currentEpochAttestations: [PendingAttestation],
         previousEpochAttestations: [PendingAttestation]
     )
-        -> [Int]
-    {
+        -> [Int] {
         let root = winningRoot(
             state: state,
             committee: committee,
@@ -771,8 +766,7 @@ extension StateTransition {
         currentEpochAttestations: [PendingAttestation],
         previousEpochAttestations: [PendingAttestation]
     )
-        -> Int
-    {
+        -> Int {
         return attestingValidators(
             state: state,
             committee: committee,
@@ -800,9 +794,8 @@ extension StateTransition {
         currentEpochAttestations: [PendingAttestation],
         previousEpochAttestations: [PendingAttestation]
     )
-        -> [Int]
-    {
-        var indices = Set([Int]())
+        -> [Int] {
+        let indices = Set([Int]())
         for attestation in (currentEpochAttestations + previousEpochAttestations) {
             if attestation.data.shard == shard && attestation.data.shardBlockRoot == shardBlockRoot {
                 indices.union(
@@ -811,8 +804,8 @@ extension StateTransition {
                             state: state,
                             data: attestation.data,
                             aggregationBitfield: attestation.aggregationBitfield
+                        )
                     )
-                )
                 )
             }
         }
@@ -827,9 +820,8 @@ extension StateTransition {
         currentEpochAttestations: [PendingAttestation],
         previousEpochAttestations: [PendingAttestation]
     )
-        -> Data
-    {
-        let candidateRoots = (currentEpochAttestations + previousEpochAttestations).compactMap{
+        -> Data {
+        let candidateRoots = (currentEpochAttestations + previousEpochAttestations).compactMap {
             (attestation) -> Data? in
             if attestation.data.shard == shard {
                 return attestation.data.shardBlockRoot

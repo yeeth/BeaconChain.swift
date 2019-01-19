@@ -19,8 +19,7 @@ class AttestationData: Equatable {
         latestCrosslinkRoot: Data,
         justifiedSlot: Int,
         justifiedBlockRoot: Data
-    )
-    {
+    ) {
         self.slot = slot
         self.shard = shard
         self.beaconBlockRoot = beaconBlockRoot
