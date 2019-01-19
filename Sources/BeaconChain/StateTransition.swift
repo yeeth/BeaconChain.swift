@@ -548,6 +548,7 @@ extension StateTransition {
         return baseReward(state: state, index: index, totalBalance: totalBalance) * epochsSinceFinality / INACTIVITY_PENALTY_QUOTIENT / 2
     }
 
+    // @todo maybe make these extension functions on an int?
     private func isPowerOfTwo(_ n: Int) -> Bool {
         return ceil(log2(n)) == floor(log2(n))
     }
