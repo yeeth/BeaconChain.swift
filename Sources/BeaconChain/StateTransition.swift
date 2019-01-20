@@ -5,10 +5,10 @@ class StateTransition {
     static func processSlot(state: inout BeaconState, previousBlockRoot: Data) {
         state.slot += 1
         state.validatorRegistry[BeaconChain.getBeaconProposerIndex(state: state, slot: state.slot)].randaoLayers += 1
-        state.latestRandaoMixes[state.slot % LATEST_RANDAO_MIXES_LENGTH] = state.latestRandaoMixes[(state.slot - 1) % LATEST_RANDAO_MIXES_LENGTH]
+        state.latestRandaoMixes[state.slot.mod(LATEST_RANDAO_MIXES_LENGTH)] = state.latestRandaoMixes[(state.slot - 1).mod(LATEST_RANDAO_MIXES_LENGTH)]
 
-        state.latestBlockRoots[(state.slot - 1) % LATEST_BLOCK_ROOTS_LENGTH] = previousBlockRoot
-        if state.slot % LATEST_BLOCK_ROOTS_LENGTH == 0 {
+        state.latestBlockRoots[(state.slot - 1).mod(LATEST_BLOCK_ROOTS_LENGTH)] = previousBlockRoot
+        if state.slot.mod(LATEST_BLOCK_ROOTS_LENGTH) == 0 {
             state.batchedBlockRoots.append(BeaconChain.merkleRoot(values: state.latestBlockRoots))
         }
     }
@@ -34,8 +34,8 @@ extension StateTransition {
         let proposer = state.validatorRegistry[proposerIndex]
         assert(repeatHash(data: block.randaoReveal, n: proposer.randaoLayers) == proposer.randaoCommitment)
 
-        state.latestRandaoMixes[state.slot % LATEST_RANDAO_MIXES_LENGTH] = BeaconChain.hash(
-            data: state.latestRandaoMixes[state.slot % LATEST_RANDAO_MIXES_LENGTH] ^ block.randaoReveal
+        state.latestRandaoMixes[state.slot.mod(LATEST_RANDAO_MIXES_LENGTH)] = BeaconChain.hash(
+            data: state.latestRandaoMixes[state.slot.mod(LATEST_RANDAO_MIXES_LENGTH)] ^ block.randaoReveal
         )
 
         state.validatorRegistry[proposerIndex].randaoCommitment = block.randaoReveal
@@ -205,7 +205,7 @@ extension StateTransition {
             assert(attestation.data.slot + MIN_ATTESTATION_INCLUSION_DELAY <= state.slot)
             assert(attestation.data.slot + EPOCH_LENGTH >= state.slot)
 
-            if attestation.data.slot >= state.slot - (state.slot % EPOCH_LENGTH) {
+            if attestation.data.slot >= state.slot - state.slot.mod(EPOCH_LENGTH) {
                 assert(attestation.data.justifiedSlot == state.justifiedSlot)
             } else {
                 assert(attestation.data.justifiedSlot == state.previousJustifiedSlot)
@@ -259,7 +259,7 @@ extension StateTransition {
     private static func verifyMerkleBranch(leaf: Data, branch: [Data], depth: Int, index: Int, root: Data) -> Bool {
         var value = leaf
         for i in 0...depth {
-            if index / (2^i) % 2 == 1 {
+            if (index / (2^i)).mod(2) == 1 {
                 value = BeaconChain.hash(data: branch[i] + value)
             } else {
                 value = BeaconChain.hash(data: value + branch[i])
@@ -273,7 +273,7 @@ extension StateTransition {
 extension StateTransition {
 
     static func processEpoch(state: inout BeaconState) {
-        assert(state.slot % EPOCH_LENGTH == 1)
+        assert(state.slot.mod(EPOCH_LENGTH) == 1)
         let activeValidators = BeaconChain.getActiveValidatorIndices(validators: state.validatorRegistry, slot: state.slot)
         let totalBalance = activeValidators.map({
             (i: Int) -> Int in
@@ -414,12 +414,12 @@ extension StateTransition {
         processPenaltiesAndExits(state: &state)
 
         let e = state.slot / EPOCH_LENGTH
-        state.latestPenalizedBalances[(e + 1) % LATEST_PENALIZED_EXIT_LENGTH] = state.latestPenalizedBalances[e % LATEST_PENALIZED_EXIT_LENGTH]
+        state.latestPenalizedBalances[(e + 1).mod(LATEST_PENALIZED_EXIT_LENGTH)] = state.latestPenalizedBalances[e.mod(LATEST_PENALIZED_EXIT_LENGTH)]
         state.latestAttestations.removeAll { $0.data.slot < state.slot - EPOCH_LENGTH }
     }
 
     private static func eth1Data(state: inout BeaconState) {
-        if state.slot % ETH1_DATA_VOTING_PERIOD != 0 {
+        if state.slot.mod(ETH1_DATA_VOTING_PERIOD) != 0 {
             return
         }
 
@@ -439,7 +439,7 @@ extension StateTransition {
         currentEpochBoundaryAttestingBalance: Int
     ) {
         state.previousJustifiedSlot = state.justifiedSlot
-        state.justificationBitfield = (state.justificationBitfield * 2) % 2^64
+        state.justificationBitfield = (state.justificationBitfield * 2).mod(2^64)
 
         if 3 * previousEpochBoundaryAttestingBalance >= 2 * totalBalance {
             state.justificationBitfield |= 2
@@ -451,9 +451,9 @@ extension StateTransition {
             state.justifiedSlot = state.slot - 1 * EPOCH_LENGTH
         }
 
-        if (state.previousJustifiedSlot == state.slot - 2 * EPOCH_LENGTH && state.justificationBitfield % 4 == 3)
-            || (state.previousJustifiedSlot == state.slot - 3 * EPOCH_LENGTH && state.justificationBitfield % 8 == 7)
-            || (state.previousJustifiedSlot == state.slot - 4 * EPOCH_LENGTH && [15, 14].contains(state.justificationBitfield % 16)) {
+        if (state.previousJustifiedSlot == state.slot - 2 * EPOCH_LENGTH && state.justificationBitfield.mod(4) == 3)
+            || (state.previousJustifiedSlot == state.slot - 3 * EPOCH_LENGTH && state.justificationBitfield.mod(8) == 7)
+            || (state.previousJustifiedSlot == state.slot - 4 * EPOCH_LENGTH && [15, 14].contains(state.justificationBitfield.mod(16))) {
             state.finalizedSlot = state.previousJustifiedSlot
         }
     }
@@ -607,7 +607,7 @@ extension StateTransition {
     private static func validatorRegistry(state: inout BeaconState) {
         let shards = (0...BeaconChain.getCurrentEpochCommitteeCountPerSlot(state: state) * EPOCH_LENGTH).map({
             (i) -> Int in
-            return (state.currentEpochStartShard + i) % SHARD_COUNT
+            return (state.currentEpochStartShard + i).mod(SHARD_COUNT)
         })
 
         var satisfied = true
@@ -626,7 +626,7 @@ extension StateTransition {
             state.previousEpochStartShard = state.currentEpochStartShard
             state.previousEpochRandaoMix = state.currentEpochRandaoMix
             state.currentEpochCalculationSlot = state.slot
-            state.currentEpochStartShard = (state.currentEpochStartShard + BeaconChain.getCurrentEpochCommitteeCountPerSlot(state: state) % EPOCH_LENGTH) % SHARD_COUNT
+            state.currentEpochStartShard = (state.currentEpochStartShard + BeaconChain.getCurrentEpochCommitteeCountPerSlot(state: state).mod(EPOCH_LENGTH)).mod(SHARD_COUNT)
             state.currentEpochRandaoMix = BeaconChain.getRandaoMix(
                 state: state,
                 slot: state.currentEpochCalculationSlot - SEED_LOOKAHEAD
@@ -638,7 +638,7 @@ extension StateTransition {
             let epochsSinceLastRegistryChange = (state.slot - state.validatorRegistryUpdateSlot) / EPOCH_LENGTH
             if isPowerOfTwo(epochsSinceLastRegistryChange) {
                 state.currentEpochCalculationSlot = state.slot
-                state.currentEpochRandaoMix = state.latestRandaoMixes[(state.currentEpochCalculationSlot - SEED_LOOKAHEAD) % LATEST_RANDAO_MIXES_LENGTH]
+                state.currentEpochRandaoMix = state.latestRandaoMixes[(state.currentEpochCalculationSlot - SEED_LOOKAHEAD).mod(LATEST_RANDAO_MIXES_LENGTH)]
             }
         }
     }
@@ -701,8 +701,8 @@ extension StateTransition {
                 continue
             }
 
-            let e = (state.slot / EPOCH_LENGTH) % LATEST_PENALIZED_EXIT_LENGTH
-            let totalAtStart = state.latestPenalizedBalances[(e + 1) % LATEST_PENALIZED_EXIT_LENGTH]
+            let e = (state.slot / EPOCH_LENGTH).mod(LATEST_PENALIZED_EXIT_LENGTH)
+            let totalAtStart = state.latestPenalizedBalances[(e + 1).mod(LATEST_PENALIZED_EXIT_LENGTH)]
             let totalAtEnd = state.latestPenalizedBalances[e]
             let totalPenalties = totalAtEnd - totalAtStart
             let penalty = BeaconChain.getEffectiveBalance(state: state, index: i) * min(totalPenalties * 3, totalBalance) / totalBalance
