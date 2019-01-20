@@ -25,18 +25,18 @@ class BeaconChain {
     static func getBlockRoot(state: BeaconState, slot: Int) -> Data {
         assert(state.slot <= slot + LATEST_BLOCK_ROOTS_LENGTH)
         assert(slot < state.slot)
-        return state.latestBlockRoots[slot % LATEST_BLOCK_ROOTS_LENGTH]
+        return state.latestBlockRoots[slot.mod(LATEST_BLOCK_ROOTS_LENGTH)]
     }
 
     static func getRandaoMix(state: BeaconState, slot: Int) -> Data {
         assert(state.slot <= slot + LATEST_RANDAO_MIXES_LENGTH)
         assert(slot < state.slot)
-        return state.latestBlockRoots[slot % LATEST_RANDAO_MIXES_LENGTH]
+        return state.latestBlockRoots[slot.mod(LATEST_RANDAO_MIXES_LENGTH)]
     }
 
     static func getBeaconProposerIndex(state: BeaconState, slot: Int) -> Int {
         let (committee, _) = BeaconChain.getCrosslinkCommitteesAtSlot(state: state, slot: slot)[0]
-        return committee[slot % committee.count]
+        return committee[slot.mod(committee.count)]
     }
 
     static func getAttestationParticipants(state: BeaconState, data: AttestationData, aggregationBitfield: Data) -> [Int] {
@@ -51,7 +51,7 @@ class BeaconChain {
 
         var participants = [Int]()
         for (i, validatorIndex) in (crosslinkCommittee?.enumerated())! {
-            let participationBit = (aggregationBitfield[i / 8] >> (7 - (i % 8))) % 2
+            let participationBit = Int(aggregationBitfield[i / 8] >> (7 - (i.mod(8)))).mod(2)
             if participationBit == 1 {
                 participants.append(validatorIndex)
             }
@@ -270,7 +270,7 @@ extension BeaconChain {
     static func penalizeValidator(state: BeaconState, index: Int) {
         BeaconChain.exitValidator(state: state, index: index)
 
-        state.latestPenalizedBalances[(state.slot / EPOCH_LENGTH) % LATEST_PENALIZED_EXIT_LENGTH] += BeaconChain.getEffectiveBalance(state: state, index: index)
+        state.latestPenalizedBalances[(state.slot / EPOCH_LENGTH).mod(LATEST_PENALIZED_EXIT_LENGTH)] += BeaconChain.getEffectiveBalance(state: state, index: index)
 
         let whistleblowerIndex = BeaconChain.getBeaconProposerIndex(state: state, slot: state.slot)
         let whistleblowerReward = BeaconChain.getEffectiveBalance(state: state, index: index) / WHISTLEBLOWER_REWARD_QUOTIENT
@@ -369,9 +369,9 @@ extension BeaconChain {
 
     // @todo rthis is probably broken
     static func getCrosslinkCommitteesAtSlot(state: BeaconState, slot: Int) -> [([Int], Int)] {
-        let earliestSlot = state.slot - (state.slot % EPOCH_LENGTH) - EPOCH_LENGTH
+        let earliestSlot = state.slot - (state.slot.mod(EPOCH_LENGTH)) - EPOCH_LENGTH
         assert(earliestSlot <= slot && slot < earliestSlot + (EPOCH_LENGTH * 2))
-        let offest = slot % EPOCH_LENGTH
+        let offest = slot.mod(EPOCH_LENGTH)
 
         var committeesPerSlot: Int
         var shuffling: [[Int]]
@@ -382,19 +382,19 @@ extension BeaconChain {
                 seed: state.previousEpochRandaoMix,
                 validators: state.validatorRegistry, slot: state.previousEpochCalculationSlot
             )
-            slotStartShard = (state.previousEpochStartShard + (committeesPerSlot * offest)) % SHARD_COUNT
+            slotStartShard = (state.previousEpochStartShard + (committeesPerSlot * offest)).mod(SHARD_COUNT)
         } else {
             committeesPerSlot = BeaconChain.getCurrentEpochCommitteeCountPerSlot(state: state)
             shuffling = getShuffling(
                 seed: state.currentEpochRandaoMix,
                 validators: state.validatorRegistry, slot: state.currentEpochCalculationSlot
             )
-            slotStartShard = (state.currentEpochStartShard + (committeesPerSlot * offest)) % SHARD_COUNT
+            slotStartShard = (state.currentEpochStartShard + (committeesPerSlot * offest)).mod(SHARD_COUNT)
         }
 
         return stride(from: 0, to: committeesPerSlot, by: 1).map {
             (i: Int) -> ([Int], Int) in
-            return (shuffling[committeesPerSlot * (offest + i)], (slotStartShard + i) % SHARD_COUNT)
+            return (shuffling[committeesPerSlot * (offest + i)], (slotStartShard + i).mod(SHARD_COUNT))
         }
     }
 }
@@ -438,7 +438,7 @@ extension BeaconChain {
         while index < values.count - 1 {
             source = BeaconChain.hash(data: source)
 
-            for i in stride(from: 0, through: 32 - (32 % randBytes), by: randBytes) {
+            for i in stride(from: 0, through: 32 - 32.mod(randBytes), by: randBytes) {
                 let remaining = values.count - index
                 if remaining == 1 {
                     break
@@ -449,10 +449,10 @@ extension BeaconChain {
                     return ptr.pointee
                 }
 
-                let sampleMax = randMax - randMax % remaining
+                let sampleMax = randMax - randMax.mod(remaining)
 
                 if sampleFromSource < sampleMax {
-                    let replacementPosition = (sampleFromSource % remaining) + index
+                    let replacementPosition = sampleFromSource.mod(remaining) + index
                     (output[index], output[replacementPosition]) = (output[replacementPosition], output[index])
                     index += 1
                 }
@@ -470,7 +470,7 @@ extension BeaconChain {
     }
 
     static func getShuffling(seed: Data, validators: [Validator], slot: Int) -> [[Int]] {
-        var slot = slot - (slot % EPOCH_LENGTH)
+        var slot = slot - (slot.mod(EPOCH_LENGTH))
 
         let activeValidatorIndices = getActiveValidatorIndices(validators: validators, slot: slot)
         let committeesPerSlot = BeaconChain.getCommitteeCountPerSlot(activeValidatorCount: activeValidatorIndices.count)
