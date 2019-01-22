@@ -41,11 +41,13 @@ class BeaconChain {
 
     static func getAttestationParticipants(state: BeaconState, data: AttestationData, aggregationBitfield: Data) -> [Int] {
         let committees = BeaconChain.getCrosslinkCommitteesAtSlot(state: state, slot: data.slot)
-        guard let crosslinkCommittee = committees.first(where: {
+        guard let crosslink = committees.first(where: {
             $1 == data.shard
-        })!.0 else {
+        }) else {
             assert(false) // @todo better error
         }
+
+        let crosslinkComittee = crosslink.0
 
         var participants = [Int]()
         for (i, validatorIndex) in (crosslinkCommittee?.enumerated())! {
