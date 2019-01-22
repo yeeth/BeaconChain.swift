@@ -43,7 +43,7 @@ class BeaconChain {
         let committees = BeaconChain.getCrosslinkCommitteesAtSlot(state: state, slot: data.slot)
         guard let crosslinkCommittee = committees.first(where: {
             $1 == data.shard
-        }).0 else {
+        })!.0 else {
             assert(false) // @todo better error
         }
 
