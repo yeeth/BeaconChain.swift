@@ -1,7 +1,7 @@
 import Foundation
 
 class BeaconState {
-    let slot: Int
+    var slot: Int
     let genesisTime: TimeInterval
     let fork: Fork
 
@@ -11,30 +11,30 @@ class BeaconState {
     var validatorRegistryExitCount: Int
     var validatorRegistryDeltaChainTip: Data
 
-    let latestRandaoMixes: [Data]
+    var latestRandaoMixes: [Data]
     let latestVdfOutputs: [Data]
-    let previousEpochStartShard: Int
-    let currentEpochStartShard: Int
-    let previousEpochCalculationSlot: Int
-    let currentEpochCalculationSlot: Int
-    let previousEpochRandaoMix: Data
-    let currentEpochRandaoMix: Data
+    var previousEpochStartShard: Int
+    var currentEpochStartShard: Int
+    var previousEpochCalculationSlot: Int
+    var currentEpochCalculationSlot: Int
+    var previousEpochRandaoMix: Data
+    var currentEpochRandaoMix: Data
 
 //    let custodyChallenges: [CustodyChallenge] defined in 1.0
 
-    let previousJustifiedSlot: Int
-    let justifiedSlot: Int
-    let justificationBitfield: Int
-    let finalizedSlot: Int
+    var previousJustifiedSlot: Int
+    var justifiedSlot: Int
+    var justificationBitfield: Int
+    var finalizedSlot: Int
 
-    let latestCrosslinks: [Crosslink]
-    let latestBlockRoots: [Data]
+    var latestCrosslinks: [Crosslink]
+    var latestBlockRoots: [Data]
     var latestPenalizedBalances: [Int]
-    let latestAttestations: [PendingAttestation]
-    let batchedBlockRoots: [Data]
+    var latestAttestations: [PendingAttestation]
+    var batchedBlockRoots: [Data]
 
-    let latestEth1Data: Eth1Data
-    let eth1DataVotes: [Eth1DataVote]
+    var latestEth1Data: Eth1Data
+    var eth1DataVotes: [Eth1DataVote]
 
     // @todo consider not passing those with default genesis values
     init(

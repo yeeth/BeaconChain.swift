@@ -3,15 +3,15 @@ import Foundation
 class BeaconChain {
 
     static func getInitialBeaconState(initialValidatorDeposits: [Deposit], genesisTime: TimeInterval, latestEth1Data: Eth1Data) -> BeaconState {
-        let state = BeaconChain.genesisState(genesisTime: genesisTime, latestEth1Data: latestEth1Data)
+        var state = BeaconChain.genesisState(genesisTime: genesisTime, latestEth1Data: latestEth1Data)
 
         for deposit in initialValidatorDeposits {
-            BeaconChain.processDeposit(state: state, deposit: deposit)
+            BeaconChain.processDeposit(state: &state, deposit: deposit)
         }
 
         for (i, _) in state.validatorRegistry.enumerated() {
-            if (BeaconChain.getEffectiveBalance(state: state, index: i) >= MAX_DEPOSIT_AMOUNT) {
-                BeaconChain.activateValidator(state: state, index: i, genesis: true)
+            if BeaconChain.getEffectiveBalance(state: state, index: i) >= MAX_DEPOSIT_AMOUNT {
+                BeaconChain.activateValidator(state: &state, index: i, genesis: true)
             }
         }
 
@@ -159,7 +159,7 @@ class BeaconChain {
 
 extension BeaconChain {
 
-    static func processDeposit(state: BeaconState, deposit: Deposit) {
+    static func processDeposit(state: inout BeaconState, deposit: Deposit) {
         assert(
             BeaconChain.validateProofOfPossession(
                 state: state,
@@ -217,10 +217,10 @@ extension BeaconChain {
         )
     }
 
-    static func processEjections(state: BeaconState) {
+    static func processEjections(state: inout BeaconState) {
         for i in BeaconChain.getActiveValidatorIndices(validators: state.validatorRegistry, slot: state.slot) {
             if state.validatorBalances[i] < EJECTION_BALANCE {
-                exitValidator(state: state, index: i)
+                exitValidator(state: &state, index: i)
             }
         }
     }
@@ -228,7 +228,7 @@ extension BeaconChain {
 
 extension BeaconChain {
 
-    static func activateValidator(state: BeaconState, index: Int, genesis: Bool) {
+    static func activateValidator(state: inout BeaconState, index: Int, genesis: Bool) {
         state.validatorRegistry[index].activationSlot = genesis ? GENESIS_SLOT : state.slot + ENTRY_EXIT_DELAY
 
         let validator = state.validatorRegistry[index] // @todo change when validator is a class so we read earler
@@ -242,11 +242,11 @@ extension BeaconChain {
         )
     }
 
-    static func initiateValidatorExit(state: BeaconState, index: Int) {
+    static func initiateValidatorExit(state: inout BeaconState, index: Int) {
         state.validatorRegistry[index].statusFlags |= INITIATED_EXIT
     }
 
-    static func exitValidator(state: BeaconState, index: Int) {
+    static func exitValidator(state: inout BeaconState, index: Int) {
         if state.validatorRegistry[index].exitSlot <= state.slot + ENTRY_EXIT_DELAY {
             return
         }
@@ -265,8 +265,8 @@ extension BeaconChain {
         )
     }
 
-    static func penalizeValidator(state: BeaconState, index: Int) {
-        BeaconChain.exitValidator(state: state, index: index)
+    static func penalizeValidator(state: inout BeaconState, index: Int) {
+        BeaconChain.exitValidator(state: &state, index: index)
 
         state.latestPenalizedBalances[(state.slot / EPOCH_LENGTH).mod(LATEST_PENALIZED_EXIT_LENGTH)] += BeaconChain.getEffectiveBalance(state: state, index: index)
 
@@ -277,14 +277,14 @@ extension BeaconChain {
         state.validatorRegistry[index].penalizedSlot = state.slot
     }
 
-    static func prepareValidatorForWithdrawal(state: BeaconState, index: Int) {
+    static func prepareValidatorForWithdrawal(state: inout BeaconState, index: Int) {
         state.validatorRegistry[index].statusFlags |= WITHDRAWABLE
     }
 }
 
 extension BeaconChain {
 
-    static func updateValidatorRegistry(state: BeaconState) {
+    static func updateValidatorRegistry(state: inout BeaconState) {
         let activeValidatorIndices = BeaconChain.getActiveValidatorIndices(validators: state.validatorRegistry, slot: state.slot)
 
         let totalBalance = activeValidatorIndices.map({
@@ -302,7 +302,7 @@ extension BeaconChain {
                     break
                 }
 
-                BeaconChain.activateValidator(state: state, index: i, genesis: false)
+                BeaconChain.activateValidator(state: &state, index: i, genesis: false)
             }
         }
 
@@ -314,7 +314,7 @@ extension BeaconChain {
                     break
                 }
 
-                BeaconChain.exitValidator(state: state, index: i)
+                BeaconChain.exitValidator(state: &state, index: i)
             }
         }
 
@@ -367,14 +367,15 @@ extension BeaconChain {
 
     // @todo rthis is probably broken
     static func getCrosslinkCommitteesAtSlot(state: BeaconState, slot: Int) -> [([Int], Int)] {
-        let earliestSlot = state.slot - (state.slot.mod(EPOCH_LENGTH)) - EPOCH_LENGTH
-        assert(earliestSlot <= slot && slot < earliestSlot + (EPOCH_LENGTH * 2))
+        let stateEpochSlot = state.slot - (state.slot.mod(EPOCH_LENGTH))
+        assert(stateEpochSlot <= slot + EPOCH_LENGTH)
+        assert(slot < stateEpochSlot + EPOCH_LENGTH)
         let offest = slot.mod(EPOCH_LENGTH)
 
         var committeesPerSlot: Int
         var shuffling: [[Int]]
         var slotStartShard: Int
-        if slot < earliestSlot + EPOCH_LENGTH {
+        if slot < stateEpochSlot {
             committeesPerSlot = BeaconChain.getPreviousEpochCommitteeCountPerSlot(state: state)
             shuffling = getShuffling(
                 seed: state.previousEpochRandaoMix,

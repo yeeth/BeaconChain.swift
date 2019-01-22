@@ -7,6 +7,6 @@ struct Block {
     let randaoReveal: Data
     let depositRoot: Data
     let eth1Data: Eth1Data
-    let signature: Data
+    var signature: Data
     let body: BlockBody
 }
