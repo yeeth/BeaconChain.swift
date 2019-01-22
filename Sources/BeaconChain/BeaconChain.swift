@@ -47,7 +47,7 @@ class BeaconChain {
             assert(false) // @todo better error
         }
 
-        let crosslinkComittee = crosslink.0
+        let crosslinkCommittee = crosslink.0
 
         var participants = [Int]()
         for (i, validatorIndex) in (crosslinkCommittee?.enumerated())! {
