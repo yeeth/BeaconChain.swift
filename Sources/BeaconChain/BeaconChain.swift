@@ -51,8 +51,8 @@ class BeaconChain {
 
         var participants = [Int]()
         for (i, validatorIndex) in (crosslinkCommittee?.enumerated())! {
-            let participationBit = Int(aggregationBitfield[i / 8] >> (7 - (i.mod(8)))).mod(2)
-            if participationBit == 1 {
+            let aggregationBit = Int(aggregationBitfield[i / 8] >> (7 - (i.mod(8)))).mod(2)
+            if aggregationBit == 1 {
                 participants.append(validatorIndex)
             }
         }
