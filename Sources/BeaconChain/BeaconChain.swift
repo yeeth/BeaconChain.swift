@@ -41,14 +41,14 @@ class BeaconChain {
 
     static func getAttestationParticipants(state: BeaconState, data: AttestationData, aggregationBitfield: Data) -> [Int] {
         let committees = BeaconChain.getCrosslinkCommitteesAtSlot(state: state, slot: data.slot)
-        guard let crosslink = committees.first(where: {
+        guard let crosslinkComittee = committees.first(where: {
             $1 == data.shard
         }) else {
             assert(false) // @todo better error
         }
 
         var participants = [Int]()
-        for (i, validatorIndex) in crosslink.0.enumerated() {
+        for (i, validatorIndex) in crosslinkComittee.0.enumerated() {
             let aggregationBit = Int(aggregationBitfield[i / 8] >> (7 - (i.mod(8)))).mod(2)
             if aggregationBit == 1 {
                 participants.append(validatorIndex)
