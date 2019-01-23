@@ -275,10 +275,7 @@ extension StateTransition {
     static func processEpoch(state: inout BeaconState) {
         assert(state.slot.mod(EPOCH_LENGTH) == 1)
         let activeValidators = BeaconChain.getActiveValidatorIndices(validators: state.validatorRegistry, slot: state.slot)
-        let totalBalance = activeValidators.map({
-            (i: Int) -> Int in
-            return BeaconChain.getEffectiveBalance(state: state, index: i)
-        }).reduce(0, +)
+        let totalBalance = self.totalBalance(state: state, validators: activeValidators)
 
         let currentEpochAttestations = state.latestAttestations.filter({
             state.slot - EPOCH_LENGTH <= $0.data.slot && $0.data.slot < state.slot
@@ -474,7 +471,7 @@ extension StateTransition {
                     previousEpochAttestations: previousEpochAttestations
                 )
 
-                if 3 * totalAttestingBalance >= 2 * totalBalance(state: state, committe: committee) {
+                if 3 * totalAttestingBalance >= 2 * totalBalance(state: state, validators: committee) {
                     state.latestCrosslinks[shard] = Crosslink(
                         slot: state.slot,
                         shardBlockRoot: self.winningRoot(
@@ -590,7 +587,7 @@ extension StateTransition {
                     previousEpochAttestations: previousEpochAttestations
                 )
 
-                let totalBalance = self.totalBalance(state: state, committe: committee)
+                let totalBalance = self.totalBalance(state: state, validators: committee)
                 let totalAttestingBalance = self.totalAttestingBalance(state: state, committee: committee, shard: shard, currentEpochAttestations: previousEpochAttestations, previousEpochAttestations: previousEpochAttestations)
 
                 for i in committee {
@@ -691,10 +688,7 @@ extension StateTransition {
 
     private static func processPenaltiesAndExits(state: inout BeaconState) {
         let activeValidators = BeaconChain.getActiveValidatorIndices(validators: state.validatorRegistry, slot: state.slot)
-        let totalBalance = activeValidators.map({
-            (i: Int) -> Int in
-            return BeaconChain.getEffectiveBalance(state: state, index: i)
-        }).reduce(0, +)
+        let totalBalance = self.totalBalance(state: state, validators: activeValidators)
 
         for (i, validator) in state.validatorRegistry.enumerated() {
             if (state.slot / EPOCH_LENGTH) != (validator.penalizedSlot / EPOCH_LENGTH) + LATEST_PENALIZED_EXIT_LENGTH / 2 {
@@ -767,21 +761,21 @@ extension StateTransition {
         previousEpochAttestations: [PendingAttestation]
     )
         -> Int {
-        return attestingValidators(
+        return totalBalance(
             state: state,
-            committee: committee,
-            shard: shard,
-            currentEpochAttestations: currentEpochAttestations,
-            previousEpochAttestations: previousEpochAttestations
-        ).map({
-            (i) -> Int in
-            return BeaconChain.getEffectiveBalance(state: state, index: i)
-        }).reduce(0, +)
+            validators: attestingValidators(
+                state: state,
+                committee: committee,
+                shard: shard,
+                currentEpochAttestations: currentEpochAttestations,
+                previousEpochAttestations: previousEpochAttestations
+            )
+        )
     }
 
-    private static func totalBalance(state: BeaconState, committe: [Int]) -> Int {
-        return committe.map({
-            (i) -> Int in
+    private static func totalBalance(state: BeaconState, validators: [Int]) -> Int {
+        return validators.map({
+            (i: Int) -> Int in
             return BeaconChain.getEffectiveBalance(state: state, index: i)
         }).reduce(0, +)
     }
