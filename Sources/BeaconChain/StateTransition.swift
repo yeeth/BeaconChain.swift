@@ -95,7 +95,11 @@ extension StateTransition {
                     pubkey: proposer.pubkey,
                     message: BeaconChain.hashTreeRoot(data: slashing.proposalData1),
                     signature: slashing.proposalSignature1,
-                    domain: BeaconChain.getDomain(data: state.fork, slot: slashing.proposalData1.slot, domainType: Domain.PROPOSAL)
+                    domain: BeaconChain.getDomain(
+                        data: state.fork,
+                        slot: slashing.proposalData1.slot,
+                        domainType: Domain.PROPOSAL
+                    )
                 )
             )
             assert(
@@ -103,7 +107,11 @@ extension StateTransition {
                     pubkey: proposer.pubkey,
                     message: BeaconChain.hashTreeRoot(data: slashing.proposalData2),
                     signature: slashing.proposalSignature2,
-                    domain: BeaconChain.getDomain(data: state.fork, slot: slashing.proposalData2.slot, domainType: Domain.PROPOSAL)
+                    domain: BeaconChain.getDomain(
+                        data: state.fork,
+                        slot: slashing.proposalData2.slot,
+                        domainType: Domain.PROPOSAL
+                    )
                 )
             )
 
@@ -239,7 +247,11 @@ extension StateTransition {
                         data: AttestationDataAndCustodyBit(data: attestation.data, custodyBit: false)
                     ),
                     signature: attestation.aggregateSignature,
-                    domain: BeaconChain.getDomain(data: state.fork, slot: attestation.data.slot, domainType: Domain.ATTESTATION)
+                    domain: BeaconChain.getDomain(
+                        data: state.fork,
+                        slot: attestation.data.slot,
+                        domainType: Domain.ATTESTATION
+                    )
                 )
             )
 
@@ -385,7 +397,11 @@ extension StateTransition {
             currentEpochBoundaryAttestingBalance: currentEpochBoundaryAttestingBalance
         )
 
-        crosslink(state: &state, currentEpochAttestations: currentEpochAttestations, previousEpochAttestations: previousEpochAttestations)
+        crosslink(
+            state: &state,
+            currentEpochAttestations: currentEpochAttestations,
+            previousEpochAttestations: previousEpochAttestations
+        )
 
         rewardsAndPenalties(
             state: &state,
@@ -474,7 +490,7 @@ extension StateTransition {
                 if 3 * totalAttestingBalance >= 2 * totalBalance(state: state, validators: committee) {
                     state.latestCrosslinks[shard] = Crosslink(
                         slot: state.slot,
-                        shardBlockRoot: self.winningRoot(
+                        shardBlockRoot: winningRoot(
                             state: state,
                             committee: committee,
                             shard: shard,
