@@ -718,7 +718,7 @@ extension StateTransition {
             let penalty = BeaconChain.getEffectiveBalance(state: state, index: i) * min(totalPenalties * 3, totalBalance) / totalBalance
             state.validatorBalances[i] -= penalty
 
-            var eligibleIndices = (0...state.validatorRegistry.count).filter({
+            var eligibleIndices = (0..<state.validatorRegistry.count).filter({
                 let validator = state.validatorRegistry[$0]
                 if validator.penalizedSlot <= state.slot {
                     let PENALIZED_WITHDRAWAL_TIME = LATEST_PENALIZED_EXIT_LENGTH * EPOCH_LENGTH / 2
