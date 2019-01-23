@@ -10,6 +10,7 @@ let package = Package(
         .library(
             name: "BeaconChain",
             targets: ["BeaconChain"]),
+        .executable(name: "Simulator", targets: ["Simulator"])
     ],
     dependencies: [
         // Dependencies declare other packages that this package depends on.
@@ -23,6 +24,9 @@ let package = Package(
             dependencies: []),
         .testTarget(
             name: "BeaconChainTests",
+            dependencies: ["BeaconChain"]),
+        .target(
+            name: "Simulator",
             dependencies: ["BeaconChain"]),
     ]
 )

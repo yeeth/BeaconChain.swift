@@ -1,6 +1,6 @@
 import Foundation
 
-class AttestationData: Equatable {
+public class AttestationData: Equatable {
     let slot: Int
     let shard: Int
     let beaconBlockRoot: Data
@@ -30,7 +30,7 @@ class AttestationData: Equatable {
         self.justifiedBlockRoot = justifiedBlockRoot
     }
 
-    static func == (lhs: AttestationData, rhs: AttestationData) -> Bool {
+    public static func == (lhs: AttestationData, rhs: AttestationData) -> Bool {
         return lhs.slot == rhs.slot
             && lhs.shard == rhs.shard
             && lhs.beaconBlockRoot == rhs.beaconBlockRoot

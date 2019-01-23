@@ -1,6 +1,6 @@
 import Foundation
 
-struct Block {
+public struct Block {
     let slot: Int
     let parentRoot: Data
     let stateRoot: Data

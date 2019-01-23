@@ -1,6 +1,6 @@
 import Foundation
 
-struct BlockBody {
+public struct BlockBody {
     // @todo
     let proposerSlashings: [ProposerSlashing]
     let casperSlashings: [CasperSlashing]

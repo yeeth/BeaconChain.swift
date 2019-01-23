@@ -1,6 +1,6 @@
 import Foundation
 
-struct Validator {
+public struct Validator {
     let pubkey: Data
     let withdrawalCredentials: Data
     var randaoCommitment: Data

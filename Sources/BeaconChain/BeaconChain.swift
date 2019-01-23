@@ -1,8 +1,8 @@
 import Foundation
 
-class BeaconChain {
+public class BeaconChain {
 
-    static func getInitialBeaconState(initialValidatorDeposits: [Deposit], genesisTime: TimeInterval, latestEth1Data: Eth1Data) -> BeaconState {
+    public static func getInitialBeaconState(initialValidatorDeposits: [Deposit], genesisTime: TimeInterval, latestEth1Data: Eth1Data) -> BeaconState {
         var state = BeaconChain.genesisState(genesisTime: genesisTime, latestEth1Data: latestEth1Data)
 
         for deposit in initialValidatorDeposits {

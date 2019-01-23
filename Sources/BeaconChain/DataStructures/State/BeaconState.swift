@@ -1,6 +1,6 @@
 import Foundation
 
-class BeaconState {
+public class BeaconState {
     var slot: Int
     let genesisTime: TimeInterval
     let fork: Fork
