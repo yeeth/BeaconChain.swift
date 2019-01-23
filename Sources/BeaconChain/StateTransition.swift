@@ -577,7 +577,7 @@ extension StateTransition {
             state.validatorBalances[proposer] += baseReward(state: state, index: index, totalBalance: totalBalance)
         }
 
-        for i in (state.slot - 2 * EPOCH_LENGTH)...(state.slot - EPOCH_LENGTH) {
+        for _ in (state.slot - 2 * EPOCH_LENGTH)...(state.slot - EPOCH_LENGTH) {
             let crosslinkCommitteesAtSlot = BeaconChain.getCrosslinkCommitteesAtSlot(state: state, slot: state.slot)
 
             for (_, (committee, shard)) in crosslinkCommitteesAtSlot.enumerated() {
@@ -795,10 +795,10 @@ extension StateTransition {
         previousEpochAttestations: [PendingAttestation]
     )
         -> [Int] {
-        let indices = Set([Int]())
+        var indices = Set([Int]())
         for attestation in (currentEpochAttestations + previousEpochAttestations) {
             if attestation.data.shard == shard && attestation.data.shardBlockRoot == shardBlockRoot {
-                indices.union(
+                indices = indices.union(
                     Set(
                         BeaconChain.getAttestationParticipants(
                             state: state,
