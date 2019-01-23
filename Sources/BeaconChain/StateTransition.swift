@@ -297,10 +297,10 @@ extension StateTransition {
             )
         }
 
-        let currentEpochBoundaryAttestingBalance = currentEpochBoundaryAttesterIndices.map({
-            (i: Int) -> Int in
-            return BeaconChain.getEffectiveBalance(state: state, index: i)
-        }).reduce(0, +)
+        let currentEpochBoundaryAttestingBalance = self.totalBalance(
+            state: state,
+            validators: Array(currentEpochBoundaryAttesterIndices)
+        )
 
         let previousEpochAttestations = state.latestAttestations.filter({
             state.slot - (2 * EPOCH_LENGTH) <= $0.data.slot && $0.data.slot < state.slot - EPOCH_LENGTH
@@ -332,10 +332,10 @@ extension StateTransition {
             )
         }
 
-        let previousEpochJustifiedAttestingBalance = previousEpochJustifiedAttesterIndices.map({
-            (i: Int) -> Int in
-            return BeaconChain.getEffectiveBalance(state: state, index: i)
-        }).reduce(0, +)
+        let previousEpochJustifiedAttestingBalance = self.totalBalance(
+            state: state,
+            validators: Array(previousEpochJustifiedAttesterIndices)
+        )
 
         let previousEpochBoundaryAttestations = previousEpochJustifiedAttestations.filter({
             $0.data.epochBoundryRoot == BeaconChain.getBlockRoot(state: state, slot: state.slot - 2 * EPOCH_LENGTH)
@@ -352,10 +352,10 @@ extension StateTransition {
             )
         }
 
-        let previousEpochBoundaryAttestingBalance = previousEpochJustifiedAttesterIndices.map({
-            (i: Int) -> Int in
-            return BeaconChain.getEffectiveBalance(state: state, index: i)
-        }).reduce(0, +)
+        let previousEpochBoundaryAttestingBalance = self.totalBalance(
+            state: state,
+            validators: Array(previousEpochJustifiedAttesterIndices)
+        )
 
         let previousEpochHeadAttestations = previousEpochAttestations.filter({
             $0.data.beaconBlockRoot == BeaconChain.getBlockRoot(state: state, slot: state.slot)
@@ -372,10 +372,10 @@ extension StateTransition {
             )
         }
 
-        let previousEpochHeadAttestingBalance = previousEpochHeadAttesterIndices.map({
-            (i: Int) -> Int in
-            return BeaconChain.getEffectiveBalance(state: state, index: i)
-        }).reduce(0, +)
+        let previousEpochHeadAttestingBalance = self.totalBalance(
+            state: state,
+            validators: Array(previousEpochHeadAttesterIndices)
+        )
 
         eth1Data(state: &state)
         justification(
@@ -836,11 +836,7 @@ extension StateTransition {
                 previousEpochAttestations: previousEpochAttestations
             )
 
-            var rootBalance = 0
-            for i in indices {
-                rootBalance += BeaconChain.getEffectiveBalance(state: state, index: i)
-
-            }
+            let rootBalance = self.totalBalance(state: state, validators: indices)
 
             if rootBalance > winnerBalance || (rootBalance == winnerBalance && root < winnerRoot) {
                 winnerBalance = rootBalance
