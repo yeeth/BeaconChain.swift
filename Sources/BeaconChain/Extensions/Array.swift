@@ -38,5 +38,4 @@ extension Array {
 
         return output
     }
-    }
 }
