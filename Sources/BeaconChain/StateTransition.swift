@@ -66,7 +66,7 @@ extension StateTransition {
                 pubkey: state.validatorRegistry[BeaconChain.getBeaconProposerIndex(state: state, slot: state.slot)].pubkey,
                 message: proposalRoot,
                 signature: block.signature,
-                domain: BeaconChain.getDomain(data: state.fork, slot: state.slot, domainType: DOMAIN_PROPOSAL)
+                domain: BeaconChain.getDomain(data: state.fork, slot: state.slot, domainType: Domain.PROPOSAL)
             )
         )
     }
@@ -95,7 +95,7 @@ extension StateTransition {
                     pubkey: proposer.pubkey,
                     message: BeaconChain.hashTreeRoot(data: slashing.proposalData1),
                     signature: slashing.proposalSignature1,
-                    domain: BeaconChain.getDomain(data: state.fork, slot: slashing.proposalData1.slot, domainType: DOMAIN_PROPOSAL)
+                    domain: BeaconChain.getDomain(data: state.fork, slot: slashing.proposalData1.slot, domainType: Domain.PROPOSAL)
                 )
             )
             assert(
@@ -103,7 +103,7 @@ extension StateTransition {
                     pubkey: proposer.pubkey,
                     message: BeaconChain.hashTreeRoot(data: slashing.proposalData2),
                     signature: slashing.proposalSignature2,
-                    domain: BeaconChain.getDomain(data: state.fork, slot: slashing.proposalData2.slot, domainType: DOMAIN_PROPOSAL)
+                    domain: BeaconChain.getDomain(data: state.fork, slot: slashing.proposalData2.slot, domainType: Domain.PROPOSAL)
                 )
             )
 
@@ -190,7 +190,7 @@ extension StateTransition {
                     pubkey: validator.pubkey,
                     message: exitMessage,
                     signature: exit.signature,
-                    domain: BeaconChain.getDomain(data: state.fork, slot: state.slot, domainType: DOMAIN_EXIT)
+                    domain: BeaconChain.getDomain(data: state.fork, slot: state.slot, domainType: Domain.EXIT)
                 )
             )
 
@@ -239,7 +239,7 @@ extension StateTransition {
                         data: AttestationDataAndCustodyBit(data: attestation.data, custodyBit: false)
                     ),
                     signature: attestation.aggregateSignature,
-                    domain: BeaconChain.getDomain(data: state.fork, slot: attestation.data.slot, domainType: DOMAIN_ATTESTATION)
+                    domain: BeaconChain.getDomain(data: state.fork, slot: attestation.data.slot, domainType: Domain.ATTESTATION)
                 )
             )
 
