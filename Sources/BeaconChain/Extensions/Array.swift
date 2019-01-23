@@ -15,7 +15,7 @@ extension Array {
         while index < self.count - 1 {
             source = BeaconChain.hash(data: source)
 
-            for i in stride(from: 0, through: 32 - (32 % randBytes), by: randBytes) {
+            for i in stride(from: 0, through: 32 - 32.mod(randBytes), by: randBytes) {
                 let remaining = self.count - index
                 if remaining == 1 {
                     break
@@ -26,10 +26,10 @@ extension Array {
                     return ptr.pointee
                 }
 
-                let sampleMax = randMax - randMax % remaining
+                let sampleMax = randMax - randMax.mod(remaining)
 
                 if sampleFromSource < sampleMax {
-                    let replacementPosition = (sampleFromSource % remaining) + index
+                    let replacementPosition = sampleFromSource.mod(remaining) + index
                     (output[index], output[replacementPosition]) = (output[replacementPosition], output[index])
                     index += 1
                 }
@@ -37,5 +37,6 @@ extension Array {
         }
 
         return output
+    }
     }
 }
