@@ -207,4 +207,18 @@ final class StateTransitionTests: XCTestCase {
             }
         }
     }
+
+    func testBaseRewardQuotient() {
+        var tests = [(UInt64, UInt64)]()
+        tests.append((UInt64(0), UInt64(0)))
+        tests.append((UInt64(1e6 * 1e9), UInt64(988211)))
+        tests.append((UInt64(2e6 * 1e9), UInt64(1397542)))
+        tests.append((UInt64(5e6 * 1e9), UInt64(2209708)))
+        tests.append((UInt64(10e6 * 1e9), UInt64(3125000)))
+        tests.append((UInt64(20e6 * 1e9), UInt64(4419417)))
+
+        for test in tests {
+            XCTAssertEqual(StateTransition.baseRewardQuotient(totalBalance: test.0), test.1)
+        }
+    }
 }
