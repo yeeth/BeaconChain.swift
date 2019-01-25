@@ -633,11 +633,12 @@ extension StateTransition {
             break
         }
 
+        state.previousEpochCalculationSlot = state.currentEpochCalculationSlot
+        state.previousEpochStartShard = state.currentEpochStartShard
+        state.previousEpochRandaoMix = state.currentEpochRandaoMix
+
         if state.finalizedSlot > state.validatorRegistryUpdateSlot && satisfied {
             BeaconChain.updateValidatorRegistry(state: &state)
-            state.previousEpochCalculationSlot = state.currentEpochCalculationSlot
-            state.previousEpochStartShard = state.currentEpochStartShard
-            state.previousEpochRandaoMix = state.currentEpochRandaoMix
             state.currentEpochCalculationSlot = state.slot
             state.currentEpochStartShard = (state.currentEpochStartShard + BeaconChain.getCurrentEpochCommitteeCountPerSlot(state: state).mod(EPOCH_LENGTH)).mod(SHARD_COUNT)
             state.currentEpochRandaoMix = BeaconChain.getRandaoMix(
@@ -645,9 +646,6 @@ extension StateTransition {
                 slot: state.currentEpochCalculationSlot - SEED_LOOKAHEAD
             )
         } else {
-            state.previousEpochCalculationSlot = state.currentEpochCalculationSlot
-            state.previousEpochStartShard = state.currentEpochStartShard
-
             let epochsSinceLastRegistryChange = (state.slot - state.validatorRegistryUpdateSlot) / EPOCH_LENGTH
             if isPowerOfTwo(epochsSinceLastRegistryChange) {
                 state.currentEpochCalculationSlot = state.slot
