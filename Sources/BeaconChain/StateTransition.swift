@@ -925,5 +925,4 @@ extension StateTransition {
 
         return state
     }
-
 }
