@@ -7,4 +7,4 @@ xcode_scheme: BeaconChain.Package
 script: swift test
 
 notifications:
-  email: never
+  email: false
