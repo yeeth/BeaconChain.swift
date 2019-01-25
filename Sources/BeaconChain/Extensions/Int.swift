@@ -11,6 +11,3 @@ extension Int {
     }
 
 }
-//
-//precedencegroup PowerPrecedence { higherThan: MultiplicationPrecedence }
-//infix operator ** : PowerPrecedence
