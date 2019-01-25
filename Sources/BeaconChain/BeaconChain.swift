@@ -248,7 +248,6 @@ extension BeaconChain {
 
     static func exitValidator(state: inout BeaconState, index: Int) {
         if state.validatorRegistry[index].exitSlot <= state.slot + ENTRY_EXIT_DELAY {
-            print("fuck")
             return
         }
 
