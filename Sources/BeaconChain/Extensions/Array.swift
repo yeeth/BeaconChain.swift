@@ -4,7 +4,7 @@ extension Array {
 
     func shuffle(seed: Data) -> Array {
         let randBytes = 3
-        let randMax = (2**(randBytes * 8)) - 1
+        let randMax = (Int(2)**Int(randBytes * 8)) - 1
 
         assert(self.count < randMax)
 

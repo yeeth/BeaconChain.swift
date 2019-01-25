@@ -1,23 +1,23 @@
 import Foundation
 
 class AttestationData: Equatable {
-    let slot: Int
-    let shard: Int
+    let slot: UInt64
+    let shard: UInt64
     let beaconBlockRoot: Data
     let epochBoundryRoot: Data
     let shardBlockRoot: Data
     let latestCrosslinkRoot: Data
-    let justifiedSlot: Int
+    let justifiedSlot: UInt64
     let justifiedBlockRoot: Data
 
     init(
-        slot: Int,
-        shard: Int,
+        slot: UInt64,
+        shard: UInt64,
         beaconBlockRoot: Data,
         epochBoundryRoot: Data,
         shardBlockRoot: Data,
         latestCrosslinkRoot: Data,
-        justifiedSlot: Int,
+        justifiedSlot: UInt64,
         justifiedBlockRoot: Data
     ) {
         self.slot = slot

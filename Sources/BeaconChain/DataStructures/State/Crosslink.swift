@@ -1,6 +1,6 @@
 import Foundation
 
 struct Crosslink {
-    let slot: Int
+    let slot: UInt64
     let shardBlockRoot: Data
 }

@@ -1,7 +1,7 @@
 import Foundation
 
 struct ProposalSignedData {
-    let slot: Int
-    let shard: Int
+    let slot: UInt64
+    let shard: UInt64
     let blockRoot: Data
 }
