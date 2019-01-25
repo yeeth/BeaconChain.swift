@@ -237,7 +237,7 @@ extension BeaconChain {
                 validatorIndex: index,
                 pubkey: validator.pubkey,
                 slot: validator.activationSlot,
-                flag: ACTIVATION
+                flag: ValidatorRegistryDeltaFlags.ACTIVATION
             )
         )
     }
@@ -260,7 +260,7 @@ extension BeaconChain {
                 validatorIndex: index,
                 pubkey: validator.pubkey,
                 slot: validator.exitSlot,
-                flag: EXIT
+                flag: ValidatorRegistryDeltaFlags.EXIT
             )
         )
     }
