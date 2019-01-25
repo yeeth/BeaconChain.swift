@@ -522,62 +522,65 @@ extension StateTransition {
             BeaconChain.getActiveValidatorIndices(validators: state.validatorRegistry, slot: state.slot)
         )
 
+
+        let baseRewardQuotient = self.baseRewardQuotient(totalBalance: totalBalance)
+
         if epochsSinceFinality <= 4 {
             for index in previousEpochJustifiedAttesterIndices {
-                state.validatorBalances[index] += baseReward(state: state, index: index, totalBalance: totalBalance) * previousEpochJustifiedAttestingBalance / totalBalance
+                state.validatorBalances[index] += baseReward(state: state, index: index, baseRewardQuotient: baseRewardQuotient) * previousEpochJustifiedAttestingBalance / totalBalance
             }
 
             activeValidators.subtracting(Set(previousEpochJustifiedAttesterIndices)).forEach({
                 (index) in
-                state.validatorBalances[index] -= baseReward(state: state, index: index, totalBalance: totalBalance)
+                state.validatorBalances[index] -= baseReward(state: state, index: index, baseRewardQuotient: baseRewardQuotient)
             })
 
             for index in previousEpochBoundaryAttesterIndices {
-                state.validatorBalances[index] += baseReward(state: state, index: index, totalBalance: totalBalance) * previousEpochBoundaryAttestingBalance / totalBalance
+                state.validatorBalances[index] += baseReward(state: state, index: index, baseRewardQuotient: baseRewardQuotient) * previousEpochBoundaryAttestingBalance / totalBalance
             }
 
             activeValidators.subtracting(Set(previousEpochBoundaryAttesterIndices)).forEach({
                 (index) in
-                state.validatorBalances[index] -= baseReward(state: state, index: index, totalBalance: totalBalance)
+                state.validatorBalances[index] -= baseReward(state: state, index: index, baseRewardQuotient: baseRewardQuotient)
             })
 
             for index in previousEpochHeadAttesterIndices {
-                state.validatorBalances[index] += baseReward(state: state, index: index, totalBalance: totalBalance) * previousEpochHeadAttestingBalance / totalBalance
+                state.validatorBalances[index] += baseReward(state: state, index: index, baseRewardQuotient: baseRewardQuotient) * previousEpochHeadAttestingBalance / totalBalance
             }
 
             activeValidators.subtracting(Set(previousEpochHeadAttesterIndices)).forEach({
                 (index) in
-                state.validatorBalances[index] -= baseReward(state: state, index: index, totalBalance: totalBalance)
+                state.validatorBalances[index] -= baseReward(state: state, index: index, baseRewardQuotient: baseRewardQuotient)
             })
 
             for index in previousEpochAttesterIndices {
-                state.validatorBalances[index] += baseReward(state: state, index: index, totalBalance: totalBalance) + MIN_ATTESTATION_INCLUSION_DELAY / inclusionDistance(state: state, index: index)
+                state.validatorBalances[index] += baseReward(state: state, index: index, baseRewardQuotient: baseRewardQuotient) + MIN_ATTESTATION_INCLUSION_DELAY / inclusionDistance(state: state, index: index)
             }
         } else {
             activeValidators.subtracting(Set(previousEpochJustifiedAttesterIndices)).forEach({
                 (index) in
-                state.validatorBalances[index] -= inactivityPenalty(state: state, index: index, epochsSinceFinality: epochsSinceFinality, totalBalance: totalBalance)
+                state.validatorBalances[index] -= inactivityPenalty(state: state, index: index, epochsSinceFinality: epochsSinceFinality, baseRewardQuotient: baseRewardQuotient)
             })
 
             activeValidators.subtracting(Set(previousEpochBoundaryAttesterIndices)).forEach({
                 (index) in
-                state.validatorBalances[index] -= inactivityPenalty(state: state, index: index, epochsSinceFinality: epochsSinceFinality, totalBalance: totalBalance)
+                state.validatorBalances[index] -= inactivityPenalty(state: state, index: index, epochsSinceFinality: epochsSinceFinality, baseRewardQuotient: baseRewardQuotient)
             })
 
             activeValidators.subtracting(Set(previousEpochHeadAttesterIndices)).forEach({
                 (index) in
-                state.validatorBalances[index] -= baseReward(state: state, index: index, totalBalance: totalBalance)
+                state.validatorBalances[index] -= baseReward(state: state, index: index, baseRewardQuotient: baseRewardQuotient)
             })
 
             activeValidators.forEach({
                 index in
                 if state.validatorRegistry[index].penalizedSlot <= state.slot {
-                    state.validatorBalances[index] -= 2 * inactivityPenalty(state: state, index: index, epochsSinceFinality: epochsSinceFinality, totalBalance: totalBalance) + baseReward(state: state, index: index, totalBalance: totalBalance)
+                    state.validatorBalances[index] -= 2 * inactivityPenalty(state: state, index: index, epochsSinceFinality: epochsSinceFinality, baseRewardQuotient: baseRewardQuotient) + baseReward(state: state, index: index, baseRewardQuotient: baseRewardQuotient)
                 }
             })
 
             for index in previousEpochAttesterIndices {
-                let base = baseReward(state: state, index: index, totalBalance: totalBalance)
+                let base = baseReward(state: state, index: index, baseRewardQuotient: baseRewardQuotient)
                 state.validatorBalances[index] -= base - base * MIN_ATTESTATION_INCLUSION_DELAY / inclusionDistance(state: state, index: index)
             }
         }
@@ -587,7 +590,7 @@ extension StateTransition {
                 state: state,
                 slot: inclusionSlot(state: state, index: index)
             )
-            state.validatorBalances[proposer] += baseReward(state: state, index: index, totalBalance: totalBalance)
+            state.validatorBalances[proposer] += baseReward(state: state, index: index, baseRewardQuotient: baseRewardQuotient)
         }
 
         for _ in (state.slot - 2 * EPOCH_LENGTH)...(state.slot - EPOCH_LENGTH) {
@@ -608,9 +611,9 @@ extension StateTransition {
 
                 for i in committee {
                     if let _ = attestingValidators.firstIndex(of: i) {
-                        state.validatorBalances[i] += baseReward(state: state, index: i, totalBalance: totalBalance) * totalAttestingBalance / totalBalance
+                        state.validatorBalances[i] += baseReward(state: state, index: i, baseRewardQuotient: baseRewardQuotient) * totalAttestingBalance / totalBalance
                     } else {
-                        state.validatorBalances[i] -= baseReward(state: state, index: i, totalBalance: totalBalance)
+                        state.validatorBalances[i] -= baseReward(state: state, index: i, baseRewardQuotient: baseRewardQuotient)
                     }
                 }
             }
@@ -682,13 +685,16 @@ extension StateTransition {
         return 0
     }
 
-    private static func baseReward(state: BeaconState, index: Int, totalBalance: UInt64) -> UInt64 {
-        let baseRewardQoutient = BeaconChain.integerSquareRoot(n: totalBalance) / BASE_REWARD_QUOTIENT
-        return BeaconChain.getEffectiveBalance(state: state, index: index) / baseRewardQoutient / 5
+    static func baseRewardQuotient(totalBalance: UInt64) -> UInt64 {
+        return BeaconChain.integerSquareRoot(n: totalBalance) / BASE_REWARD_QUOTIENT
     }
 
-    private static func inactivityPenalty(state: BeaconState, index: Int, epochsSinceFinality: UInt64, totalBalance: UInt64) -> UInt64 {
-        return baseReward(state: state, index: index, totalBalance: totalBalance) * epochsSinceFinality / INACTIVITY_PENALTY_QUOTIENT / 2
+    static func baseReward(state: BeaconState, index: Int, baseRewardQuotient: UInt64) -> UInt64 {
+        return BeaconChain.getEffectiveBalance(state: state, index: index) / baseRewardQuotient / 5
+    }
+
+    static func inactivityPenalty(state: BeaconState, index: Int, epochsSinceFinality: UInt64, baseRewardQuotient: UInt64) -> UInt64 {
+        return baseReward(state: state, index: index, baseRewardQuotient: baseRewardQuotient) + BeaconChain.getEffectiveBalance(state: state, index: index) * epochsSinceFinality / INACTIVITY_PENALTY_QUOTIENT / 2
     }
 
     // @todo maybe make these extension functions on an int?
