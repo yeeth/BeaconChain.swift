@@ -522,7 +522,6 @@ extension StateTransition {
             BeaconChain.getActiveValidatorIndices(validators: state.validatorRegistry, slot: state.slot)
         )
 
-
         let baseRewardQuotient = self.baseRewardQuotient(totalBalance: totalBalance)
 
         if epochsSinceFinality <= 4 {
