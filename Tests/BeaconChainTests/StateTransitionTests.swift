@@ -52,7 +52,7 @@ final class StateTransitionTests: XCTestCase {
         }
     }
 
-func testExpectedFFGTarget() {
+    func testExpectedFFGTarget() {
         // @todo check these numbers
         let tests = [
             ([Int](), [31999427550, 31999427550, 31999427550, 31999427550]),
