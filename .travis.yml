@@ -5,3 +5,6 @@ xcode_project: BeaconChain.xcodeproj
 xcode_scheme: BeaconChain.Package
   
 script: swift test
+
+notifications:
+  email: never
