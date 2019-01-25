@@ -752,8 +752,7 @@ extension StateTransition {
         shard: UInt64,
         currentEpochAttestations: [PendingAttestation],
         previousEpochAttestations: [PendingAttestation]
-    )
-        -> [Int] {
+    ) -> [Int] {
         let root = winningRoot(
             state: state,
             committee: committee,
@@ -778,8 +777,7 @@ extension StateTransition {
         shard: UInt64,
         currentEpochAttestations: [PendingAttestation],
         previousEpochAttestations: [PendingAttestation]
-    )
-        -> UInt64 {
+    ) -> UInt64 {
         return totalBalance(
             state: state,
             validators: attestingValidators(
@@ -806,8 +804,7 @@ extension StateTransition {
         shardBlockRoot: Data,
         currentEpochAttestations: [PendingAttestation],
         previousEpochAttestations: [PendingAttestation]
-    )
-        -> [Int] {
+    ) -> [Int] {
         var indices = Set([Int]())
         for attestation in (currentEpochAttestations + previousEpochAttestations) {
             if attestation.data.shard == shard && attestation.data.shardBlockRoot == shardBlockRoot {
@@ -832,8 +829,7 @@ extension StateTransition {
         shard: UInt64,
         currentEpochAttestations: [PendingAttestation],
         previousEpochAttestations: [PendingAttestation]
-    )
-        -> Data {
+    ) -> Data {
         let candidateRoots = (currentEpochAttestations + previousEpochAttestations).compactMap {
             (attestation) -> Data? in
             if attestation.data.shard == shard {
@@ -896,7 +892,7 @@ extension StateTransition {
         previousEpochBoundaryAttestingBalance: UInt64,
         baseRewardQuotient: UInt64,
         totalBalance: UInt64
-        ) -> BeaconState {
+    ) -> BeaconState {
         for index in previousEpochBoundaryAttesterIndices {
             state.validatorBalances[index] += baseReward(state: state, index: index, baseRewardQuotient: baseRewardQuotient) * previousEpochBoundaryAttestingBalance / totalBalance
         }
