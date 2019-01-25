@@ -18,25 +18,25 @@ public class BeaconChain {
         return state
     }
 
-    static func getEffectiveBalance(state: BeaconState, index: Int) -> Int {
+    static func getEffectiveBalance(state: BeaconState, index: Int) -> UInt64 {
         return min(state.validatorBalances[index], MAX_DEPOSIT_AMOUNT)
     }
 
-    static func getBlockRoot(state: BeaconState, slot: Int) -> Data {
+    static func getBlockRoot(state: BeaconState, slot: UInt64) -> Data {
         assert(state.slot <= slot + LATEST_BLOCK_ROOTS_LENGTH)
         assert(slot < state.slot)
-        return state.latestBlockRoots[slot.mod(LATEST_BLOCK_ROOTS_LENGTH)]
+        return state.latestBlockRoots[Int(slot.mod(LATEST_BLOCK_ROOTS_LENGTH))]
     }
 
-    static func getRandaoMix(state: BeaconState, slot: Int) -> Data {
+    static func getRandaoMix(state: BeaconState, slot: UInt64) -> Data {
         assert(state.slot <= slot + LATEST_RANDAO_MIXES_LENGTH)
         assert(slot < state.slot)
-        return state.latestBlockRoots[slot.mod(LATEST_RANDAO_MIXES_LENGTH)]
+        return state.latestBlockRoots[Int(slot.mod(LATEST_RANDAO_MIXES_LENGTH))]
     }
 
-    static func getBeaconProposerIndex(state: BeaconState, slot: Int) -> Int {
+    static func getBeaconProposerIndex(state: BeaconState, slot: UInt64) -> Int {
         let (committee, _) = BeaconChain.getCrosslinkCommitteesAtSlot(state: state, slot: slot)[0]
-        return committee[slot.mod(committee.count)]
+        return committee[Int(slot.mod(UInt64(committee.count)))]
     }
 
     static func getAttestationParticipants(state: BeaconState, data: AttestationData, aggregationBitfield: Data) -> [Int] {
@@ -58,7 +58,7 @@ public class BeaconChain {
         return participants
     }
 
-    static func integerSquareRoot(n: Int) -> Int {
+    static func integerSquareRoot(n: UInt64) -> UInt64 {
         assert(n >= 0)
 
         var x = n
@@ -72,7 +72,7 @@ public class BeaconChain {
         return x
     }
 
-    static func getForkVersion(data: Fork, slot: Int) -> Int {
+    static func getForkVersion(data: Fork, slot: UInt64) -> UInt64 {
         if slot < data.slot {
             return data.previousVersion
         }
@@ -80,8 +80,8 @@ public class BeaconChain {
         return data.currentVersion
     }
 
-    static func getDomain(data: Fork, slot: Int, domainType: Domain) -> Int {
-        return BeaconChain.getForkVersion(data: data, slot: slot) * (2**32) + domainType.rawValue
+    static func getDomain(data: Fork, slot: UInt64, domainType: Domain) -> Int {
+        return Int(BeaconChain.getForkVersion(data: data, slot: slot) * (2**32)) + domainType.rawValue
     }
 
     static func isDoubleVote(first: AttestationData, second: AttestationData) -> Bool {
@@ -128,12 +128,12 @@ public class BeaconChain {
                 slot: GENESIS_SLOT
             ),
             validatorRegistry: [Validator](),
-            validatorBalances: [Int](),
+            validatorBalances: [UInt64](),
             validatorRegistryUpdateSlot: GENESIS_SLOT,
             validatorRegistryExitCount: 0,
             validatorRegistryDeltaChainTip: ZERO_HASH,
-            latestRandaoMixes: [Data](repeating: ZERO_HASH, count: LATEST_RANDAO_MIXES_LENGTH),
-            latestVdfOutputs: [Data](repeating: ZERO_HASH, count: LATEST_RANDAO_MIXES_LENGTH / EPOCH_LENGTH),
+            latestRandaoMixes: [Data](repeating: ZERO_HASH, count: Int(LATEST_RANDAO_MIXES_LENGTH)),
+            latestVdfOutputs: [Data](repeating: ZERO_HASH, count: Int(LATEST_RANDAO_MIXES_LENGTH / EPOCH_LENGTH)),
             previousEpochStartShard: GENESIS_START_SHARD,
             currentEpochStartShard: GENESIS_START_SHARD,
             previousEpochCalculationSlot: GENESIS_SLOT,
@@ -145,8 +145,8 @@ public class BeaconChain {
             justificationBitfield: 0,
             finalizedSlot: GENESIS_SLOT,
             latestCrosslinks: (0...SHARD_COUNT).map { _ in return Crosslink(slot: GENESIS_SLOT, shardBlockRoot: ZERO_HASH) },
-            latestBlockRoots: [Data](repeating: ZERO_HASH, count: LATEST_BLOCK_ROOTS_LENGTH),
-            latestPenalizedBalances: [Int](repeating: 0, count: LATEST_PENALIZED_EXIT_LENGTH),
+            latestBlockRoots: [Data](repeating: ZERO_HASH, count: Int(LATEST_BLOCK_ROOTS_LENGTH)),
+            latestPenalizedBalances: [UInt64](repeating: 0, count: Int(LATEST_PENALIZED_EXIT_LENGTH)),
             latestAttestations: [PendingAttestation](),
             batchedBlockRoots: [Data](),
 
@@ -269,7 +269,7 @@ extension BeaconChain {
     static func penalizeValidator(state: inout BeaconState, index: Int) {
         BeaconChain.exitValidator(state: &state, index: index)
 
-        state.latestPenalizedBalances[(state.slot / EPOCH_LENGTH).mod(LATEST_PENALIZED_EXIT_LENGTH)] += BeaconChain.getEffectiveBalance(state: state, index: index)
+        state.latestPenalizedBalances[Int((state.slot / EPOCH_LENGTH).mod(LATEST_PENALIZED_EXIT_LENGTH))] += BeaconChain.getEffectiveBalance(state: state, index: index)
 
         let whistleblowerIndex = BeaconChain.getBeaconProposerIndex(state: state, slot: state.slot)
         let whistleblowerReward = BeaconChain.getEffectiveBalance(state: state, index: index) / WHISTLEBLOWER_REWARD_QUOTIENT
@@ -289,13 +289,13 @@ extension BeaconChain {
         let activeValidatorIndices = BeaconChain.getActiveValidatorIndices(validators: state.validatorRegistry, slot: state.slot)
 
         let totalBalance = activeValidatorIndices.map({
-            (i: Int) -> Int in
+            (i: Int) -> UInt64 in
             return BeaconChain.getEffectiveBalance(state: state, index: i)
         }).reduce(0, +)
 
         let maxBalanceChurn = max(MAX_DEPOSIT_AMOUNT, totalBalance / (2 * MAX_BALANCE_CHURN_QUOTIENT))
 
-        var balanceChurn = 0
+        var balanceChurn = UInt64(0)
         for (i, validator) in state.validatorRegistry.enumerated() {
             if validator.activationSlot > state.slot + ENTRY_EXIT_DELAY && state.validatorBalances[i] >= MAX_DEPOSIT_AMOUNT {
                 balanceChurn += BeaconChain.getEffectiveBalance(state: state, index: i)
@@ -307,7 +307,7 @@ extension BeaconChain {
             }
         }
 
-        balanceChurn = 0
+        balanceChurn = UInt64(0)
         for (i, validator) in state.validatorRegistry.enumerated() {
             if validator.exitSlot > state.slot + ENTRY_EXIT_DELAY && (validator.statusFlags & INITIATED_EXIT) == 1 {
                 balanceChurn += BeaconChain.getEffectiveBalance(state: state, index: i)
@@ -322,7 +322,7 @@ extension BeaconChain {
         state.validatorRegistryUpdateSlot = state.slot
     }
 
-    static func getActiveValidatorIndices(validators: [Validator], slot: Int) -> [Int] {
+    static func getActiveValidatorIndices(validators: [Validator], slot: UInt64) -> [Int] {
         return validators.enumerated().compactMap {
             (i, validator) -> Int? in
             if BeaconChain.isActive(validator: validator, slot: slot) {
@@ -334,7 +334,7 @@ extension BeaconChain {
     }
 
     // @todo move these functions into validator 
-    static func isActive(validator: Validator, slot: Int) -> Bool {
+    static func isActive(validator: Validator, slot: UInt64) -> Bool {
         return validator.activationSlot <= slot && slot < validator.exitSlot
     }
 }
@@ -342,9 +342,11 @@ extension BeaconChain {
 extension BeaconChain {
 
     static func getCommitteeCountPerSlot(activeValidatorCount: Int) -> Int {
-        return max(
-            1,
-            min(SHARD_COUNT / EPOCH_LENGTH, activeValidatorCount / EPOCH_LENGTH / TARGET_COMMITTEE_SIZE)
+        return Int(
+            max(
+                1,
+                min(SHARD_COUNT / EPOCH_LENGTH, UInt64(activeValidatorCount) / EPOCH_LENGTH / TARGET_COMMITTEE_SIZE)
+            )
         )
     }
 
@@ -367,34 +369,34 @@ extension BeaconChain {
     }
 
     // @todo rthis is probably broken
-    static func getCrosslinkCommitteesAtSlot(state: BeaconState, slot: Int) -> [([Int], Int)] {
+    static func getCrosslinkCommitteesAtSlot(state: BeaconState, slot: UInt64) -> [([Int], UInt64)] {
         let stateEpochSlot = state.slot - (state.slot.mod(EPOCH_LENGTH))
         assert(stateEpochSlot <= slot + EPOCH_LENGTH)
         assert(slot < stateEpochSlot + EPOCH_LENGTH)
         let offest = slot.mod(EPOCH_LENGTH)
 
-        var committeesPerSlot: Int
+        var committeesPerSlot: UInt64
         var shuffling: [[Int]]
         var slotStartShard: Int
         if slot < stateEpochSlot {
-            committeesPerSlot = BeaconChain.getPreviousEpochCommitteeCountPerSlot(state: state)
+            committeesPerSlot = UInt64(BeaconChain.getPreviousEpochCommitteeCountPerSlot(state: state))
             shuffling = getShuffling(
                 seed: state.previousEpochRandaoMix,
                 validators: state.validatorRegistry, slot: state.previousEpochCalculationSlot
             )
-            slotStartShard = (state.previousEpochStartShard + (committeesPerSlot * offest)).mod(SHARD_COUNT)
+            slotStartShard = Int((state.previousEpochStartShard + (committeesPerSlot * offest)).mod(SHARD_COUNT))
         } else {
-            committeesPerSlot = BeaconChain.getCurrentEpochCommitteeCountPerSlot(state: state)
+            committeesPerSlot = UInt64(BeaconChain.getCurrentEpochCommitteeCountPerSlot(state: state))
             shuffling = getShuffling(
                 seed: state.currentEpochRandaoMix,
                 validators: state.validatorRegistry, slot: state.currentEpochCalculationSlot
             )
-            slotStartShard = (state.currentEpochStartShard + (committeesPerSlot * offest)).mod(SHARD_COUNT)
+            slotStartShard = Int((state.currentEpochStartShard + (committeesPerSlot * offest)).mod(SHARD_COUNT))
         }
 
         return stride(from: 0, to: committeesPerSlot, by: 1).map {
-            (i: Int) -> ([Int], Int) in
-            return (shuffling[committeesPerSlot * (offest + i)], (slotStartShard + i).mod(SHARD_COUNT))
+            (i) -> ([Int], UInt64) in
+            return (shuffling[Int(committeesPerSlot * (offest + i))], (UInt64(slotStartShard) + i).mod(SHARD_COUNT))
         }
     }
 }
@@ -431,7 +433,7 @@ extension BeaconChain {
         }
     }
 
-    static func getShuffling(seed: Data, validators: [Validator], slot: Int) -> [[Int]] {
+    static func getShuffling(seed: Data, validators: [Validator], slot: UInt64) -> [[Int]] {
         var slot = slot - (slot.mod(EPOCH_LENGTH))
 
         let activeValidatorIndices = getActiveValidatorIndices(validators: validators, slot: slot)
@@ -441,6 +443,6 @@ extension BeaconChain {
             seed: (seed ^ Data(bytes: &slot, count: MemoryLayout.size(ofValue: slot)))
         )
 
-        return split(values: shuffledValidatorIndices, count: committeesPerSlot * EPOCH_LENGTH)
+        return split(values: shuffledValidatorIndices, count: committeesPerSlot * Int(EPOCH_LENGTH))
     }
 }

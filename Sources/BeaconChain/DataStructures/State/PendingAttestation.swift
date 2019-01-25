@@ -4,5 +4,5 @@ struct PendingAttestation {
     let data: AttestationData
     let aggregationBitfield: Data
     let custodyBitfield: Data
-    let slotIncluded: Int
+    let slotIncluded: UInt64
 }

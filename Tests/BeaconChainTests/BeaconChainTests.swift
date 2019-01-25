@@ -26,7 +26,7 @@ final class BeaconChainTests: XCTestCase {
     }
 
     func testIntegerSquareRoot() {
-        let numbers = [(20, 4), (200, 14), (1987, 44), (34989843, 5915), (97282, 311)]
+        let numbers = [(UInt64(20), UInt64(4)), (200, 14), (1987, 44), (34989843, 5915), (97282, 311)]
 
         for num in numbers {
             XCTAssertEqual(num.1, BeaconChain.integerSquareRoot(n: num.0))

@@ -1,0 +1,10 @@
+os: osx
+language: swift
+osx_image: xcode10.1
+xcode_project: BeaconChain.xcodeproj
+xcode_scheme: BeaconChain.Package
+  
+script: swift test
+
+notifications:
+  email: false

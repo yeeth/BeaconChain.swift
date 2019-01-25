@@ -1,35 +1,35 @@
 import Foundation
 
 public class BeaconState {
-    var slot: Int
+    var slot: UInt64
     let genesisTime: TimeInterval
     let fork: Fork
 
     var validatorRegistry: [Validator]
-    var validatorBalances: [Int] // @todo move balances into Validator class
-    var validatorRegistryUpdateSlot: Int
-    var validatorRegistryExitCount: Int
+    var validatorBalances: [UInt64] // @todo move balances into Validator class
+    var validatorRegistryUpdateSlot: UInt64
+    var validatorRegistryExitCount: UInt64
     var validatorRegistryDeltaChainTip: Data
 
     var latestRandaoMixes: [Data]
     let latestVdfOutputs: [Data]
-    var previousEpochStartShard: Int
-    var currentEpochStartShard: Int
-    var previousEpochCalculationSlot: Int
-    var currentEpochCalculationSlot: Int
+    var previousEpochStartShard: UInt64
+    var currentEpochStartShard: UInt64
+    var previousEpochCalculationSlot: UInt64
+    var currentEpochCalculationSlot: UInt64
     var previousEpochRandaoMix: Data
     var currentEpochRandaoMix: Data
 
 //    let custodyChallenges: [CustodyChallenge] defined in 1.0
 
-    var previousJustifiedSlot: Int
-    var justifiedSlot: Int
-    var justificationBitfield: Int
-    var finalizedSlot: Int
+    var previousJustifiedSlot: UInt64
+    var justifiedSlot: UInt64
+    var justificationBitfield: UInt64
+    var finalizedSlot: UInt64
 
     var latestCrosslinks: [Crosslink]
     var latestBlockRoots: [Data]
-    var latestPenalizedBalances: [Int]
+    var latestPenalizedBalances: [UInt64]
     var latestAttestations: [PendingAttestation]
     var batchedBlockRoots: [Data]
 
@@ -38,29 +38,29 @@ public class BeaconState {
 
     // @todo consider not passing those with default genesis values
     init(
-        slot: Int,
+        slot: UInt64,
         genesisTime: TimeInterval,
         fork: Fork,
         validatorRegistry: [Validator],
-        validatorBalances: [Int],
-        validatorRegistryUpdateSlot: Int,
-        validatorRegistryExitCount: Int,
+        validatorBalances: [UInt64],
+        validatorRegistryUpdateSlot: UInt64,
+        validatorRegistryExitCount: UInt64,
         validatorRegistryDeltaChainTip: Data,
         latestRandaoMixes: [Data],
         latestVdfOutputs: [Data],
-        previousEpochStartShard: Int,
-        currentEpochStartShard: Int,
-        previousEpochCalculationSlot: Int,
-        currentEpochCalculationSlot: Int,
+        previousEpochStartShard: UInt64,
+        currentEpochStartShard: UInt64,
+        previousEpochCalculationSlot: UInt64,
+        currentEpochCalculationSlot: UInt64,
         previousEpochRandaoMix: Data,
         currentEpochRandaoMix: Data,
-        previousJustifiedSlot: Int,
-        justifiedSlot: Int,
-        justificationBitfield: Int,
-        finalizedSlot: Int,
+        previousJustifiedSlot: UInt64,
+        justifiedSlot: UInt64,
+        justificationBitfield: UInt64,
+        finalizedSlot: UInt64,
         latestCrosslinks: [Crosslink],
         latestBlockRoots: [Data],
-        latestPenalizedBalances: [Int],
+        latestPenalizedBalances: [UInt64],
         latestAttestations: [PendingAttestation],
         batchedBlockRoots: [Data],
         latestEth1Data: Eth1Data,

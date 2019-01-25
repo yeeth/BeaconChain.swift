@@ -1,7 +1,7 @@
 import Foundation
 
 struct Fork {
-    let previousVersion: Int
-    let currentVersion: Int
-    let slot: Int
+    let previousVersion: UInt64
+    let currentVersion: UInt64
+    let slot: UInt64
 }
