@@ -81,7 +81,7 @@ class BeaconChain {
     }
 
     static func getDomain(data: Fork, slot: Int, domainType: Domain) -> Int {
-        return BeaconChain.getForkVersion(data: data, slot: slot) * 2^32 + domainType.rawValue
+        return BeaconChain.getForkVersion(data: data, slot: slot) * (2**32) + domainType.rawValue
     }
 
     static func isDoubleVote(first: AttestationData, second: AttestationData) -> Bool {
