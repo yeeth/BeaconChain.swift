@@ -5,5 +5,5 @@ struct ValidatorRegistryDeltaBlock {
     let validatorIndex: Int
     let pubkey: Data
     let slot: Int
-    let flag: Int
+    let flag: ValidatorRegistryDeltaFlags
 }
