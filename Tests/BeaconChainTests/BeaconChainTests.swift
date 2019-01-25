@@ -77,4 +77,95 @@ final class BeaconChainTests: XCTestCase {
             (3*constant)+3
         )
     }
+
+    func testInitiateValidatorExit() {
+        var state = BeaconChain.genesisState(
+            genesisTime: TimeInterval(0),
+            latestEth1Data: Eth1Data(depositRoot: Data(count: 32), blockHash: Data(count: 32))
+        )
+
+        for _ in 0..<3 {
+            state.validatorRegistry.append(
+                Validator(
+                    pubkey: Data(count: 32),
+                    withdrawalCredentials: Data(count: 32),
+                    randaoCommitment: Data(count: 32),
+                    randaoLayers: 0,
+                    activationSlot: 0,
+                    exitSlot: 0,
+                    withdrawalSlot: 0,
+                    penalizedSlot: 0,
+                    exitCount: 0,
+                    statusFlags: 0,
+                    custodyCommitment: Data(count: 32),
+                    latestCustodyReseedSlot: 0,
+                    penultimateCustodyReseedSlot: 0
+                )
+            )
+        }
+
+        BeaconChain.initiateValidatorExit(state: &state, index: 2)
+
+        XCTAssertEqual(state.validatorRegistry[0].statusFlags, 0)
+        XCTAssertEqual(state.validatorRegistry[2].statusFlags, INITIATED_EXIT)
+    }
+
+    func testActivateValidator() {
+        var state = BeaconChain.genesisState(
+            genesisTime: TimeInterval(0),
+            latestEth1Data: Eth1Data(depositRoot: Data(count: 32), blockHash: Data(count: 32))
+        )
+
+        state.slot = 10
+        state.validatorRegistry.append(
+            Validator(
+                pubkey: Data(count: 32),
+                withdrawalCredentials: Data(count: 32),
+                randaoCommitment: Data(count: 32),
+                randaoLayers: 0,
+                activationSlot: 0,
+                exitSlot: 0,
+                withdrawalSlot: 0,
+                penalizedSlot: 0,
+                exitCount: 0,
+                statusFlags: 0,
+                custodyCommitment: Data(count: 32),
+                latestCustodyReseedSlot: 0,
+                penultimateCustodyReseedSlot: 0
+            )
+        )
+
+        BeaconChain.activateValidator(state: &state, index: 0, genesis: false)
+        XCTAssertEqual(state.validatorRegistry[0].activationSlot, state.slot + ENTRY_EXIT_DELAY)
+    }
+
+    func testExitValidator() {
+        var state = BeaconChain.genesisState(
+            genesisTime: TimeInterval(0),
+            latestEth1Data: Eth1Data(depositRoot: Data(count: 32), blockHash: Data(count: 32))
+        )
+
+        state.slot = 10
+        state.validatorRegistry.append(
+            Validator(
+                pubkey: Data(count: 32),
+                withdrawalCredentials: Data(count: 32),
+                randaoCommitment: Data(count: 32),
+                randaoLayers: 0,
+                activationSlot: 0,
+                exitSlot: FAR_FUTURE_SLOT,
+                withdrawalSlot: 0,
+                penalizedSlot: 0,
+                exitCount: 0,
+                statusFlags: 0,
+                custodyCommitment: Data(count: 32),
+                latestCustodyReseedSlot: 0,
+                penultimateCustodyReseedSlot: 0
+            )
+        )
+
+        BeaconChain.exitValidator(state: &state, index: 0)
+        XCTAssertEqual(state.validatorRegistry[0].exitSlot, state.slot + ENTRY_EXIT_DELAY)
+        XCTAssertEqual(state.validatorRegistry[0].exitCount, 1)
+    }
 }

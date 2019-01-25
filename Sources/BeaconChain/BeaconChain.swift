@@ -118,7 +118,7 @@ class BeaconChain {
         )
     }
 
-    private static func genesisState(genesisTime: TimeInterval, latestEth1Data: Eth1Data) -> BeaconState {
+    static func genesisState(genesisTime: TimeInterval, latestEth1Data: Eth1Data) -> BeaconState {
         return BeaconState(
             slot: GENESIS_SLOT,
             genesisTime: genesisTime,
@@ -248,11 +248,13 @@ extension BeaconChain {
 
     static func exitValidator(state: inout BeaconState, index: Int) {
         if state.validatorRegistry[index].exitSlot <= state.slot + ENTRY_EXIT_DELAY {
+            print("fuck")
             return
         }
 
         state.validatorRegistry[index].exitSlot = state.slot + ENTRY_EXIT_DELAY
         state.validatorRegistryExitCount += 1
+        state.validatorRegistry[index].exitCount = state.validatorRegistryExitCount
 
         let validator = state.validatorRegistry[index] // @todo change when validator is a class so we read earler
         state.validatorRegistryDeltaChainTip = hashTreeRoot(data: ValidatorRegistryDeltaBlock(
