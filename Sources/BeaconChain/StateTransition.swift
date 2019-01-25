@@ -692,7 +692,8 @@ extension StateTransition {
         return BeaconChain.getEffectiveBalance(state: state, index: index) / baseRewardQuotient / 5
     }
 
-    static func inactivityPenalty(state: BeaconState, index: Int, epochsSinceFinality: UInt64, baseRewardQuotient: UInt64) -> UInt64 {
+    static func inactivityPenalty(state: BeaconState, index: Int, epochsSinceFinality: UInt64, baseRewardQuotient: UInt64)
+        -> UInt64 {
         return baseReward(state: state, index: index, baseRewardQuotient: baseRewardQuotient) + BeaconChain.getEffectiveBalance(state: state, index: index) * epochsSinceFinality / INACTIVITY_PENALTY_QUOTIENT / 2
     }
 
