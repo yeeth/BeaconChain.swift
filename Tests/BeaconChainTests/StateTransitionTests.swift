@@ -102,6 +102,5 @@ final class StateTransitionTests: XCTestCase {
                 XCTAssertEqual(balance, newState.validatorBalances[i])
             }
         }
-
     }
 }
