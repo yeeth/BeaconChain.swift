@@ -271,7 +271,7 @@ extension StateTransition {
     private static func verifyMerkleBranch(leaf: Data, branch: [Data], depth: Int, index: Int, root: Data) -> Bool {
         var value = leaf
         for i in 0...depth {
-            if (index / (2^i)).mod(2) == 1 {
+            if (index / (2**i)).mod(2) == 1 {
                 value = BeaconChain.hash(data: branch[i] + value)
             } else {
                 value = BeaconChain.hash(data: value + branch[i])
@@ -452,7 +452,7 @@ extension StateTransition {
         currentEpochBoundaryAttestingBalance: Int
     ) {
         state.previousJustifiedSlot = state.justifiedSlot
-        state.justificationBitfield = (state.justificationBitfield * 2).mod(2^64)
+        state.justificationBitfield = (state.justificationBitfield * 2).mod(2**64)
 
         if 3 * previousEpochBoundaryAttestingBalance >= 2 * totalBalance {
             state.justificationBitfield |= 2
@@ -633,11 +633,12 @@ extension StateTransition {
             break
         }
 
+        state.previousEpochCalculationSlot = state.currentEpochCalculationSlot
+        state.previousEpochStartShard = state.currentEpochStartShard
+        state.previousEpochRandaoMix = state.currentEpochRandaoMix
+
         if state.finalizedSlot > state.validatorRegistryUpdateSlot && satisfied {
             BeaconChain.updateValidatorRegistry(state: &state)
-            state.previousEpochCalculationSlot = state.currentEpochCalculationSlot
-            state.previousEpochStartShard = state.currentEpochStartShard
-            state.previousEpochRandaoMix = state.currentEpochRandaoMix
             state.currentEpochCalculationSlot = state.slot
             state.currentEpochStartShard = (state.currentEpochStartShard + BeaconChain.getCurrentEpochCommitteeCountPerSlot(state: state).mod(EPOCH_LENGTH)).mod(SHARD_COUNT)
             state.currentEpochRandaoMix = BeaconChain.getRandaoMix(
@@ -645,9 +646,6 @@ extension StateTransition {
                 slot: state.currentEpochCalculationSlot - SEED_LOOKAHEAD
             )
         } else {
-            state.previousEpochCalculationSlot = state.currentEpochCalculationSlot
-            state.previousEpochStartShard = state.currentEpochStartShard
-
             let epochsSinceLastRegistryChange = (state.slot - state.validatorRegistryUpdateSlot) / EPOCH_LENGTH
             if isPowerOfTwo(epochsSinceLastRegistryChange) {
                 state.currentEpochCalculationSlot = state.slot

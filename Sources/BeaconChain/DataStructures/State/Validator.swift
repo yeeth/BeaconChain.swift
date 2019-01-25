@@ -9,7 +9,7 @@ public struct Validator {
     var exitSlot: Int
     let withdrawalSlot: Int
     var penalizedSlot: Int
-    let exitCount: Int
+    var exitCount: Int
     var statusFlags: Int
     let custodyCommitment: Data
     let latestCustodyReseedSlot: Int

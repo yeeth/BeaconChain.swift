@@ -81,7 +81,7 @@ public class BeaconChain {
     }
 
     static func getDomain(data: Fork, slot: Int, domainType: Domain) -> Int {
-        return BeaconChain.getForkVersion(data: data, slot: slot) * 2^32 + domainType.rawValue
+        return BeaconChain.getForkVersion(data: data, slot: slot) * (2**32) + domainType.rawValue
     }
 
     static func isDoubleVote(first: AttestationData, second: AttestationData) -> Bool {
@@ -118,7 +118,7 @@ public class BeaconChain {
         )
     }
 
-    private static func genesisState(genesisTime: TimeInterval, latestEth1Data: Eth1Data) -> BeaconState {
+    static func genesisState(genesisTime: TimeInterval, latestEth1Data: Eth1Data) -> BeaconState {
         return BeaconState(
             slot: GENESIS_SLOT,
             genesisTime: genesisTime,
@@ -237,7 +237,7 @@ extension BeaconChain {
                 validatorIndex: index,
                 pubkey: validator.pubkey,
                 slot: validator.activationSlot,
-                flag: ACTIVATION
+                flag: ValidatorRegistryDeltaFlags.ACTIVATION
             )
         )
     }
@@ -253,6 +253,7 @@ extension BeaconChain {
 
         state.validatorRegistry[index].exitSlot = state.slot + ENTRY_EXIT_DELAY
         state.validatorRegistryExitCount += 1
+        state.validatorRegistry[index].exitCount = state.validatorRegistryExitCount
 
         let validator = state.validatorRegistry[index] // @todo change when validator is a class so we read earler
         state.validatorRegistryDeltaChainTip = hashTreeRoot(data: ValidatorRegistryDeltaBlock(
@@ -260,7 +261,7 @@ extension BeaconChain {
                 validatorIndex: index,
                 pubkey: validator.pubkey,
                 slot: validator.exitSlot,
-                flag: EXIT
+                flag: ValidatorRegistryDeltaFlags.EXIT
             )
         )
     }
