@@ -4,7 +4,7 @@
 
 Ethereum 2.0 beacon chain implementation based on the official [specification](https://github.com/ethereum/eth2.0-specs/blob/master/specs/core/0_beacon-chain.md).
 
-The implemented specification version is [1a4107](https://github.com/ethereum/eth2.0-specs/tree/1a4107876823f4c6060f25ba79cff89c988a2a1c)
+The implemented specification version is [1a4107](https://github.com/ethereum/eth2.0-specs/tree/1a4107876823f4c6060f25ba79cff89c988a2a1c).
 
 ## Contributing
 
