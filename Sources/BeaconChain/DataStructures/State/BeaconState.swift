@@ -19,6 +19,7 @@ struct BeaconState {
     let previousEpochSeed: Data
     let currentEpochSeed: Data
 
+//    @todo will be defined in 1.0
 //    let custodyChallenges: [CustodyChallenges]
 
     let previousJustifiedEpoch: UInt64

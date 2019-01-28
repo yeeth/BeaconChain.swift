@@ -5,6 +5,7 @@ struct BeaconBlockBody {
     let casperSlashings: [CasperSlashing]
     let attestations: [Attestation]
 
+//    @todo will be defined in 1.0
 //    let custodyReseeds: [CustodyReseed]
 //    let custodyChallenges: [CustodyChallenge]
 //    let custodyResponses: [CustodyResponse]
