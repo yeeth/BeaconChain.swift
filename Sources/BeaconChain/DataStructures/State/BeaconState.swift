@@ -5,8 +5,8 @@ struct BeaconState {
     let genesisTime: UInt64
     let fork: Fork
 
-    let validatorRegistry: [Validator]
-    let validatorBalances: [UInt64]
+    var validatorRegistry: [Validator]
+    var validatorBalances: [UInt64]
     let validatorRegistryUpdateEpoch: UInt64
     let validatorRegistryExitCount: UInt64
 
@@ -17,7 +17,7 @@ struct BeaconState {
     let previousCalculationEpoch: UInt64
     let currentCalculationEpoch: UInt64
     let previousEpochSeed: Data
-    let currentEpochSeed: Data
+    var currentEpochSeed: Data
 
 //    @todo will be defined in 1.0
 //    let custodyChallenges: [CustodyChallenges]
@@ -29,7 +29,7 @@ struct BeaconState {
 
     let latestCrosslinks: [Crosslink]
     let latestBlockRoots: [Data]
-    let latestIndexRoots: [Data]
+    var latestIndexRoots: [Data]
     let latestPenalizedBalances: [UInt64]
     let latestAttestations: [PendingAttestation]
     let batchedBlockRoots: [Data]

@@ -291,3 +291,136 @@ extension BeaconChain {
         return x
     }
 }
+
+extension BeaconChain {
+
+    static func getInitialBeaconState(
+        initialValidatorDeposits: [Deposit],
+        genesisTime: UInt64,
+        latestEth1Data: Eth1Data
+    ) -> BeaconState {
+
+        var state = genesisState(genesisTime: genesisTime, latestEth1Data: latestEth1Data)
+
+        for deposit in initialValidatorDeposits {
+            processDeposit(
+                state: &state,
+                pubkey: deposit.depositData.depositInput.pubkey,
+                amount: deposit.depositData.amount,
+                proofOfPossession: deposit.depositData.depositInput.proofOfPossession,
+                withdrawalCredentials: deposit.depositData.depositInput.withdrawalCredentials
+            )
+        }
+
+        for (i, _) in state.validatorRegistry.enumerated() {
+            if getEffectiveBalance(state: state, index: ValidatorIndex(i)) >= MAX_DEPOSIT_AMOUNT {
+//                activateValidator(state, i, true)
+            }
+        }
+
+        state.latestIndexRoots[Int(GENESIS_EPOCH % LATEST_INDEX_ROOTS_LENGTH)] = hashTreeRoot(
+            getActiveValidatorIndices(validators: state.validatorRegistry, epoch: GENESIS_EPOCH)
+        )
+        state.currentEpochSeed = generateSeed(state: state, epoch: GENESIS_EPOCH)
+
+        return state
+    }
+
+    static func genesisState(genesisTime: UInt64, latestEth1Data: Eth1Data) -> BeaconState {
+        return BeaconState(
+            slot: GENESIS_SLOT,
+            genesisTime: genesisTime,
+            fork: Fork(
+                previousVersion: GENESIS_FORK_VERSION,
+                currentVersion: GENESIS_FORK_VERSION,
+                epoch: GENESIS_EPOCH
+            ),
+            validatorRegistry: [Validator](),
+            validatorBalances: [UInt64](),
+            validatorRegistryUpdateEpoch: GENESIS_EPOCH,
+            validatorRegistryExitCount: 0,
+            latestRandaoMixes: [Data](repeating: ZERO_HASH, count: Int(LATEST_RANDAO_MIXES_LENGTH)),
+            latestVdfOutputs: [Data](repeating: ZERO_HASH, count: Int(LATEST_RANDAO_MIXES_LENGTH / EPOCH_LENGTH)),
+            previousEpochStartShard: GENESIS_START_SHARD,
+            currentEpochStartShard: GENESIS_START_SHARD,
+            previousCalculationEpoch: GENESIS_EPOCH,
+            currentCalculationEpoch: GENESIS_EPOCH,
+            previousEpochSeed: ZERO_HASH,
+            currentEpochSeed: ZERO_HASH,
+            previousJustifiedEpoch: GENESIS_EPOCH,
+            justifiedEpoch: GENESIS_EPOCH,
+            justificationBitfield: 0,
+            finalizedEpoch: GENESIS_EPOCH,
+            latestCrosslinks: [Crosslink](repeating: Crosslink(epoch: GENESIS_EPOCH, shardBlockRoot: ZERO_HASH), count: Int(SHARD_COUNT)),
+            latestBlockRoots: [Data](repeating: ZERO_HASH, count: Int(LATEST_BLOCK_ROOTS_LENGTH)),
+            latestIndexRoots: [Data](repeating: ZERO_HASH, count: Int(LATEST_INDEX_ROOTS_LENGTH)),
+            latestPenalizedBalances: [UInt64](repeating: 0, count: Int(LATEST_PENALIZED_EXIT_LENGTH)),
+            latestAttestations: [PendingAttestation](),
+            batchedBlockRoots: [Data](),
+            latestEth1Data: latestEth1Data,
+            eth1DataVotes: [Eth1DataVote]()
+        )
+    }
+}
+
+extension BeaconChain {
+
+    static func validateProofOfPossesion(
+        state: BeaconState,
+        pubkey: BLSPubkey,
+        proofOfPossession: BLSSignature,
+        withdrawalCredentials: Bytes32
+    ) -> Bool {
+        let proofOfPossesionData = DepositInput(
+            pubkey: pubkey,
+            withdrawalCredentials: withdrawalCredentials,
+            proofOfPossession: EMPTY_SIGNATURE
+        )
+
+        return BLS.verify(
+            pubkey: pubkey,
+            message: BeaconChain.hashTreeRoot(proofOfPossesionData),
+            signature: proofOfPossession,
+            domain: getDomain(fork: state.fork, epoch: getCurrentEpoch(state: state), domainType: Domain.DEPOSIT)
+        )
+    }
+
+    static func processDeposit(
+        state: inout BeaconState,
+        pubkey: BLSPubkey,
+        amount: Gwei,
+        proofOfPossession: BLSSignature,
+        withdrawalCredentials: Bytes32
+    ) {
+        assert(
+            validateProofOfPossesion(
+                state: state,
+                pubkey: pubkey,
+                proofOfPossession: proofOfPossession,
+                withdrawalCredentials: withdrawalCredentials
+            )
+        )
+
+        if let index = state.validatorRegistry.firstIndex(where: { $0.pubkey == pubkey }) {
+            assert(state.validatorRegistry[index].withdrawalCredentials == withdrawalCredentials)
+            state.validatorBalances[index] += amount
+        } else {
+            let validator = Validator(
+                pubkey: pubkey,
+                withdrawalCredentials: withdrawalCredentials,
+                activationEpoch: FAR_FUTURE_EPOCH,
+                exitEpoch: FAR_FUTURE_EPOCH,
+                withdrawalEpoch: FAR_FUTURE_EPOCH,
+                penalizedEpoch: FAR_FUTURE_EPOCH,
+                exitCount: 0,
+                statusFlags: 0,
+                latestCustodyReseedSlot: GENESIS_SLOT,
+                penultimateCustodyReseedSlot: GENESIS_SLOT
+            )
+
+            state.validatorRegistry.append(validator)
+            state.validatorBalances.append(amount)
+        }
+    }
+
+}
