@@ -18,7 +18,7 @@ let MAX_DEPOSIT_AMOUNT = UInt64(2**5 * UInt64(1e9))
 // Initial Values
 let GENESIS_FORK_VERSION = UInt64(0)
 let GENESIS_SLOT = UInt64(2**19)
-//let GENESIS_EPOCH = slotToEpoch(GENESIS_SLOT)
+let GENESIS_EPOCH = BeaconChain.slotToEpoch(GENESIS_SLOT)
 let GENESIS_START_SHARD = UInt64(0)
 let FAR_FUTURE_EPOCH = UInt64.max
 let ZERO_HASH = Data(repeating: 0, count: 32) // @todo create type
