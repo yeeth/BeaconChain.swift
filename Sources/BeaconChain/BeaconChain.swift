@@ -30,6 +30,10 @@ extension BeaconChain {
     static func getEpochStartSlot(_ epoch: EpochNumber) -> SlotNumber {
         return epoch * EPOCH_LENGTH
     }
+
+    static func getEntryExitEpoch(_ epoch: EpochNumber) -> EpochNumber {
+        return epoch + 1 + ENTRY_EXIT_DELAY
+    }
 }
 
 extension BeaconChain {
@@ -268,5 +272,22 @@ extension BeaconChain {
         return left.justifiedEpoch < right.justifiedEpoch &&
             right.justifiedEpoch + 1 == slotToEpoch(right.slot) &&
             slotToEpoch(right.slot) < slotToEpoch(left.slot)
+    }
+}
+
+extension BeaconChain {
+
+    static func integerSquareRoot(n: UInt64) -> UInt64 {
+        assert(n >= 0)
+
+        var x = n
+        var y = (x + 1) / 2
+
+        while y < x {
+            x = y
+            y = (x + n / x) / 2
+        }
+
+        return x
     }
 }
