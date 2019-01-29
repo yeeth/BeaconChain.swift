@@ -104,4 +104,43 @@ extension BeaconChain {
 
         return getEpochCommitteeCount(activeValidatorCount: currentActiveValidators.count)
     }
+
+    static func getCrosslinkCommitteesAtSlot(state: BeaconState, slot: SlotNumber) -> [([ValidatorIndex], ShardNumber)] {
+        let epoch = slotToEpoch(slot)
+        let currentEpoch = getCurrentEpoch(state: state)
+        let previousEpoch = currentEpoch > GENESIS_EPOCH ? currentEpoch - 1 : currentEpoch
+        let nextEpoch = currentEpoch + 1
+
+        assert(previousEpoch <= epoch && epoch < nextEpoch)
+
+        var committeesPerEpoch: Int
+        var seed: Data
+        var shufflingEpoch: UInt64
+        var shufflingStartShard: UInt64
+        if epoch < currentEpoch {
+            committeesPerEpoch = getPreviousEpochCommitteeCount(state: state)
+            seed = state.previousEpochSeed
+            shufflingEpoch = state.previousCalculationEpoch
+            shufflingStartShard = state.previousEpochStartShard
+        } else {
+            committeesPerEpoch = getCurrentEpochCommitteeCount(state: state)
+            seed = state.currentEpochSeed
+            shufflingEpoch = state.currentCalculationEpoch
+            shufflingStartShard = state.currentEpochStartShard
+        }
+
+        let shuffling = getShuffling(seed: seed, validators: state.validatorRegistry, epoch: shufflingEpoch)
+
+        let offset = slot % EPOCH_LENGTH
+        let committeesPerSlot = UInt64(committeesPerEpoch) / EPOCH_LENGTH
+        let slotStartShard = (shufflingStartShard + committeesPerSlot * offset) % SHARD_COUNT
+
+        return (0..<committeesPerSlot).map {
+            i in
+            return (
+                shuffling[Int(committeesPerSlot * offset + i)],
+                (slotStartShard + i) % SHARD_COUNT
+            )
+        }
+    }
 }
