@@ -2,6 +2,10 @@ import Foundation
 
 class BLS {
 
+    static func verify(pubkey: Data, message: Data, signature: Data, domain: UInt64) -> Bool {
+        return true
+    }
+
     static func verify(pubkeys: [Data], messages: [Data], signature: Data, domain: UInt64) -> Bool {
         return true
     }
