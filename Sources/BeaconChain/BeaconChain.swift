@@ -165,3 +165,72 @@ extension BeaconChain {
         return state.latestIndexRoots[Int(epoch % LATEST_INDEX_ROOTS_LENGTH)]
     }
 }
+
+extension BeaconChain {
+
+    static func generateSeed(state: BeaconState, epoch: EpochNumber) -> Data {
+        return hash(
+            getRandaoMix(state: state, epoch: epoch - SEED_LOOKAHEAD) + getActiveIndexRoot(state: state, epoch: epoch)
+        )
+    }
+
+    static func getBeaconProposerIndex(state: BeaconState, slot: SlotNumber) -> ValidatorIndex {
+        let (firstCommittee, _) = getCrosslinkCommitteesAtSlot(state: state, slot: slot)[0]
+        return firstCommittee[Int(slot) % firstCommittee.count]
+    }
+
+    static func merkleRoot(values: [Bytes32]) -> Bytes32 {
+        var o = [Data](repeating: Data(repeating: 0, count: 1), count: values.count - 1)
+        o.append(contentsOf: values)
+
+        for i in stride(from: values.count - 1, through: 0, by: -1) {
+            o[i] = hash(o[i * 2] + o[i * 2 + 1])
+        }
+
+        return o[1]
+    }
+
+    static func getAttestationParticipants(
+        state: BeaconState,
+        attestationData: AttestationData,
+        aggregationBitfield: Data
+    ) -> [ValidatorIndex] {
+        let crosslinkCommittees = getCrosslinkCommitteesAtSlot(state: state, slot: attestationData.slot)
+
+        assert(crosslinkCommittees.map({return $0.1 }).contains(attestationData.shard))
+
+        // @todo clean this ugly up
+        guard let crosslinkCommittee = crosslinkCommittees.first(where: {
+            $0.1 == attestationData.shard
+        })?.0 else {
+            assert(false)
+        }
+
+        assert(aggregationBitfield.count == (crosslinkCommittee.count + 7) / 8)
+
+        return crosslinkCommittee.enumerated().compactMap {
+            let i = $0.offset
+            if aggregationBitfield[i / 8] >> (7 - (i % 8)) % 2 == 1 {
+                return $0.element
+            }
+
+            return nil
+        }
+    }
+
+    static func getEffectiveBalance(state: BeaconState, index: ValidatorIndex) -> Gwei {
+        return min(state.validatorBalances[Int(index)], MAX_DEPOSIT_AMOUNT)
+    }
+
+    static func getForkVersion(fork: Fork, epoch: EpochNumber) -> UInt64 {
+        if epoch < fork.epoch {
+            return fork.previousVersion
+        }
+
+        return fork.currentVersion
+    }
+
+    static func getDomain(fork: Fork, epoch: EpochNumber, domainType: Domain) -> UInt64 {
+        return getForkVersion(fork: fork, epoch: epoch) * 2**32 + domainType.rawValue
+    }
+}
