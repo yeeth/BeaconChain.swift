@@ -9,5 +9,4 @@ class BLS {
     static func aggregate(pubkeys: [Data]) -> Data {
         return Data(count: 32)
     }
-
 }
