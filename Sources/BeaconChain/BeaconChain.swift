@@ -234,3 +234,39 @@ extension BeaconChain {
         return getForkVersion(fork: fork, epoch: epoch) * 2**32 + domainType.rawValue
     }
 }
+
+extension BeaconChain {
+
+    static func verifySlashableVoteData(state: BeaconState, data: SlashableVoteData) -> Bool {
+        if data.custodyBit0Indices.count + data.custodyBit1Indices.count > MAX_CASPER_VOTES {
+            return false
+        }
+
+        return BLS.verify(
+            pubkeys: [
+                BLS.aggregate(
+                    pubkeys: data.custodyBit0Indices.map { (i) in return state.validatorRegistry[Int(i)].pubkey }
+                ),
+                BLS.aggregate(
+                    pubkeys: data.custodyBit1Indices.map { (i) in return state.validatorRegistry[Int(i)].pubkey }
+                )
+            ],
+            messages: [
+                hashTreeRoot(AttestationDataAndCustodyBit(data: data.data, custodyBit: false)),
+                hashTreeRoot(AttestationDataAndCustodyBit(data: data.data, custodyBit: true)),
+            ],
+            signature: data.aggregateSignature,
+            domain: getDomain(fork: state.fork, epoch: slotToEpoch(data.data.slot), domainType: Domain.ATTESTATION)
+        )
+    }
+
+    static func isDoubleVote(_ left: AttestationData, _ right: AttestationData) -> Bool {
+        return slotToEpoch(left.slot) == slotToEpoch(right.slot)
+    }
+
+    static func isSurroundVote(_ left: AttestationData, _ right: AttestationData) -> Bool {
+        return left.justifiedEpoch < right.justifiedEpoch &&
+            right.justifiedEpoch + 1 == slotToEpoch(right.slot) &&
+            slotToEpoch(right.slot) < slotToEpoch(left.slot)
+    }
+}
