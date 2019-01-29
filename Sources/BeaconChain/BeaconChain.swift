@@ -144,3 +144,24 @@ extension BeaconChain {
         }
     }
 }
+
+extension BeaconChain {
+
+    static func getBlockRoot(state: BeaconState, slot: SlotNumber) -> Bytes32 {
+        assert(state.slot <= slot + LATEST_BLOCK_ROOTS_LENGTH)
+        assert(slot < state.slot)
+        return state.latestBlockRoots[Int(slot % LATEST_BLOCK_ROOTS_LENGTH)]
+    }
+
+    static func getRandaoMix(state: BeaconState, epoch: EpochNumber) -> Bytes32 {
+        let currentEpoch = getCurrentEpoch(state: state)
+        assert(currentEpoch - LATEST_RANDAO_MIXES_LENGTH < epoch && epoch <= currentEpoch)
+        return state.latestRandaoMixes[Int(epoch % LATEST_RANDAO_MIXES_LENGTH)]
+    }
+
+    static func getActiveIndexRoot(state: BeaconState, epoch: EpochNumber) -> Bytes32 {
+        let currentEpoch = getCurrentEpoch(state: state)
+        assert(currentEpoch - LATEST_INDEX_ROOTS_LENGTH < epoch && epoch <= currentEpoch)
+        return state.latestIndexRoots[Int(epoch % LATEST_INDEX_ROOTS_LENGTH)]
+    }
+}
