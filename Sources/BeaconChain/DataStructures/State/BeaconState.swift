@@ -8,7 +8,7 @@ struct BeaconState {
     var validatorRegistry: [Validator]
     var validatorBalances: [UInt64]
     let validatorRegistryUpdateEpoch: UInt64
-    let validatorRegistryExitCount: UInt64
+    var validatorRegistryExitCount: UInt64
 
     let latestRandaoMixes: [Data]
     let latestVdfOutputs: [Data]
@@ -30,7 +30,7 @@ struct BeaconState {
     let latestCrosslinks: [Crosslink]
     let latestBlockRoots: [Data]
     var latestIndexRoots: [Data]
-    let latestPenalizedBalances: [UInt64]
+    var latestPenalizedBalances: [UInt64]
     let latestAttestations: [PendingAttestation]
     let batchedBlockRoots: [Data]
 

@@ -314,7 +314,7 @@ extension BeaconChain {
 
         for (i, _) in state.validatorRegistry.enumerated() {
             if getEffectiveBalance(state: state, index: ValidatorIndex(i)) >= MAX_DEPOSIT_AMOUNT {
-//                activateValidator(state, i, true)
+                activateValidator(state: &state, index: ValidatorIndex(i), genesis: true)
             }
         }
 
@@ -422,5 +422,44 @@ extension BeaconChain {
             state.validatorBalances.append(amount)
         }
     }
+}
 
+extension BeaconChain {
+
+    static func activateValidator(state: inout BeaconState, index: ValidatorIndex, genesis: Bool) {
+        state.validatorRegistry[Int(index)].activationEpoch = genesis ? GENESIS_EPOCH : getEntryExitEpoch(getCurrentEpoch(state: state))
+    }
+
+    static func initiateValidatorExit(state: inout BeaconState, index: ValidatorIndex) {
+        state.validatorRegistry[Int(index)].statusFlags |= StatusFlag.INITIATED_EXIT.rawValue
+    }
+
+    static func exitValidator(state: inout BeaconState, index: ValidatorIndex) {
+        var validator = state.validatorRegistry[Int(index)]
+        if validator.exitEpoch <= getEntryExitEpoch(getCurrentEpoch(state: state)) {
+            return
+        }
+
+        validator.exitEpoch = getEntryExitEpoch(getCurrentEpoch(state: state))
+        state.validatorRegistryExitCount += 1
+        validator.exitCount = state.validatorRegistryExitCount
+        state.validatorRegistry[Int(index)] = validator
+    }
+
+    static func penalizeValidator(state: inout BeaconState, index: ValidatorIndex) {
+        exitValidator(state: &state, index: index)
+
+        state.latestPenalizedBalances[Int(getCurrentEpoch(state: state) % LATEST_PENALIZED_EXIT_LENGTH)] += getEffectiveBalance(state: state, index: index)
+
+        let whistleblowerIndex = getBeaconProposerIndex(state: state, slot: state.slot)
+        let whistleblowerReward = getEffectiveBalance(state: state, index: index) / WHISTLEBLOWER_REWARD_QUOTIENT
+
+        state.validatorBalances[Int(whistleblowerIndex)] += whistleblowerReward
+        state.validatorBalances[Int(index)] -= whistleblowerReward
+        state.validatorRegistry[Int(index)].penalizedEpoch = getCurrentEpoch(state: state)
+    }
+
+    static func prepareValidatorForWithdrawal(state: inout BeaconState, index: ValidatorIndex) {
+        state.validatorRegistry[Int(index)].statusFlags |= StatusFlag.WITHDRAWABLE.rawValue
+    }
 }
