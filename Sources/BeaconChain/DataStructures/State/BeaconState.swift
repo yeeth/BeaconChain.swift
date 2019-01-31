@@ -1,7 +1,7 @@
 import Foundation
 
 struct BeaconState {
-    let slot: UInt64
+    var slot: UInt64
     let genesisTime: UInt64
     let fork: Fork
 
