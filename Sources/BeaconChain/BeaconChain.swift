@@ -1,6 +1,7 @@
 import Foundation
 
 // @todo figure out better name
+// @todo refactor so this isn't all in one class
 
 class BeaconChain {
 

@@ -28,11 +28,11 @@ struct BeaconState {
     let finalizedEpoch: UInt64
 
     let latestCrosslinks: [Crosslink]
-    let latestBlockRoots: [Data]
+    var latestBlockRoots: [Data]
     var latestIndexRoots: [Data]
     var latestPenalizedBalances: [UInt64]
     let latestAttestations: [PendingAttestation]
-    let batchedBlockRoots: [Data]
+    var batchedBlockRoots: [Data]
 
     let latestEth1Data: Eth1Data
     let eth1DataVotes: [Eth1DataVote]
