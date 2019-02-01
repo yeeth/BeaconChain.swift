@@ -21,6 +21,7 @@ extension StateTransition {
 
         proposerSignature(state: &state, block: block)
         randao(state: &state, block: block)
+        eth1data(state: &state, block: block)
     }
 
     static func proposerSignature(state: inout BeaconState, block: BeaconBlock) {
@@ -62,5 +63,17 @@ extension StateTransition {
         )
 
         state.latestRandaoMixes[Int(BeaconChain.getCurrentEpoch(state: state) % LATEST_RANDAO_MIXES_LENGTH)] = BeaconChain.getRandaoMix(state: state, epoch: BeaconChain.getCurrentEpoch(state: state)) ^ BeaconChain.hash(block.randaoReveal)
+    }
+
+    static func eth1data(state: inout BeaconState, block: BeaconBlock) {
+        let votes = state.eth1DataVotes.enumerated()
+        for (i, vote) in votes {
+            if vote.eth1Data == block.eth1Data {
+                state.eth1DataVotes[i].voteCount += 1
+                continue
+            }
+
+            state.eth1DataVotes.append(Eth1DataVote(eth1Data: block.eth1Data, voteCount: 1))
+        }
     }
 }

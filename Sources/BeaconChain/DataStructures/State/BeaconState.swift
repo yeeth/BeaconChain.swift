@@ -35,5 +35,5 @@ struct BeaconState {
     var batchedBlockRoots: [Data]
 
     let latestEth1Data: Eth1Data
-    let eth1DataVotes: [Eth1DataVote]
+    var eth1DataVotes: [Eth1DataVote]
 }
