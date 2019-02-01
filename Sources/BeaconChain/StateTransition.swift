@@ -13,3 +13,35 @@ class StateTransition {
         }
     }
 }
+
+extension StateTransition {
+
+    static func processBlock(state: inout BeaconState, block: BeaconBlock) {
+        assert(state.slot == block.slot)
+    }
+
+    static func proposerSignature(state: inout BeaconState, block: BeaconBlock) {
+        var signatureBlock = block
+        signatureBlock.signature = EMPTY_SIGNATURE
+
+        let proposalRoot = BeaconChain.hashTreeRoot(ProposalSignedData(
+                slot: state.slot,
+                shard: BEACON_CHAIN_SHARD_NUMBER,
+                blockRoot: BeaconChain.hashTreeRoot(signatureBlock)
+            )
+        )
+
+        assert(
+            BLS.verify(
+                pubkey: state.validatorRegistry[Int(BeaconChain.getBeaconProposerIndex(state: state, slot: state.slot))].pubkey,
+                message: proposalRoot,
+                signature: block.signature,
+                domain: BeaconChain.getDomain(
+                    fork: state.fork,
+                    epoch: BeaconChain.getCurrentEpoch(state: state),
+                    domainType: Domain.PROPOSAL
+                )
+            )
+        )
+    }
+}
