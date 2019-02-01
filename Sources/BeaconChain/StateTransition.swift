@@ -20,6 +20,7 @@ extension StateTransition {
         assert(state.slot == block.slot)
 
         proposerSignature(state: &state, block: block)
+        randao(state: &state, block: block)
     }
 
     static func proposerSignature(state: inout BeaconState, block: BeaconBlock) {
@@ -45,5 +46,21 @@ extension StateTransition {
                 )
             )
         )
+    }
+
+    static func randao(state: inout BeaconState, block: BeaconBlock) {
+        let proposer = state.validatorRegistry[Int(BeaconChain.getBeaconProposerIndex(state: state, slot: state.slot))]
+
+        var epoch = BeaconChain.getCurrentEpoch(state: state)
+        assert(
+            BLS.verify(
+                pubkey: proposer.pubkey,
+                message: Data(bytes: &epoch, count: 32),
+                signature: block.randaoReveal,
+                domain: BeaconChain.getDomain(fork: state.fork, epoch: BeaconChain.getCurrentEpoch(state: state), domainType: Domain.RANDAO)
+            )
+        )
+
+        state.latestRandaoMixes[Int(BeaconChain.getCurrentEpoch(state: state) % LATEST_RANDAO_MIXES_LENGTH)] = BeaconChain.getRandaoMix(state: state, epoch: BeaconChain.getCurrentEpoch(state: state)) ^ BeaconChain.hash(block.randaoReveal)
     }
 }

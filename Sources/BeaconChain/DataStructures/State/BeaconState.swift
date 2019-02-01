@@ -10,7 +10,7 @@ struct BeaconState {
     let validatorRegistryUpdateEpoch: UInt64
     var validatorRegistryExitCount: UInt64
 
-    let latestRandaoMixes: [Data]
+    var latestRandaoMixes: [Data]
     let latestVdfOutputs: [Data]
     let previousEpochStartShard: UInt64
     let currentEpochStartShard: UInt64
