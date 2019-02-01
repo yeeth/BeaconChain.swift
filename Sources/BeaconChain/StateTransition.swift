@@ -18,6 +18,8 @@ extension StateTransition {
 
     static func processBlock(state: inout BeaconState, block: BeaconBlock) {
         assert(state.slot == block.slot)
+
+        proposerSignature(state: &state, block: block)
     }
 
     static func proposerSignature(state: inout BeaconState, block: BeaconBlock) {
