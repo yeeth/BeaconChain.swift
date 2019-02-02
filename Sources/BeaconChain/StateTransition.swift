@@ -268,5 +268,9 @@ extension StateTransition {
 
     static func processEpoch(state: inout BeaconState) {
         assert(state.slot + 1 % EPOCH_LENGTH == 0) // @todo not sure if this should be here
+
+        let currentEpoch = BeaconChain.getCurrentEpoch(state: state)
+        let previousEpoch = currentEpoch > GENESIS_EPOCH ? currentEpoch - 1 : currentEpoch
+        let nextEpoch = currentEpoch + 1
     }
 }
