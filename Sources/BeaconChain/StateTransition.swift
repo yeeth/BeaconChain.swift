@@ -253,7 +253,7 @@ extension StateTransition {
     static func verifyMerkleBranch(leaf: Bytes32, branch: [Bytes32], depth: Int, index: Int, root: Bytes32) -> Bool {
         var value = leaf
         for i in 0..<depth {
-            if index / (2**i) % 2 == 0 {
+            if index / (2**i) % 2 == 1 {
                 value = BeaconChain.hash(branch[i] + value)
             } else {
                 value = BeaconChain.hash(value + branch[i])
@@ -261,5 +261,12 @@ extension StateTransition {
         }
 
         return value == root
+    }
+}
+
+extension StateTransition {
+
+    static func processEpoch(state: inout BeaconState) {
+        assert(state.slot + 1 % EPOCH_LENGTH == 0) // @todo not sure if this should be here
     }
 }
