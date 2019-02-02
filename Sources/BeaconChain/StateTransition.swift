@@ -78,7 +78,7 @@ extension StateTransition {
     }
 
     static func proposerSlashings(state: inout BeaconState, block: BeaconBlock) {
-        assert(block.body.proposerSlashings.count <= MAX_CASPER_SLASHINGS)
+        assert(block.body.proposerSlashings.count <= MAX_PROPOSER_SLASHINGS)
 
         for proposerSlashing in block.body.proposerSlashings {
             let proposer = state.validatorRegistry[Int(proposerSlashing.proposerIndex)]
@@ -108,6 +108,39 @@ extension StateTransition {
             )
 
             BeaconChain.penalizeValidator(state: &state, index: proposerSlashing.proposerIndex)
+        }
+    }
+
+    static func casperSlashings(state: inout BeaconState, block: BeaconBlock) {
+        assert(block.body.casperSlashings.count <= MAX_CASPER_SLASHINGS)
+
+        for casperSlashing in block.body.casperSlashings {
+            let slashableVoteData1 = casperSlashing.slashableVoteData1
+            let slashableVoteData2 = casperSlashing.slashableVoteData2
+
+            let slashableVoteData1Indices = slashableVoteData1.custodyBit0Indices + slashableVoteData1.custodyBit1Indices
+            let slashableVoteData2Indices = slashableVoteData2.custodyBit0Indices + slashableVoteData2.custodyBit1Indices
+
+            let intersection = Set(slashableVoteData1Indices).intersection(Set(slashableVoteData2Indices))
+
+            assert(intersection.count > 1)
+
+            assert(slashableVoteData1.data != slashableVoteData2.data)
+            assert(
+                BeaconChain.isDoubleVote(slashableVoteData1.data, slashableVoteData2.data)
+                || BeaconChain.isSurroundVote(slashableVoteData1.data, slashableVoteData2.data)
+            )
+
+            assert(BeaconChain.verifySlashableVoteData(state: state, data: slashableVoteData1))
+            assert(BeaconChain.verifySlashableVoteData(state: state, data: slashableVoteData2))
+
+            for i in intersection {
+                if state.validatorRegistry[Int(i)].penalizedEpoch <= BeaconChain.getCurrentEpoch(state: state) {
+                    continue
+                }
+
+                BeaconChain.penalizeValidator(state: &state, index: i)
+            }
         }
     }
 }

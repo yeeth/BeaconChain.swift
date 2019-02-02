@@ -1,6 +1,6 @@
 import Foundation
 
-struct AttestationData {
+struct AttestationData: Equatable {
     let slot: UInt64
     let shard: UInt64
     let beaconBlockRoot: Data
