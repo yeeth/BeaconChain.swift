@@ -25,6 +25,7 @@ extension StateTransition {
         proposerSlashings(state: &state, block: block)
         casperSlashings(state: &state, block: block)
         attestations(state: &state, block: block)
+        deposits(state: &state, block: block)
     }
 
     static func proposerSignature(state: inout BeaconState, block: BeaconBlock) {
@@ -193,5 +194,44 @@ extension StateTransition {
                 )
             )
         }
+    }
+
+    static func deposits(state: inout BeaconState, block: BeaconBlock) {
+        assert(block.body.deposits.count <= MAX_DEPOSITS)
+
+        for deposit in block.body.deposits {
+            let serializedDepositData = Data(count: 64) // @todo when we have SSZ
+
+            assert(
+                verifyMerkleBranch(
+                    leaf: BeaconChain.hash(serializedDepositData),
+                    branch: deposit.branch,
+                    depth: Int(DEPOSIT_CONTRACT_TREE_DEPTH),
+                    index: Int(deposit.index),
+                    root: state.latestEth1Data.depositRoot
+                )
+            )
+
+            BeaconChain.processDeposit(
+                state: &state,
+                pubkey: deposit.depositData.depositInput.pubkey,
+                amount: deposit.depositData.amount,
+                proofOfPossession: deposit.depositData.depositInput.proofOfPossession,
+                withdrawalCredentials: deposit.depositData.depositInput.withdrawalCredentials
+            )
+        }
+    }
+
+    static func verifyMerkleBranch(leaf: Bytes32, branch: [Bytes32], depth: Int, index: Int, root: Bytes32) -> Bool {
+        var value = leaf
+        for i in 0..<depth {
+            if index / (2**i) % 2 == 0 {
+                value = BeaconChain.hash(branch[i] + value)
+            } else {
+                value = BeaconChain.hash(value + branch[i])
+            }
+        }
+
+        return value == root
     }
 }
