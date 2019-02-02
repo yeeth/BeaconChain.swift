@@ -272,5 +272,17 @@ extension StateTransition {
         let currentEpoch = BeaconChain.getCurrentEpoch(state: state)
         let previousEpoch = currentEpoch > GENESIS_EPOCH ? currentEpoch - 1 : currentEpoch
         let nextEpoch = currentEpoch + 1
+
+        let currentTotalBalance = BeaconChain.getActiveValidatorIndices(validators: state.validatorRegistry, epoch: currentEpoch)
+            .map { return BeaconChain.getEffectiveBalance(state: state, index: $0) }
+            .reduce(0, +)
+        let currentEpochAttestations = state.latestAttestations.compactMap {
+            (attestation) -> (PendingAttestation?) in
+            if currentEpoch == BeaconChain.slotToEpoch(attestation.data.slot) {
+                return attestation
+            }
+
+            return nil
+        }
     }
 }
