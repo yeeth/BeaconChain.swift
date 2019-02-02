@@ -26,6 +26,7 @@ extension StateTransition {
         casperSlashings(state: &state, block: block)
         attestations(state: &state, block: block)
         deposits(state: &state, block: block)
+        exits(state: &state, block: block)
     }
 
     static func proposerSignature(state: inout BeaconState, block: BeaconBlock) {
@@ -219,6 +220,33 @@ extension StateTransition {
                 proofOfPossession: deposit.depositData.depositInput.proofOfPossession,
                 withdrawalCredentials: deposit.depositData.depositInput.withdrawalCredentials
             )
+        }
+    }
+
+    static func exits(state: inout BeaconState, block: BeaconBlock) {
+        assert(block.body.exits.count <= MAX_EXITS)
+
+        for exit in block.body.exits {
+            let validator = state.validatorRegistry[Int(exit.validatorIndex)]
+
+            let epoch = BeaconChain.getCurrentEpoch(state: state)
+            assert(validator.exitEpoch > BeaconChain.getEntryExitEpoch(epoch))
+            assert(epoch >= exit.epoch)
+
+            let exitMessage = BeaconChain.hashTreeRoot(
+                Exit(epoch: exit.epoch, validatorIndex: exit.validatorIndex, signature: EMPTY_SIGNATURE)
+            )
+
+            assert(
+                BLS.verify(
+                    pubkey: validator.pubkey,
+                    message: exitMessage,
+                    signature: exit.signature,
+                    domain: BeaconChain.getDomain(fork: state.fork, epoch: exit.epoch, domainType: Domain.EXIT)
+                )
+            )
+
+            BeaconChain.initiateValidatorExit(state: &state, index: exit.validatorIndex)
         }
     }
 
