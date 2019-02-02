@@ -24,6 +24,7 @@ extension StateTransition {
         eth1data(state: &state, block: block)
         proposerSlashings(state: &state, block: block)
         casperSlashings(state: &state, block: block)
+        attestations(state: &state, block: block)
     }
 
     static func proposerSignature(state: inout BeaconState, block: BeaconBlock) {
@@ -143,6 +144,54 @@ extension StateTransition {
 
                 BeaconChain.penalizeValidator(state: &state, index: i)
             }
+        }
+    }
+
+    static func attestations(state: inout BeaconState, block: BeaconBlock) {
+        assert(block.body.attestations.count <= MAX_ATTESTATIONS)
+
+        for attestation in block.body.attestations {
+            assert(attestation.data.slot + MIN_ATTESTATION_INCLUSION_DELAY <= state.slot)
+            assert(attestation.data.slot + EPOCH_LENGTH >= state.slot)
+
+            let e = attestation.data.justifiedEpoch >= BeaconChain.getCurrentEpoch(state: state) ? state.justifiedEpoch : state.previousJustifiedEpoch
+            assert(attestation.data.justifiedEpoch == e)
+            assert(attestation.data.justifiedBlockRoot == BeaconChain.getBlockRoot(state: state, slot: BeaconChain.getEpochStartSlot(attestation.data.justifiedEpoch)))
+
+            let shardBlockRoot = state.latestCrosslinks[Int(attestation.data.shard)].shardBlockRoot
+            assert(attestation.data.latestCrosslinkRoot == shardBlockRoot || attestation.data.shardBlockRoot == shardBlockRoot)
+
+            let participants = BeaconChain.getAttestationParticipants(
+                state: state,
+                attestationData: attestation.data,
+                aggregationBitfield: attestation.aggregationBitfield
+            )
+
+            let groupPublicKey = BLS.aggregate(pubkeys: participants.map { return state.validatorRegistry[Int($0)].pubkey })
+
+            assert(
+                BLS.verify(
+                    pubkey: groupPublicKey,
+                    message: BeaconChain.hashTreeRoot(AttestationDataAndCustodyBit(data: attestation.data, custodyBit: false)),
+                    signature: attestation.aggregateSignature,
+                    domain: BeaconChain.getDomain(
+                        fork: state.fork,
+                        epoch: BeaconChain.slotToEpoch(attestation.data.slot),
+                        domainType: Domain.ATTESTATION
+                    )
+                )
+            )
+
+            assert(attestation.data.shardBlockRoot == ZERO_HASH) // @todo remove in phase 1
+
+            state.latestAttestations.append(
+                PendingAttestation(
+                    data: attestation.data,
+                    aggregationBitfield: attestation.aggregationBitfield,
+                    custodyBitfield: attestation.custodyBitfield,
+                    slotIncluded: state.slot
+                )
+            )
         }
     }
 }

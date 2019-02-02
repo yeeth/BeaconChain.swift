@@ -31,7 +31,7 @@ struct BeaconState {
     var latestBlockRoots: [Data]
     var latestIndexRoots: [Data]
     var latestPenalizedBalances: [UInt64]
-    let latestAttestations: [PendingAttestation]
+    var latestAttestations: [PendingAttestation]
     var batchedBlockRoots: [Data]
 
     let latestEth1Data: Eth1Data
