@@ -22,6 +22,8 @@ extension StateTransition {
         proposerSignature(state: &state, block: block)
         randao(state: &state, block: block)
         eth1data(state: &state, block: block)
+        proposerSlashings(state: &state, block: block)
+        casperSlashings(state: &state, block: block)
     }
 
     static func proposerSignature(state: inout BeaconState, block: BeaconBlock) {
