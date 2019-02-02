@@ -76,4 +76,38 @@ extension StateTransition {
             state.eth1DataVotes.append(Eth1DataVote(eth1Data: block.eth1Data, voteCount: 1))
         }
     }
+
+    static func proposerSlashings(state: inout BeaconState, block: BeaconBlock) {
+        assert(block.body.proposerSlashings.count <= MAX_CASPER_SLASHINGS)
+
+        for proposerSlashing in block.body.proposerSlashings {
+            let proposer = state.validatorRegistry[Int(proposerSlashing.proposerIndex)]
+            let epoch = BeaconChain.getCurrentEpoch(state: state)
+            // @todo none of these should be asserts
+            assert(proposerSlashing.proposalData1.slot == proposerSlashing.proposalData2.slot)
+            assert(proposerSlashing.proposalData1.shard == proposerSlashing.proposalData2.shard)
+            assert(proposerSlashing.proposalData1.blockRoot != proposerSlashing.proposalData2.blockRoot)
+            assert(proposer.penalizedEpoch > epoch)
+
+            assert(
+                BLS.verify(
+                    pubkey: proposer.pubkey,
+                    message: BeaconChain.hashTreeRoot(proposerSlashing.proposalData1),
+                    signature: proposerSlashing.proposalSignature1,
+                    domain: BeaconChain.getDomain(fork: state.fork, epoch: epoch, domainType: Domain.PROPOSAL)
+                )
+            )
+
+            assert(
+                BLS.verify(
+                    pubkey: proposer.pubkey,
+                    message: BeaconChain.hashTreeRoot(proposerSlashing.proposalData2),
+                    signature: proposerSlashing.proposalSignature2,
+                    domain: BeaconChain.getDomain(fork: state.fork, epoch: epoch, domainType: Domain.PROPOSAL)
+                )
+            )
+
+            BeaconChain.penalizeValidator(state: &state, index: proposerSlashing.proposerIndex)
+        }
+    }
 }
