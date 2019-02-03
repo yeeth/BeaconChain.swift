@@ -341,4 +341,106 @@ extension StateTransition {
             .map { return BeaconChain.getEffectiveBalance(state: state, index: $0) }
             .reduce(0, +)
     }
+
+    private static func attestingValidators(
+        state: BeaconState,
+        committee: [Int],
+        shard: UInt64,
+        currentEpochAttestations: [PendingAttestation],
+        previousEpochAttestations: [PendingAttestation]
+    ) -> [ValidatorIndex] {
+        let root = winningRoot(
+            state: state,
+            committee: committee,
+            shard: shard,
+            currentEpochAttestations: currentEpochAttestations,
+            previousEpochAttestations: previousEpochAttestations
+        )
+
+        return attestingValidatorIndices(
+            state: state,
+            committee: committee,
+            shard: shard,
+            shardBlockRoot: root,
+            currentEpochAttestations: currentEpochAttestations,
+            previousEpochAttestations: previousEpochAttestations
+        )
+    }
+
+    private static func totalAttestingBalance(
+        state: BeaconState,
+        committee: [Int],
+        shard: UInt64,
+        currentEpochAttestations: [PendingAttestation],
+        previousEpochAttestations: [PendingAttestation]
+    ) -> UInt64 {
+        return totalBalance(
+            state: state,
+            validators: attestingValidators(
+                state: state,
+                committee: committee,
+                shard: shard,
+                currentEpochAttestations: currentEpochAttestations,
+                previousEpochAttestations: previousEpochAttestations
+            )
+        )
+    }
+
+    private static func totalBalance(state: BeaconState, validators: [ValidatorIndex]) -> UInt64 {
+        return validators.map { return BeaconChain.getEffectiveBalance(state: state, index: $0) }
+            .reduce(0, +)
+    }
+
+    private static func attestingValidatorIndices(
+        state: BeaconState,
+        committee: [Int],
+        shard: UInt64,
+        shardBlockRoot: Data,
+        currentEpochAttestations: [PendingAttestation],
+        previousEpochAttestations: [PendingAttestation]
+    ) -> [ValidatorIndex] {
+        return (currentEpochAttestations + previousEpochAttestations)
+            .filter { $0.data.shard == shard && $0.data.shardBlockRoot == shardBlockRoot }
+            .flatMap {
+                return BeaconChain.getAttestationParticipants(
+                    state: state,
+                    attestationData: $0.data,
+                    aggregationBitfield: $0.aggregationBitfield
+                )
+            }
+    }
+
+    private static func winningRoot(
+        state: BeaconState,
+        committee: [Int],
+        shard: UInt64,
+        currentEpochAttestations: [PendingAttestation],
+        previousEpochAttestations: [PendingAttestation]
+    ) -> Data {
+        let candidateRoots = (currentEpochAttestations + previousEpochAttestations)
+            .filter { $0.data.shard == shard }
+            .map { $0.data.shardBlockRoot }
+
+        var winnerRoot = Data(count: 0)
+        var winnerBalance = UInt64(0)
+        for root in candidateRoots {
+            let indices = attestingValidatorIndices(
+                state: state,
+                committee: committee,
+                shard: shard,
+                shardBlockRoot: root,
+                currentEpochAttestations: currentEpochAttestations,
+                previousEpochAttestations: previousEpochAttestations
+            )
+
+            let rootBalance = self.totalBalance(state: state, validators: indices)
+
+            if rootBalance > winnerBalance || (rootBalance == winnerBalance && root < winnerRoot) {
+                winnerBalance = rootBalance
+                winnerRoot = root
+            }
+        }
+
+        return winnerRoot
+    }
 }
