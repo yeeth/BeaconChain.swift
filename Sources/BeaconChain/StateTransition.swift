@@ -313,7 +313,31 @@ extension StateTransition {
             return BeaconChain.getAttestationParticipants(state: state, attestationData: $0.data, aggregationBitfield: $0.aggregationBitfield)
         }
 
-        let previousEpochJustifiedAttesterBalance = previousEpochJustifiedAttesterIndices
+        let previousEpochJustifiedAttestingBalance = previousEpochJustifiedAttesterIndices
+            .map { return BeaconChain.getEffectiveBalance(state: state, index: $0) }
+            .reduce(0, +)
+
+        let previousEpochBoundaryAttestations = previousEpochJustifiedAttestations.filter {
+            $0.data.epochBoundaryRoot == BeaconChain.getBlockRoot(state: state, slot: BeaconChain.getEpochStartSlot(previousEpoch))
+        }
+
+        let previousEpochBoundaryAttesterIndices = previousEpochBoundaryAttestations.flatMap {
+            return BeaconChain.getAttestationParticipants(state: state, attestationData: $0.data, aggregationBitfield: $0.aggregationBitfield)
+        }
+
+        let previousEpochBoundaryAttestingBalance = previousEpochBoundaryAttesterIndices
+            .map { return BeaconChain.getEffectiveBalance(state: state, index: $0) }
+            .reduce(0, +)
+
+        let previousEpochHeadAttestations = previousEpochAttestations.filter {
+            $0.data.beaconBlockRoot == BeaconChain.getBlockRoot(state: state, slot: $0.data.slot)
+        }
+
+        let previousEpochHeadAttesterIndices = previousEpochHeadAttestations.flatMap {
+            return BeaconChain.getAttestationParticipants(state: state, attestationData: $0.data, aggregationBitfield: $0.aggregationBitfield)
+        }
+
+        let previousEpochHeadAttestingBalance = previousEpochHeadAttesterIndices
             .map { return BeaconChain.getEffectiveBalance(state: state, index: $0) }
             .reduce(0, +)
     }
