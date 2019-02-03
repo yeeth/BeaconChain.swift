@@ -282,7 +282,7 @@ extension StateTransition {
         }
 
         let currentEpochBoundryAttestations = currentEpochAttestations.filter {
-            return $0.data.epochBoundaryRoot == BeaconChain.getBlockRoot(state: state, slot: BeaconChain.getEpochStartSlot(currentEpoch))
+            $0.data.epochBoundaryRoot == BeaconChain.getBlockRoot(state: state, slot: BeaconChain.getEpochStartSlot(currentEpoch))
                 && $0.data.justifiedEpoch == state.justifiedEpoch
         }
 
