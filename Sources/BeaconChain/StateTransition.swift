@@ -276,13 +276,22 @@ extension StateTransition {
         let currentTotalBalance = BeaconChain.getActiveValidatorIndices(validators: state.validatorRegistry, epoch: currentEpoch)
             .map { return BeaconChain.getEffectiveBalance(state: state, index: $0) }
             .reduce(0, +)
-        let currentEpochAttestations = state.latestAttestations.compactMap {
-            (attestation) -> (PendingAttestation?) in
-            if currentEpoch == BeaconChain.slotToEpoch(attestation.data.slot) {
-                return attestation
-            }
 
-            return nil
+        let currentEpochAttestations = state.latestAttestations.filter {
+            return currentEpoch == BeaconChain.slotToEpoch($0.data.slot)
         }
+
+        let currentEpochBoundryAttestations = currentEpochAttestations.filter {
+            return $0.data.epochBoundaryRoot == BeaconChain.getBlockRoot(state: state, slot: BeaconChain.getEpochStartSlot(currentEpoch))
+                && $0.data.justifiedEpoch == state.justifiedEpoch
+        }
+
+        let currentEpochBoundaryAttesterIndices = currentEpochAttestations.flatMap {
+            return BeaconChain.getAttestationParticipants(state: state, attestationData: $0.data, aggregationBitfield: $0.aggregationBitfield)
+        }
+
+        let currentEpochBoundaryAttestingBalance = currentEpochBoundaryAttesterIndices
+            .map { return BeaconChain.getEffectiveBalance(state: state, index: $0) }
+            .reduce(0, +)
     }
 }
