@@ -331,11 +331,119 @@ extension StateTransition {
         }
 
         let previousEpochHeadAttestingBalance = totalBalance(state: state, validators: previousEpochHeadAttesterIndices)
+
+        eth1data(state: &state, nextEpoch: nextEpoch)
+
+        justification(
+            state: &state,
+            previousEpoch: previousEpoch,
+            currentEpoch: currentEpoch,
+            previousTotalBalance: previousTotalBalance,
+            previousEpochBoundaryAttestingBalance: previousEpochBoundaryAttestingBalance,
+            currentTotalBalance: currentTotalBalance,
+            currentEpochBoundaryAttestingBalance: currentEpochBoundaryAttestingBalance
+        )
+
+        crosslink(
+            state: &state,
+            previousEpoch: previousEpoch,
+            currentEpoch: currentEpoch,
+            nextEpoch: nextEpoch,
+            currentEpochAttestations: currentEpochAttestations,
+            previousEpochAttestations: previousEpochAttestations
+        )
+    }
+
+    private static func eth1data(state: inout BeaconState, nextEpoch: EpochNumber) {
+        if nextEpoch % ETH1_DATA_VOTING_PERIOD != 0 {
+            return
+        }
+
+        for vote in state.eth1DataVotes {
+            if vote.voteCount * 2 > ETH1_DATA_VOTING_PERIOD * EPOCH_LENGTH {
+                state.latestEth1Data = vote.eth1Data
+            }
+        }
+
+        state.eth1DataVotes = [Eth1DataVote]()
+    }
+
+    private static func justification(
+        state: inout BeaconState,
+        previousEpoch: EpochNumber,
+        currentEpoch: EpochNumber,
+        previousTotalBalance: Gwei,
+        previousEpochBoundaryAttestingBalance: Gwei,
+        currentTotalBalance: Gwei,
+        currentEpochBoundaryAttestingBalance: Gwei
+    ) {
+        var newJustifiedEpoch = state.justifiedEpoch
+        state.justificationBitfield = state.justificationBitfield << 1
+
+        if 3 * previousEpochBoundaryAttestingBalance >= 2 * previousTotalBalance {
+            state.justificationBitfield |= 2
+            newJustifiedEpoch = previousEpoch
+        }
+
+        if 3 * currentEpochBoundaryAttestingBalance >= 2 * currentTotalBalance {
+            state.justificationBitfield |= 1
+            newJustifiedEpoch = currentEpoch
+        }
+
+        if (state.justificationBitfield >> 1) % 8 == 0b111 && state.previousJustifiedEpoch == previousEpoch - 2 {
+            state.finalizedEpoch = state.previousJustifiedEpoch
+        }
+
+        if (state.justificationBitfield >> 1) % 4 == 0b11 && state.previousJustifiedEpoch == previousEpoch - 1 {
+            state.finalizedEpoch = state.previousJustifiedEpoch
+        }
+
+        if (state.justificationBitfield >> 0) % 8 == 0b111 && state.justifiedEpoch == previousEpoch - 1 {
+            state.finalizedEpoch = state.justifiedEpoch
+        }
+
+        if (state.justificationBitfield >> 0) % 4 == 0b11 && state.justifiedEpoch == previousEpoch {
+            state.finalizedEpoch = state.justifiedEpoch
+        }
+
+        state.previousJustifiedEpoch = state.justifiedEpoch
+        state.justifiedEpoch = newJustifiedEpoch
+    }
+
+    private static func crosslink(
+        state: inout BeaconState,
+        previousEpoch: EpochNumber,
+        currentEpoch: EpochNumber,
+        nextEpoch: EpochNumber,
+        currentEpochAttestations: [PendingAttestation],
+        previousEpochAttestations: [PendingAttestation]
+    ) {
+
+        for slot in BeaconChain.getEpochStartSlot(previousEpoch)..<BeaconChain.getEpochStartSlot(nextEpoch) {
+            let crosslinkCommitteesAtSlot = BeaconChain.getCrosslinkCommitteesAtSlot(state: state, slot: slot)
+
+            for (_, (crosslinkCommittee, shard)) in crosslinkCommitteesAtSlot.enumerated() {
+
+                // @todo clean up this pile of turd
+                if 3 * totalAttestingBalance(state: state, committee: crosslinkCommittee, shard: shard, currentEpochAttestations: currentEpochAttestations, previousEpochAttestations: previousEpochAttestations) >= 2 * totalBalance(state: state, validators: crosslinkCommittee) {
+                    state.latestCrosslinks[Int(shard)] = Crosslink(
+                        epoch: currentEpoch,
+                        shardBlockRoot: winningRoot(
+                            state: state,
+                            committee: crosslinkCommittee,
+                            shard: shard,
+                            currentEpochAttestations: currentEpochAttestations,
+                            previousEpochAttestations: previousEpochAttestations
+                        )
+                    )
+                }
+            }
+        }
     }
 
     private static func attestingValidators(
         state: BeaconState,
-        committee: [Int],
+        committee: [ValidatorIndex],
         shard: UInt64,
         currentEpochAttestations: [PendingAttestation],
         previousEpochAttestations: [PendingAttestation]
@@ -360,7 +468,7 @@ extension StateTransition {
 
     private static func totalAttestingBalance(
         state: BeaconState,
-        committee: [Int],
+        committee: [ValidatorIndex],
         shard: UInt64,
         currentEpochAttestations: [PendingAttestation],
         previousEpochAttestations: [PendingAttestation]
@@ -384,7 +492,7 @@ extension StateTransition {
 
     private static func attestingValidatorIndices(
         state: BeaconState,
-        committee: [Int],
+        committee: [ValidatorIndex],
         shard: UInt64,
         shardBlockRoot: Data,
         currentEpochAttestations: [PendingAttestation],
@@ -403,7 +511,7 @@ extension StateTransition {
 
     private static func winningRoot(
         state: BeaconState,
-        committee: [Int],
+        committee: [ValidatorIndex],
         shard: UInt64,
         currentEpochAttestations: [PendingAttestation],
         previousEpochAttestations: [PendingAttestation]
@@ -437,7 +545,7 @@ extension StateTransition {
 
     private static func inclusionDistance(state: BeaconState, index: Int) -> UInt64 {
         for a in state.latestAttestations {
-            let participated = BeaconChain.getAttestationParticipants(state: state, data: a.data, aggregationBitfield: a.aggregationBitfield)
+            let participated = BeaconChain.getAttestationParticipants(state: state, attestationData: a.data, aggregationBitfield: a.aggregationBitfield)
 
             for i in participated {
                 if index == i {
@@ -451,7 +559,7 @@ extension StateTransition {
 
     private static func inclusionSlot(state: BeaconState, index: Int) -> UInt64 {
         for a in state.latestAttestations {
-            let participated = BeaconChain.getAttestationParticipants(state: state, data: a.data, aggregationBitfield: a.aggregationBitfield)
+            let participated = BeaconChain.getAttestationParticipants(state: state, attestationData: a.data, aggregationBitfield: a.aggregationBitfield)
 
             for i in participated {
                 if index == i {

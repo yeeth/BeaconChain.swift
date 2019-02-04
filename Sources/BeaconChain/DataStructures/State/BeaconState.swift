@@ -22,18 +22,18 @@ struct BeaconState {
 //    @todo will be defined in 1.0
 //    let custodyChallenges: [CustodyChallenges]
 
-    let previousJustifiedEpoch: UInt64
-    let justifiedEpoch: UInt64
-    let justificationBitfield: UInt64
-    let finalizedEpoch: UInt64
+    var previousJustifiedEpoch: UInt64
+    var justifiedEpoch: UInt64
+    var justificationBitfield: UInt64
+    var finalizedEpoch: UInt64
 
-    let latestCrosslinks: [Crosslink]
+    var latestCrosslinks: [Crosslink]
     var latestBlockRoots: [Data]
     var latestIndexRoots: [Data]
     var latestPenalizedBalances: [UInt64]
     var latestAttestations: [PendingAttestation]
     var batchedBlockRoots: [Data]
 
-    let latestEth1Data: Eth1Data
+    var latestEth1Data: Eth1Data
     var eth1DataVotes: [Eth1DataVote]
 }
