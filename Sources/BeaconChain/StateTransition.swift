@@ -434,4 +434,32 @@ extension StateTransition {
 
         return winnerRoot
     }
+
+    private static func inclusionDistance(state: BeaconState, index: Int) -> UInt64 {
+        for a in state.latestAttestations {
+            let participated = BeaconChain.getAttestationParticipants(state: state, data: a.data, aggregationBitfield: a.aggregationBitfield)
+
+            for i in participated {
+                if index == i {
+                    return a.slotIncluded - a.data.slot
+                }
+            }
+        }
+
+        return 0
+    }
+
+    private static func inclusionSlot(state: BeaconState, index: Int) -> UInt64 {
+        for a in state.latestAttestations {
+            let participated = BeaconChain.getAttestationParticipants(state: state, data: a.data, aggregationBitfield: a.aggregationBitfield)
+
+            for i in participated {
+                if index == i {
+                    return a.slotIncluded
+                }
+            }
+        }
+
+        return 0
+    }
 }
