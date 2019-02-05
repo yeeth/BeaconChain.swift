@@ -441,6 +441,73 @@ extension StateTransition {
         }
     }
 
+    private static func rewardsAndPenalties(
+        state: inout BeaconState,
+        currentEpoch: EpochNumber,
+        nextEpoch: EpochNumber,
+        previousTotalBalance: Gwei,
+        totalBalance: UInt64,
+        previousEpochJustifiedAttesterIndices: [ValidatorIndex],
+        previousEpochJustifiedAttestingBalance: UInt64,
+        previousEpochBoundaryAttesterIndices: [ValidatorIndex],
+        previousEpochBoundaryAttestingBalance: UInt64,
+        previousEpochHeadAttesterIndices: [ValidatorIndex],
+        previousEpochHeadAttestingBalance: UInt64,
+        previousEpochAttesterIndices: [ValidatorIndex]
+    ) {
+        let baseRewardQuotient = BeaconChain.integerSquareRoot(n: previousTotalBalance) / BASE_REWARD_QUOTIENT
+
+        let epochsSinceFinality = nextEpoch - state.finalizedEpoch
+
+        let activeValidators = Set(BeaconChain.getActiveValidatorIndices(validators: state.validatorRegistry, epoch: currentEpoch))
+
+        if epochsSinceFinality <= 4 {
+
+            expectedFFGSource(
+                state: &state,
+                previousEpochJustifiedAttesterIndices: previousEpochJustifiedAttesterIndices,
+                activeValidators: activeValidators,
+                previousEpochJustifiedAttestingBalance: previousEpochJustifiedAttestingBalance,
+                baseRewardQuotient: baseRewardQuotient,
+                totalBalance: previousTotalBalance
+            )
+            
+        } else {
+
+        }
+    }
+
+    static func expectedFFGSource(
+        state: inout BeaconState,
+        previousEpochJustifiedAttesterIndices: [ValidatorIndex],
+        activeValidators: Set<ValidatorIndex>,
+        previousEpochJustifiedAttestingBalance: UInt64,
+        baseRewardQuotient: UInt64,
+        totalBalance: UInt64
+    ) {
+        for index in previousEpochJustifiedAttesterIndices {
+            state.validatorBalances[Int(index)] += baseReward(state: state, index: index, baseRewardQuotient: baseRewardQuotient) * previousEpochJustifiedAttestingBalance / totalBalance
+        }
+
+        activeValidators.subtracting(Set(previousEpochJustifiedAttesterIndices)).forEach({
+            (index) in
+            state.validatorBalances[Int(index)] -= baseReward(state: state, index: index, baseRewardQuotient: baseRewardQuotient)
+        })
+    }
+
+    private static func baseReward(state: BeaconState, index: ValidatorIndex, baseRewardQuotient: UInt64) -> UInt64 {
+        return BeaconChain.getEffectiveBalance(state: state, index: index) / baseRewardQuotient / 5
+    }
+
+    private static func inactivityPenalty(
+        state: BeaconState,
+        index: ValidatorIndex,
+        epochsSinceFinality: UInt64,
+        baseRewardQuotient: UInt64
+    ) -> UInt64 {
+        return baseReward(state: state, index: index, baseRewardQuotient: baseRewardQuotient) + BeaconChain.getEffectiveBalance(state: state, index: index) * epochsSinceFinality / INACTIVITY_PENALTY_QUOTIENT / 2
+    }
+
     private static func attestingValidators(
         state: BeaconState,
         committee: [ValidatorIndex],
