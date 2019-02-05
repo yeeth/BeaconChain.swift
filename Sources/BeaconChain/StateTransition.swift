@@ -471,7 +471,16 @@ extension StateTransition {
                 baseRewardQuotient: baseRewardQuotient,
                 totalBalance: previousTotalBalance
             )
-            
+
+            expectedFFGTarget(
+                state: &state,
+                previousEpochBoundaryAttesterIndices: previousEpochBoundaryAttesterIndices,
+                activeValidators: activeValidators,
+                previousEpochBoundaryAttestingBalance: previousEpochBoundaryAttestingBalance,
+                baseRewardQuotient: baseRewardQuotient,
+                totalBalance: previousTotalBalance
+            )
+
         } else {
 
         }
@@ -493,6 +502,26 @@ extension StateTransition {
             (index) in
             state.validatorBalances[Int(index)] -= baseReward(state: state, index: index, baseRewardQuotient: baseRewardQuotient)
         })
+    }
+
+    static func expectedFFGTarget(
+        state: inout BeaconState,
+        previousEpochBoundaryAttesterIndices: [ValidatorIndex],
+        activeValidators: Set<ValidatorIndex>,
+        previousEpochBoundaryAttestingBalance: UInt64,
+        baseRewardQuotient: UInt64,
+        totalBalance: UInt64
+    ) -> BeaconState {
+        for index in previousEpochBoundaryAttesterIndices {
+            state.validatorBalances[Int(index)] += baseReward(state: state, index: index, baseRewardQuotient: baseRewardQuotient) * previousEpochBoundaryAttestingBalance / totalBalance
+        }
+
+        activeValidators.subtracting(Set(previousEpochBoundaryAttesterIndices)).forEach({
+            (index) in
+            state.validatorBalances[Int(index)] -= baseReward(state: state, index: index, baseRewardQuotient: baseRewardQuotient)
+        })
+
+        return state
     }
 
     private static func baseReward(state: BeaconState, index: ValidatorIndex, baseRewardQuotient: UInt64) -> UInt64 {
