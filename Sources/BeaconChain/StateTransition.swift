@@ -481,6 +481,19 @@ extension StateTransition {
                 totalBalance: previousTotalBalance
             )
 
+            expectedBeaconChainHead(
+                state: &state,
+                previousEpochHeadAttesterIndices: previousEpochHeadAttesterIndices,
+                activeValidators: activeValidators,
+                previousEpochHeadAttestingBalance: previousEpochHeadAttestingBalance,
+                baseRewardQuotient: baseRewardQuotient,
+                totalBalance: previousTotalBalance
+            )
+
+            for index in previousEpochAttesterIndices {
+                state.validatorBalances[Int(index)] += baseReward(state: state, index: index, baseRewardQuotient: baseRewardQuotient) + MIN_ATTESTATION_INCLUSION_DELAY / inclusionDistance(state: state, index: index)
+            }
+
         } else {
 
         }
@@ -517,6 +530,26 @@ extension StateTransition {
         }
 
         activeValidators.subtracting(Set(previousEpochBoundaryAttesterIndices)).forEach({
+            (index) in
+            state.validatorBalances[Int(index)] -= baseReward(state: state, index: index, baseRewardQuotient: baseRewardQuotient)
+        })
+
+        return state
+    }
+
+    static func expectedBeaconChainHead(
+        state: inout BeaconState,
+        previousEpochHeadAttesterIndices: [ValidatorIndex],
+        activeValidators: Set<ValidatorIndex>,
+        previousEpochHeadAttestingBalance: UInt64,
+        baseRewardQuotient: UInt64,
+        totalBalance: UInt64
+    ) -> BeaconState {
+        for index in previousEpochHeadAttesterIndices {
+            state.validatorBalances[Int(index)] += baseReward(state: state, index: index, baseRewardQuotient: baseRewardQuotient) * previousEpochHeadAttestingBalance / totalBalance
+        }
+
+        activeValidators.subtracting(Set(previousEpochHeadAttesterIndices)).forEach({
             (index) in
             state.validatorBalances[Int(index)] -= baseReward(state: state, index: index, baseRewardQuotient: baseRewardQuotient)
         })
@@ -639,7 +672,7 @@ extension StateTransition {
         return winnerRoot
     }
 
-    private static func inclusionDistance(state: BeaconState, index: Int) -> UInt64 {
+    private static func inclusionDistance(state: BeaconState, index: ValidatorIndex) -> UInt64 {
         for a in state.latestAttestations {
             let participated = BeaconChain.getAttestationParticipants(state: state, attestationData: a.data, aggregationBitfield: a.aggregationBitfield)
 
