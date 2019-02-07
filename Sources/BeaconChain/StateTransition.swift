@@ -443,6 +443,7 @@ extension StateTransition {
 
     private static func rewardsAndPenalties(
         state: inout BeaconState,
+        previousEpoch: EpochNumber,
         currentEpoch: EpochNumber,
         nextEpoch: EpochNumber,
         previousTotalBalance: Gwei,
@@ -453,7 +454,9 @@ extension StateTransition {
         previousEpochBoundaryAttestingBalance: UInt64,
         previousEpochHeadAttesterIndices: [ValidatorIndex],
         previousEpochHeadAttestingBalance: UInt64,
-        previousEpochAttesterIndices: [ValidatorIndex]
+        previousEpochAttesterIndices: [ValidatorIndex],
+        currentEpochAttestations: [PendingAttestation],
+        previousEpochAttestations: [PendingAttestation]
     ) {
         let baseRewardQuotient = BeaconChain.integerSquareRoot(n: previousTotalBalance) / BASE_REWARD_QUOTIENT
 
@@ -537,6 +540,31 @@ extension StateTransition {
             state.validatorBalances[Int(proposer)] += baseReward(state: state, index: index, baseRewardQuotient: baseRewardQuotient) / INCLUDER_REWARD_QUOTIENT
         }
 
+        for slot in BeaconChain.getEpochStartSlot(previousEpoch)..<BeaconChain.getEpochStartSlot(currentEpoch) {
+            let crosslinkCommitteesAtSlot = BeaconChain.getCrosslinkCommitteesAtSlot(state: state, slot: slot)
+
+            for (_, (crosslinkCommittee, shard)) in crosslinkCommitteesAtSlot.enumerated() {
+
+                let attestingValidators = self.attestingValidators(
+                    state: state,
+                    committee: crosslinkCommittee,
+                    shard: shard,
+                    currentEpochAttestations: currentEpochAttestations,
+                    previousEpochAttestations: previousEpochAttestations
+                )
+
+                let totalBalance = self.totalBalance(state: state, validators: crosslinkCommittee)
+                let totalAttestingBalance = self.totalAttestingBalance(state: state, committee: crosslinkCommittee, shard: shard, currentEpochAttestations: previousEpochAttestations, previousEpochAttestations: previousEpochAttestations)
+
+                for i in crosslinkCommittee {
+                    if let _ = attestingValidators.firstIndex(of: i) {
+                        state.validatorBalances[Int(i)] += baseReward(state: state, index: i, baseRewardQuotient: baseRewardQuotient) * totalAttestingBalance / totalBalance
+                    } else {
+                        state.validatorBalances[Int(i)] -= baseReward(state: state, index: i, baseRewardQuotient: baseRewardQuotient)
+                    }
+                }
+            }
+        }
     }
 
     static func deductInactivityBalance(
