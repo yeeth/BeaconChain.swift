@@ -565,6 +565,16 @@ extension StateTransition {
                 }
             }
         }
+
+        processEjections(state: &state)
+    }
+
+    static func processEjections(state: inout BeaconState) {
+        for i in BeaconChain.getActiveValidatorIndices(validators: state.validatorRegistry, epoch: BeaconChain.getCurrentEpoch(state: state)) {
+            if state.validatorBalances[Int(i)] < EJECTION_BALANCE {
+                BeaconChain.exitValidator(state: &state, index: i)
+            }
+        }
     }
 
     static func deductInactivityBalance(
