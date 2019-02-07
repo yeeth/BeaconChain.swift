@@ -495,7 +495,59 @@ extension StateTransition {
             }
 
         } else {
+            deductInactivityBalance(
+                state: &state,
+                activeValidators: activeValidators,
+                excluding: previousEpochJustifiedAttesterIndices,
+                epochsSinceFinality: epochsSinceFinality,
+                baseRewardQuotient: baseRewardQuotient
+            )
 
+            deductInactivityBalance(
+                state: &state,
+                activeValidators: activeValidators,
+                excluding: previousEpochBoundaryAttesterIndices,
+                epochsSinceFinality: epochsSinceFinality,
+                baseRewardQuotient: baseRewardQuotient
+            )
+
+            activeValidators.subtracting(Set(previousEpochHeadAttesterIndices)).forEach({
+                (index) in
+                state.validatorBalances[Int(index)] -= baseReward(state: state, index: index, baseRewardQuotient: baseRewardQuotient)
+            })
+
+            activeValidators.forEach({
+                index in
+                if state.validatorRegistry[Int(index)].penalizedEpoch <= currentEpoch {
+                    state.validatorBalances[Int(index)] -= 2 * inactivityPenalty(state: state, index: index, epochsSinceFinality: epochsSinceFinality, baseRewardQuotient: baseRewardQuotient) + baseReward(state: state, index: index, baseRewardQuotient: baseRewardQuotient)
+                }
+            })
+
+            for index in previousEpochAttesterIndices {
+                let base = baseReward(state: state, index: index, baseRewardQuotient: baseRewardQuotient)
+                state.validatorBalances[Int(index)] -= base - base * MIN_ATTESTATION_INCLUSION_DELAY / inclusionDistance(state: state, index: index)
+            }
+        }
+
+        for index in previousEpochAttesterIndices {
+            let proposer = BeaconChain.getBeaconProposerIndex(
+                state: state,
+                slot: inclusionSlot(state: state, index: Int(index))
+            )
+            state.validatorBalances[Int(proposer)] += baseReward(state: state, index: index, baseRewardQuotient: baseRewardQuotient) / INCLUDER_REWARD_QUOTIENT
+        }
+
+    }
+
+    static func deductInactivityBalance(
+        state: inout BeaconState,
+        activeValidators: Set<ValidatorIndex>,
+        excluding: [ValidatorIndex],
+        epochsSinceFinality: UInt64,
+        baseRewardQuotient: UInt64
+    ) {
+        activeValidators.subtracting(Set(excluding)).forEach {
+            state.validatorBalances[Int($0)] -= inactivityPenalty(state: state, index: $0, epochsSinceFinality: epochsSinceFinality, baseRewardQuotient: baseRewardQuotient)
         }
     }
 
