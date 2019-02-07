@@ -12,11 +12,11 @@ struct BeaconState {
 
     var latestRandaoMixes: [Data]
     let latestVdfOutputs: [Data]
-    let previousEpochStartShard: UInt64
+    var previousEpochStartShard: UInt64
     let currentEpochStartShard: UInt64
-    let previousCalculationEpoch: UInt64
+    var previousCalculationEpoch: UInt64
     let currentCalculationEpoch: UInt64
-    let previousEpochSeed: Data
+    var previousEpochSeed: Data
     var currentEpochSeed: Data
 
 //    @todo will be defined in 1.0
