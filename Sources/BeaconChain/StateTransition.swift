@@ -569,6 +569,16 @@ extension StateTransition {
         processEjections(state: &state)
 
         shufflingSeedData(state: &state, nextEpoch: nextEpoch)
+
+        let shards = (0..<BeaconChain.getCurrentEpochCommitteeCount(state: state)).filter {
+            state.latestCrosslinks[Int((state.currentCalculationEpoch + UInt64($0)) % SHARD_COUNT)].epoch <= state.validatorRegistryUpdateEpoch
+        }
+
+        if state.finalizedEpoch > state.validatorRegistryUpdateEpoch && shards.count == 0 {
+            // @todo update_validator_registry
+        } else {
+            // If a validator registry update does not happen do the following:
+        }
     }
 
     static func shufflingSeedData(state: inout BeaconState, nextEpoch: EpochNumber) {
