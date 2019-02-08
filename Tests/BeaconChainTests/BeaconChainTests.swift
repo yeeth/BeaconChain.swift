@@ -69,12 +69,12 @@ final class BeaconChainTests: XCTestCase {
 
         XCTAssertEqual(
             BeaconChain.getDomain(fork: data, epoch: 9, domainType: Domain.PROPOSAL),
-            (2*constant)+2
+            EpochNumber((2*constant)+2)
         )
 
         XCTAssertEqual(
             BeaconChain.getDomain(fork: data, epoch: 11, domainType: Domain.EXIT),
-            (3*constant)+3
+            EpochNumber((3*constant)+3)
         )
     }
 
