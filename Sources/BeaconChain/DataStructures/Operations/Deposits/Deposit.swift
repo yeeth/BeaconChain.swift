@@ -1,7 +1,7 @@
 import Foundation
 
 struct Deposit {
-    let branch: [Data] // not sure if good
-    let index: Int
+    let branch: [Data]
+    let index: UInt64
     let depositData: DepositData
 }

@@ -1,62 +1,282 @@
 import Foundation
 
+// @todo figure out better name
+// @todo refactor so this isn't all in one class
+
 class BeaconChain {
 
-    static func getInitialBeaconState(initialValidatorDeposits: [Deposit], genesisTime: TimeInterval, latestEth1Data: Eth1Data) -> BeaconState {
-        var state = BeaconChain.genesisState(genesisTime: genesisTime, latestEth1Data: latestEth1Data)
+    static func hash(_ data: Any) -> Data {
+        // @todo
+        return Data(count: 0)
+    }
 
-        for deposit in initialValidatorDeposits {
-            BeaconChain.processDeposit(state: &state, deposit: deposit)
-        }
+    static func hashTreeRoot(_ data: Any) -> Data {
+        // @todo
+        return Data(count: 0)
+    }
 
-        for (i, _) in state.validatorRegistry.enumerated() {
-            if BeaconChain.getEffectiveBalance(state: state, index: i) >= MAX_DEPOSIT_AMOUNT {
-                BeaconChain.activateValidator(state: &state, index: i, genesis: true)
+}
+
+extension BeaconChain {
+
+    // @todo should be a function on slot number types
+    static func slotToEpoch(_ slot: SlotNumber) -> EpochNumber {
+        return slot / EPOCH_LENGTH
+    }
+
+    static func getCurrentEpoch(state: BeaconState) -> EpochNumber {
+        return slotToEpoch(state.slot)
+    }
+
+    static func getEpochStartSlot(_ epoch: EpochNumber) -> SlotNumber {
+        return epoch * EPOCH_LENGTH
+    }
+
+    static func getEntryExitEpoch(_ epoch: EpochNumber) -> EpochNumber {
+        return epoch + 1 + ENTRY_EXIT_DELAY
+    }
+}
+
+extension BeaconChain {
+
+    static func isActive(validator: Validator, epoch: EpochNumber) -> Bool {
+        return validator.activationEpoch <= epoch && epoch < validator.exitEpoch
+    }
+
+    static func getActiveValidatorIndices(validators: [Validator], epoch: EpochNumber) -> [ValidatorIndex] {
+        return validators.enumerated().compactMap {
+            (k, v) in
+            if isActive(validator: v, epoch: epoch) {
+                return ValidatorIndex(k)
             }
+
+            return nil
+        }
+    }
+}
+
+extension BeaconChain {
+
+    // @todo use generic instead of any
+    static func shuffle<T>(values: [T], seed: Bytes32) -> [T] {
+        return [T]()
+    }
+
+    static func split<T>(values: [T], splitCount: Int) -> [[T]] {
+        return [[T]]()
+    }
+
+    static func getShuffling(seed: Bytes32, validators: [Validator], epoch: EpochNumber) -> [[ValidatorIndex]] {
+        let activeValidatorIndices = getActiveValidatorIndices(validators: validators, epoch: epoch)
+        let committeesPerEpoch = getEpochCommitteeCount(activeValidatorCount: validators.count)
+
+        var e = epoch
+        let newSeed = seed ^ Data(bytes: &e, count: 32)
+        let shuffledActiveValidatorIndices = shuffle(values: activeValidatorIndices, seed: newSeed)
+
+        return split(values: shuffledActiveValidatorIndices, splitCount: committeesPerEpoch)
+    }
+}
+
+extension BeaconChain {
+
+    static func getEpochCommitteeCount(activeValidatorCount: Int) -> Int {
+        return Int(
+            max(
+                1,
+                min(
+                    SHARD_COUNT / EPOCH_LENGTH,
+                    UInt64(activeValidatorCount) / EPOCH_LENGTH / TARGET_COMMITTEE_SIZE
+                )
+            ) * EPOCH_LENGTH
+        )
+    }
+
+    static func getPreviousEpochCommitteeCount(state: BeaconState) -> Int {
+        let previousActiveValidators = getActiveValidatorIndices(
+            validators: state.validatorRegistry,
+            epoch: state.previousCalculationEpoch
+        )
+
+        return getEpochCommitteeCount(activeValidatorCount: previousActiveValidators.count)
+    }
+
+    static func getCurrentEpochCommitteeCount(state: BeaconState) -> Int {
+        let currentActiveValidators = getActiveValidatorIndices(
+            validators: state.validatorRegistry,
+            epoch: state.currentCalculationEpoch
+        )
+
+        return getEpochCommitteeCount(activeValidatorCount: currentActiveValidators.count)
+    }
+
+    static func getCrosslinkCommitteesAtSlot(state: BeaconState, slot: SlotNumber) -> [([ValidatorIndex], ShardNumber)] {
+        let epoch = slotToEpoch(slot)
+        let currentEpoch = getCurrentEpoch(state: state)
+        let previousEpoch = currentEpoch > GENESIS_EPOCH ? currentEpoch - 1 : currentEpoch
+        let nextEpoch = currentEpoch + 1
+
+        assert(previousEpoch <= epoch && epoch < nextEpoch)
+
+        var committeesPerEpoch: Int
+        var seed: Data
+        var shufflingEpoch: UInt64
+        var shufflingStartShard: UInt64
+        if epoch < currentEpoch {
+            committeesPerEpoch = getPreviousEpochCommitteeCount(state: state)
+            seed = state.previousEpochSeed
+            shufflingEpoch = state.previousCalculationEpoch
+            shufflingStartShard = state.previousEpochStartShard
+        } else {
+            committeesPerEpoch = getCurrentEpochCommitteeCount(state: state)
+            seed = state.currentEpochSeed
+            shufflingEpoch = state.currentCalculationEpoch
+            shufflingStartShard = state.currentEpochStartShard
         }
 
-        return state
-    }
+        let shuffling = getShuffling(seed: seed, validators: state.validatorRegistry, epoch: shufflingEpoch)
 
-    static func getEffectiveBalance(state: BeaconState, index: Int) -> UInt64 {
-        return min(state.validatorBalances[index], MAX_DEPOSIT_AMOUNT)
-    }
+        let offset = slot % EPOCH_LENGTH
+        let committeesPerSlot = UInt64(committeesPerEpoch) / EPOCH_LENGTH
+        let slotStartShard = (shufflingStartShard + committeesPerSlot * offset) % SHARD_COUNT
 
-    static func getBlockRoot(state: BeaconState, slot: UInt64) -> Data {
+        return (0..<committeesPerSlot).map {
+            i in
+            return (
+                shuffling[Int(committeesPerSlot * offset + i)],
+                (slotStartShard + i) % SHARD_COUNT
+            )
+        }
+    }
+}
+
+extension BeaconChain {
+
+    static func getBlockRoot(state: BeaconState, slot: SlotNumber) -> Bytes32 {
         assert(state.slot <= slot + LATEST_BLOCK_ROOTS_LENGTH)
         assert(slot < state.slot)
-        return state.latestBlockRoots[Int(slot.mod(LATEST_BLOCK_ROOTS_LENGTH))]
+        return state.latestBlockRoots[Int(slot % LATEST_BLOCK_ROOTS_LENGTH)]
     }
 
-    static func getRandaoMix(state: BeaconState, slot: UInt64) -> Data {
-        assert(state.slot <= slot + LATEST_RANDAO_MIXES_LENGTH)
-        assert(slot < state.slot)
-        return state.latestBlockRoots[Int(slot.mod(LATEST_RANDAO_MIXES_LENGTH))]
+    static func getRandaoMix(state: BeaconState, epoch: EpochNumber) -> Bytes32 {
+        let currentEpoch = getCurrentEpoch(state: state)
+        assert(currentEpoch - LATEST_RANDAO_MIXES_LENGTH < epoch && epoch <= currentEpoch)
+        return state.latestRandaoMixes[Int(epoch % LATEST_RANDAO_MIXES_LENGTH)]
     }
 
-    static func getBeaconProposerIndex(state: BeaconState, slot: UInt64) -> Int {
-        let (committee, _) = BeaconChain.getCrosslinkCommitteesAtSlot(state: state, slot: slot)[0]
-        return committee[Int(slot.mod(UInt64(committee.count)))]
+    static func getActiveIndexRoot(state: BeaconState, epoch: EpochNumber) -> Bytes32 {
+        let currentEpoch = getCurrentEpoch(state: state)
+        assert(currentEpoch - LATEST_INDEX_ROOTS_LENGTH < epoch && epoch <= currentEpoch)
+        return state.latestIndexRoots[Int(epoch % LATEST_INDEX_ROOTS_LENGTH)]
+    }
+}
+
+extension BeaconChain {
+
+    static func generateSeed(state: BeaconState, epoch: EpochNumber) -> Data {
+        return hash(
+            getRandaoMix(state: state, epoch: epoch - SEED_LOOKAHEAD) + getActiveIndexRoot(state: state, epoch: epoch)
+        )
     }
 
-    static func getAttestationParticipants(state: BeaconState, data: AttestationData, aggregationBitfield: Data) -> [Int] {
-        let committees = BeaconChain.getCrosslinkCommitteesAtSlot(state: state, slot: data.slot)
-        guard let crosslinkComittee = committees.first(where: {
-            $1 == data.shard
-        }) else {
-            assert(false) // @todo better error
+    static func getBeaconProposerIndex(state: BeaconState, slot: SlotNumber) -> ValidatorIndex {
+        let (firstCommittee, _) = getCrosslinkCommitteesAtSlot(state: state, slot: slot)[0]
+        return firstCommittee[Int(slot) % firstCommittee.count]
+    }
+
+    static func merkleRoot(values: [Bytes32]) -> Bytes32 {
+        var o = [Data](repeating: Data(repeating: 0, count: 1), count: values.count - 1)
+        o.append(contentsOf: values)
+
+        for i in stride(from: values.count - 1, through: 0, by: -1) {
+            o[i] = hash(o[i * 2] + o[i * 2 + 1])
         }
 
-        var participants = [Int]()
-        for (i, validatorIndex) in crosslinkComittee.0.enumerated() {
-            let aggregationBit = Int(aggregationBitfield[i / 8] >> (7 - (i.mod(8)))).mod(2)
-            if aggregationBit == 1 {
-                participants.append(validatorIndex)
+        return o[1]
+    }
+
+    static func getAttestationParticipants(
+        state: BeaconState,
+        attestationData: AttestationData,
+        aggregationBitfield: Data
+    ) -> [ValidatorIndex] {
+        let crosslinkCommittees = getCrosslinkCommitteesAtSlot(state: state, slot: attestationData.slot)
+
+        assert(crosslinkCommittees.map({return $0.1 }).contains(attestationData.shard))
+
+        // @todo clean this ugly up
+        guard let crosslinkCommittee = crosslinkCommittees.first(where: {
+            $0.1 == attestationData.shard
+        })?.0 else {
+            assert(false)
+        }
+
+        assert(aggregationBitfield.count == (crosslinkCommittee.count + 7) / 8)
+
+        return crosslinkCommittee.enumerated().compactMap {
+            let i = $0.offset
+            if aggregationBitfield[i / 8] >> (7 - (i % 8)) % 2 == 1 {
+                return $0.element
             }
+
+            return nil
+        }
+    }
+
+    static func getEffectiveBalance(state: BeaconState, index: ValidatorIndex) -> Gwei {
+        return min(state.validatorBalances[Int(index)], MAX_DEPOSIT_AMOUNT)
+    }
+
+    static func getForkVersion(fork: Fork, epoch: EpochNumber) -> UInt64 {
+        if epoch < fork.epoch {
+            return fork.previousVersion
         }
 
-        return participants
+        return fork.currentVersion
     }
+
+    static func getDomain(fork: Fork, epoch: EpochNumber, domainType: Domain) -> UInt64 {
+        return getForkVersion(fork: fork, epoch: epoch) * 2**32 + domainType.rawValue
+    }
+}
+
+extension BeaconChain {
+
+    static func verifySlashableVoteData(state: BeaconState, data: SlashableVoteData) -> Bool {
+        if data.custodyBit0Indices.count + data.custodyBit1Indices.count > MAX_CASPER_VOTES {
+            return false
+        }
+
+        return BLS.verify(
+            pubkeys: [
+                BLS.aggregate(
+                    pubkeys: data.custodyBit0Indices.map { (i) in return state.validatorRegistry[Int(i)].pubkey }
+                ),
+                BLS.aggregate(
+                    pubkeys: data.custodyBit1Indices.map { (i) in return state.validatorRegistry[Int(i)].pubkey }
+                )
+            ],
+            messages: [
+                hashTreeRoot(AttestationDataAndCustodyBit(data: data.data, custodyBit: false)),
+                hashTreeRoot(AttestationDataAndCustodyBit(data: data.data, custodyBit: true)),
+            ],
+            signature: data.aggregateSignature,
+            domain: getDomain(fork: state.fork, epoch: slotToEpoch(data.data.slot), domainType: Domain.ATTESTATION)
+        )
+    }
+
+    static func isDoubleVote(_ left: AttestationData, _ right: AttestationData) -> Bool {
+        return slotToEpoch(left.slot) == slotToEpoch(right.slot)
+    }
+
+    static func isSurroundVote(_ left: AttestationData, _ right: AttestationData) -> Bool {
+        return left.justifiedEpoch < right.justifiedEpoch &&
+            right.justifiedEpoch + 1 == slotToEpoch(right.slot) &&
+            slotToEpoch(right.slot) < slotToEpoch(left.slot)
+    }
+}
+
+extension BeaconChain {
 
     static func integerSquareRoot(n: UInt64) -> UInt64 {
         assert(n >= 0)
@@ -71,378 +291,176 @@ class BeaconChain {
 
         return x
     }
+}
 
-    static func getForkVersion(data: Fork, slot: UInt64) -> UInt64 {
-        if slot < data.slot {
-            return data.previousVersion
+extension BeaconChain {
+
+    static func getInitialBeaconState(
+        initialValidatorDeposits: [Deposit],
+        genesisTime: UInt64,
+        latestEth1Data: Eth1Data
+    ) -> BeaconState {
+
+        var state = genesisState(genesisTime: genesisTime, latestEth1Data: latestEth1Data)
+
+        for deposit in initialValidatorDeposits {
+            processDeposit(
+                state: &state,
+                pubkey: deposit.depositData.depositInput.pubkey,
+                amount: deposit.depositData.amount,
+                proofOfPossession: deposit.depositData.depositInput.proofOfPossession,
+                withdrawalCredentials: deposit.depositData.depositInput.withdrawalCredentials
+            )
         }
 
-        return data.currentVersion
-    }
-
-    static func getDomain(data: Fork, slot: UInt64, domainType: Domain) -> Int {
-        return Int(BeaconChain.getForkVersion(data: data, slot: slot) * (2**32)) + domainType.rawValue
-    }
-
-    static func isDoubleVote(first: AttestationData, second: AttestationData) -> Bool {
-        return (first.slot / EPOCH_LENGTH) == (second.slot / EPOCH_LENGTH)
-    }
-
-    static func isSurroundVote(first: AttestationData, second: AttestationData) -> Bool {
-        let firstSourceEpoch = first.justifiedSlot / EPOCH_LENGTH
-        let secondSourceEpoch = second.justifiedSlot / EPOCH_LENGTH
-        let firstTargetEpoch = first.slot / EPOCH_LENGTH
-        let secondTargetEpoch = second.slot / EPOCH_LENGTH
-
-        return firstSourceEpoch < secondSourceEpoch
-            && secondSourceEpoch + 1 == secondTargetEpoch
-            && secondTargetEpoch < firstTargetEpoch
-    }
-
-    static func verifySlashableVoteData(state: BeaconState, data: SlashableVoteData) -> Bool {
-        if data.custodyBit0indices.count + data.custodyBit1indices.count > MAX_CASPER_VOTES {
-            return false
+        for (i, _) in state.validatorRegistry.enumerated() {
+            if getEffectiveBalance(state: state, index: ValidatorIndex(i)) >= MAX_DEPOSIT_AMOUNT {
+                activateValidator(state: &state, index: ValidatorIndex(i), genesis: true)
+            }
         }
 
-        return BLS.verify(
-            pubkeys: [
-                BLS.aggregate(pubkeys: data.custodyBit0indices.map({ (index: Int) in return state.validatorRegistry[index].pubkey })),
-                BLS.aggregate(pubkeys: data.custodyBit1indices.map({ (index: Int) in return state.validatorRegistry[index].pubkey }))
-            ],
-            messages: [
-                BeaconChain.hashTreeRoot(data: AttestationDataAndCustodyBit(data: data.data, custodyBit: false)),
-                BeaconChain.hashTreeRoot(data: AttestationDataAndCustodyBit(data: data.data, custodyBit: true))
-            ],
-            signatures: data.aggregateSignature,
-            domain: BeaconChain.getDomain(data: state.fork, slot: data.data.slot, domainType: Domain.ATTESTATION)
+        state.latestIndexRoots[Int(GENESIS_EPOCH % LATEST_INDEX_ROOTS_LENGTH)] = hashTreeRoot(
+            getActiveValidatorIndices(validators: state.validatorRegistry, epoch: GENESIS_EPOCH)
         )
+        state.currentEpochSeed = generateSeed(state: state, epoch: GENESIS_EPOCH)
+
+        return state
     }
 
-    static func genesisState(genesisTime: TimeInterval, latestEth1Data: Eth1Data) -> BeaconState {
+    static func genesisState(genesisTime: UInt64, latestEth1Data: Eth1Data) -> BeaconState {
         return BeaconState(
             slot: GENESIS_SLOT,
             genesisTime: genesisTime,
             fork: Fork(
                 previousVersion: GENESIS_FORK_VERSION,
                 currentVersion: GENESIS_FORK_VERSION,
-                slot: GENESIS_SLOT
+                epoch: GENESIS_EPOCH
             ),
             validatorRegistry: [Validator](),
             validatorBalances: [UInt64](),
-            validatorRegistryUpdateSlot: GENESIS_SLOT,
+            validatorRegistryUpdateEpoch: GENESIS_EPOCH,
             validatorRegistryExitCount: 0,
-            validatorRegistryDeltaChainTip: ZERO_HASH,
             latestRandaoMixes: [Data](repeating: ZERO_HASH, count: Int(LATEST_RANDAO_MIXES_LENGTH)),
             latestVdfOutputs: [Data](repeating: ZERO_HASH, count: Int(LATEST_RANDAO_MIXES_LENGTH / EPOCH_LENGTH)),
             previousEpochStartShard: GENESIS_START_SHARD,
             currentEpochStartShard: GENESIS_START_SHARD,
-            previousEpochCalculationSlot: GENESIS_SLOT,
-            currentEpochCalculationSlot: GENESIS_SLOT,
-            previousEpochRandaoMix: ZERO_HASH,
-            currentEpochRandaoMix: ZERO_HASH,
-            previousJustifiedSlot: GENESIS_SLOT,
-            justifiedSlot: GENESIS_SLOT,
+            previousCalculationEpoch: GENESIS_EPOCH,
+            currentCalculationEpoch: GENESIS_EPOCH,
+            previousEpochSeed: ZERO_HASH,
+            currentEpochSeed: ZERO_HASH,
+            previousJustifiedEpoch: GENESIS_EPOCH,
+            justifiedEpoch: GENESIS_EPOCH,
             justificationBitfield: 0,
-            finalizedSlot: GENESIS_SLOT,
-            latestCrosslinks: (0...SHARD_COUNT).map { _ in return Crosslink(slot: GENESIS_SLOT, shardBlockRoot: ZERO_HASH) },
+            finalizedEpoch: GENESIS_EPOCH,
+            latestCrosslinks: [Crosslink](repeating: Crosslink(epoch: GENESIS_EPOCH, shardBlockRoot: ZERO_HASH), count: Int(SHARD_COUNT)),
             latestBlockRoots: [Data](repeating: ZERO_HASH, count: Int(LATEST_BLOCK_ROOTS_LENGTH)),
+            latestIndexRoots: [Data](repeating: ZERO_HASH, count: Int(LATEST_INDEX_ROOTS_LENGTH)),
             latestPenalizedBalances: [UInt64](repeating: 0, count: Int(LATEST_PENALIZED_EXIT_LENGTH)),
             latestAttestations: [PendingAttestation](),
             batchedBlockRoots: [Data](),
-
             latestEth1Data: latestEth1Data,
             eth1DataVotes: [Eth1DataVote]()
         )
     }
-
 }
 
 extension BeaconChain {
 
-    static func processDeposit(state: inout BeaconState, deposit: Deposit) {
-        assert(
-            BeaconChain.validateProofOfPossession(
-                state: state,
-                pubkey: deposit.depositData.depositInput.pubkey,
-                proof: deposit.depositData.depositInput.proofOfPossession,
-                withdrawalCredentials: deposit.depositData.depositInput.withdrawalCredentials,
-                randaoCommitment: deposit.depositData.depositInput.randaoCommitment,
-                custodyCommitment: deposit.depositData.depositInput.custodyCommitment
-            )
-        )
-
-        let pubkeys = state.validatorRegistry.enumerated().map {(_, validator: Validator) in return validator.pubkey}
-
-        if let index = pubkeys.firstIndex(of: deposit.depositData.depositInput.pubkey) {
-            assert(state.validatorRegistry[index].withdrawalCredentials == deposit.depositData.depositInput.withdrawalCredentials)
-            state.validatorBalances[index] += deposit.depositData.amount
-            return
-        }
-
-        let validator = Validator(
-            pubkey: deposit.depositData.depositInput.pubkey,
-            withdrawalCredentials: deposit.depositData.depositInput.withdrawalCredentials,
-            randaoCommitment: deposit.depositData.depositInput.randaoCommitment,
-            randaoLayers: 0,
-            activationSlot: FAR_FUTURE_SLOT,
-            exitSlot: FAR_FUTURE_SLOT,
-            withdrawalSlot: FAR_FUTURE_SLOT,
-            penalizedSlot: FAR_FUTURE_SLOT,
-            exitCount: 0,
-            statusFlags: 0,
-            custodyCommitment: deposit.depositData.depositInput.custodyCommitment,
-            latestCustodyReseedSlot: GENESIS_SLOT,
-            penultimateCustodyReseedSlot: GENESIS_SLOT
-        )
-
-        state.validatorRegistry.append(validator)
-        state.validatorBalances.append(deposit.depositData.amount)
-    }
-
-    static func validateProofOfPossession(state: BeaconState, pubkey: Data, proof: Data, withdrawalCredentials: Data, randaoCommitment: Data, custodyCommitment: Data) -> Bool {
-
-        let input = DepositInput(
+    static func validateProofOfPossesion(
+        state: BeaconState,
+        pubkey: BLSPubkey,
+        proofOfPossession: BLSSignature,
+        withdrawalCredentials: Bytes32
+    ) -> Bool {
+        let proofOfPossesionData = DepositInput(
             pubkey: pubkey,
             withdrawalCredentials: withdrawalCredentials,
-            randaoCommitment: randaoCommitment,
-            custodyCommitment: custodyCommitment,
             proofOfPossession: EMPTY_SIGNATURE
         )
 
         return BLS.verify(
             pubkey: pubkey,
-            message: hashTreeRoot(data: input),
-            signature: proof,
-            domain: BeaconChain.getDomain(data: state.fork, slot: state.slot, domainType: Domain.DEPOSIT)
+            message: BeaconChain.hashTreeRoot(proofOfPossesionData),
+            signature: proofOfPossession,
+            domain: getDomain(fork: state.fork, epoch: getCurrentEpoch(state: state), domainType: Domain.DEPOSIT)
         )
     }
 
-    static func processEjections(state: inout BeaconState) {
-        for i in BeaconChain.getActiveValidatorIndices(validators: state.validatorRegistry, slot: state.slot) {
-            if state.validatorBalances[i] < EJECTION_BALANCE {
-                exitValidator(state: &state, index: i)
-            }
+    static func processDeposit(
+        state: inout BeaconState,
+        pubkey: BLSPubkey,
+        amount: Gwei,
+        proofOfPossession: BLSSignature,
+        withdrawalCredentials: Bytes32
+    ) {
+        assert(
+            validateProofOfPossesion(
+                state: state,
+                pubkey: pubkey,
+                proofOfPossession: proofOfPossession,
+                withdrawalCredentials: withdrawalCredentials
+            )
+        )
+
+        if let index = state.validatorRegistry.firstIndex(where: { $0.pubkey == pubkey }) {
+            assert(state.validatorRegistry[index].withdrawalCredentials == withdrawalCredentials)
+            state.validatorBalances[index] += amount
+        } else {
+            let validator = Validator(
+                pubkey: pubkey,
+                withdrawalCredentials: withdrawalCredentials,
+                activationEpoch: FAR_FUTURE_EPOCH,
+                exitEpoch: FAR_FUTURE_EPOCH,
+                withdrawalEpoch: FAR_FUTURE_EPOCH,
+                penalizedEpoch: FAR_FUTURE_EPOCH,
+                exitCount: 0,
+                statusFlags: 0,
+                latestCustodyReseedSlot: GENESIS_SLOT,
+                penultimateCustodyReseedSlot: GENESIS_SLOT
+            )
+
+            state.validatorRegistry.append(validator)
+            state.validatorBalances.append(amount)
         }
     }
 }
 
 extension BeaconChain {
 
-    static func activateValidator(state: inout BeaconState, index: Int, genesis: Bool) {
-        state.validatorRegistry[index].activationSlot = genesis ? GENESIS_SLOT : state.slot + ENTRY_EXIT_DELAY
-
-        let validator = state.validatorRegistry[index] // @todo change when validator is a class so we read earler
-        state.validatorRegistryDeltaChainTip = hashTreeRoot(data: ValidatorRegistryDeltaBlock(
-                lateRegistryDeltaRoot: state.validatorRegistryDeltaChainTip,
-                validatorIndex: index,
-                pubkey: validator.pubkey,
-                slot: validator.activationSlot,
-                flag: ValidatorRegistryDeltaFlags.ACTIVATION
-            )
-        )
+    static func activateValidator(state: inout BeaconState, index: ValidatorIndex, genesis: Bool) {
+        state.validatorRegistry[Int(index)].activationEpoch = genesis ? GENESIS_EPOCH : getEntryExitEpoch(getCurrentEpoch(state: state))
     }
 
-    static func initiateValidatorExit(state: inout BeaconState, index: Int) {
-        state.validatorRegistry[index].statusFlags |= INITIATED_EXIT
+    static func initiateValidatorExit(state: inout BeaconState, index: ValidatorIndex) {
+        state.validatorRegistry[Int(index)].statusFlags |= StatusFlag.INITIATED_EXIT.rawValue
     }
 
-    static func exitValidator(state: inout BeaconState, index: Int) {
-        if state.validatorRegistry[index].exitSlot <= state.slot + ENTRY_EXIT_DELAY {
+    static func exitValidator(state: inout BeaconState, index: ValidatorIndex) {
+        var validator = state.validatorRegistry[Int(index)]
+        if validator.exitEpoch <= getEntryExitEpoch(getCurrentEpoch(state: state)) {
             return
         }
 
-        state.validatorRegistry[index].exitSlot = state.slot + ENTRY_EXIT_DELAY
+        validator.exitEpoch = getEntryExitEpoch(getCurrentEpoch(state: state))
         state.validatorRegistryExitCount += 1
-        state.validatorRegistry[index].exitCount = state.validatorRegistryExitCount
-
-        let validator = state.validatorRegistry[index] // @todo change when validator is a class so we read earler
-        state.validatorRegistryDeltaChainTip = hashTreeRoot(data: ValidatorRegistryDeltaBlock(
-                lateRegistryDeltaRoot: state.validatorRegistryDeltaChainTip,
-                validatorIndex: index,
-                pubkey: validator.pubkey,
-                slot: validator.exitSlot,
-                flag: ValidatorRegistryDeltaFlags.EXIT
-            )
-        )
+        validator.exitCount = state.validatorRegistryExitCount
+        state.validatorRegistry[Int(index)] = validator
     }
 
-    static func penalizeValidator(state: inout BeaconState, index: Int) {
-        BeaconChain.exitValidator(state: &state, index: index)
+    static func penalizeValidator(state: inout BeaconState, index: ValidatorIndex) {
+        exitValidator(state: &state, index: index)
 
-        state.latestPenalizedBalances[Int((state.slot / EPOCH_LENGTH).mod(LATEST_PENALIZED_EXIT_LENGTH))] += BeaconChain.getEffectiveBalance(state: state, index: index)
+        state.latestPenalizedBalances[Int(getCurrentEpoch(state: state) % LATEST_PENALIZED_EXIT_LENGTH)] += getEffectiveBalance(state: state, index: index)
 
-        let whistleblowerIndex = BeaconChain.getBeaconProposerIndex(state: state, slot: state.slot)
-        let whistleblowerReward = BeaconChain.getEffectiveBalance(state: state, index: index) / WHISTLEBLOWER_REWARD_QUOTIENT
-        state.validatorBalances[whistleblowerIndex] += whistleblowerReward
-        state.validatorBalances[index] -= whistleblowerReward
-        state.validatorRegistry[index].penalizedSlot = state.slot
+        let whistleblowerIndex = getBeaconProposerIndex(state: state, slot: state.slot)
+        let whistleblowerReward = getEffectiveBalance(state: state, index: index) / WHISTLEBLOWER_REWARD_QUOTIENT
+
+        state.validatorBalances[Int(whistleblowerIndex)] += whistleblowerReward
+        state.validatorBalances[Int(index)] -= whistleblowerReward
+        state.validatorRegistry[Int(index)].penalizedEpoch = getCurrentEpoch(state: state)
     }
 
-    static func prepareValidatorForWithdrawal(state: inout BeaconState, index: Int) {
-        state.validatorRegistry[index].statusFlags |= WITHDRAWABLE
-    }
-}
-
-extension BeaconChain {
-
-    static func updateValidatorRegistry(state: inout BeaconState) {
-        let activeValidatorIndices = BeaconChain.getActiveValidatorIndices(validators: state.validatorRegistry, slot: state.slot)
-
-        let totalBalance = activeValidatorIndices.map({
-            (i: Int) -> UInt64 in
-            return BeaconChain.getEffectiveBalance(state: state, index: i)
-        }).reduce(0, +)
-
-        let maxBalanceChurn = max(MAX_DEPOSIT_AMOUNT, totalBalance / (2 * MAX_BALANCE_CHURN_QUOTIENT))
-
-        var balanceChurn = UInt64(0)
-        for (i, validator) in state.validatorRegistry.enumerated() {
-            if validator.activationSlot > state.slot + ENTRY_EXIT_DELAY && state.validatorBalances[i] >= MAX_DEPOSIT_AMOUNT {
-                balanceChurn += BeaconChain.getEffectiveBalance(state: state, index: i)
-                if balanceChurn > maxBalanceChurn {
-                    break
-                }
-
-                BeaconChain.activateValidator(state: &state, index: i, genesis: false)
-            }
-        }
-
-        balanceChurn = UInt64(0)
-        for (i, validator) in state.validatorRegistry.enumerated() {
-            if validator.exitSlot > state.slot + ENTRY_EXIT_DELAY && (validator.statusFlags & INITIATED_EXIT) == 1 {
-                balanceChurn += BeaconChain.getEffectiveBalance(state: state, index: i)
-                if balanceChurn > maxBalanceChurn {
-                    break
-                }
-
-                BeaconChain.exitValidator(state: &state, index: i)
-            }
-        }
-
-        state.validatorRegistryUpdateSlot = state.slot
-    }
-
-    static func getActiveValidatorIndices(validators: [Validator], slot: UInt64) -> [Int] {
-        return validators.enumerated().compactMap {
-            (i, validator) -> Int? in
-            if BeaconChain.isActive(validator: validator, slot: slot) {
-                return i
-            }
-
-            return nil
-        }
-    }
-
-    // @todo move these functions into validator 
-    static func isActive(validator: Validator, slot: UInt64) -> Bool {
-        return validator.activationSlot <= slot && slot < validator.exitSlot
-    }
-}
-
-extension BeaconChain {
-
-    static func getCommitteeCountPerSlot(activeValidatorCount: Int) -> Int {
-        return Int(
-            max(
-                1,
-                min(SHARD_COUNT / EPOCH_LENGTH, UInt64(activeValidatorCount) / EPOCH_LENGTH / TARGET_COMMITTEE_SIZE)
-            )
-        )
-    }
-
-    static func getPreviousEpochCommitteeCountPerSlot(state: BeaconState) -> Int {
-        let validators = BeaconChain.getActiveValidatorIndices(
-            validators: state.validatorRegistry,
-            slot: state.previousEpochCalculationSlot
-        )
-
-        return BeaconChain.getCommitteeCountPerSlot(activeValidatorCount: validators.count)
-    }
-
-    static func getCurrentEpochCommitteeCountPerSlot(state: BeaconState) -> Int {
-        let validators = BeaconChain.getActiveValidatorIndices(
-            validators: state.validatorRegistry,
-            slot: state.currentEpochCalculationSlot
-        )
-
-        return BeaconChain.getCommitteeCountPerSlot(activeValidatorCount: validators.count)
-    }
-
-    // @todo rthis is probably broken
-    static func getCrosslinkCommitteesAtSlot(state: BeaconState, slot: UInt64) -> [([Int], UInt64)] {
-        let stateEpochSlot = state.slot - (state.slot.mod(EPOCH_LENGTH))
-        assert(stateEpochSlot <= slot + EPOCH_LENGTH)
-        assert(slot < stateEpochSlot + EPOCH_LENGTH)
-        let offest = slot.mod(EPOCH_LENGTH)
-
-        var committeesPerSlot: UInt64
-        var shuffling: [[Int]]
-        var slotStartShard: Int
-        if slot < stateEpochSlot {
-            committeesPerSlot = UInt64(BeaconChain.getPreviousEpochCommitteeCountPerSlot(state: state))
-            shuffling = getShuffling(
-                seed: state.previousEpochRandaoMix,
-                validators: state.validatorRegistry, slot: state.previousEpochCalculationSlot
-            )
-            slotStartShard = Int((state.previousEpochStartShard + (committeesPerSlot * offest)).mod(SHARD_COUNT))
-        } else {
-            committeesPerSlot = UInt64(BeaconChain.getCurrentEpochCommitteeCountPerSlot(state: state))
-            shuffling = getShuffling(
-                seed: state.currentEpochRandaoMix,
-                validators: state.validatorRegistry, slot: state.currentEpochCalculationSlot
-            )
-            slotStartShard = Int((state.currentEpochStartShard + (committeesPerSlot * offest)).mod(SHARD_COUNT))
-        }
-
-        return stride(from: 0, to: committeesPerSlot, by: 1).map {
-            (i) -> ([Int], UInt64) in
-            return (shuffling[Int(committeesPerSlot * (offest + i))], (UInt64(slotStartShard) + i).mod(SHARD_COUNT))
-        }
-    }
-}
-
-extension BeaconChain {
-
-    static func merkleRoot(values: [Data]) -> Data {
-        var o = [Data](repeating: Data(repeating: 0, count: 1), count: values.count - 1)
-        o.append(contentsOf: values)
-
-        for i in stride(from: values.count - 1, through: 0, by: -1) {
-            o[i] = hash(data: o[i * 2] + o[i * 2 + 1])
-        }
-
-        return o[1]
-    }
-
-    static func hash(data: Any) -> Data {
-        return Data(repeating: 0, count: 32) // @todo
-    }
-
-    static func hashTreeRoot(data: Any) -> Data {
-        return Data(repeating: 0, count: 32) // @todo
-    }
-
-}
-
-extension BeaconChain {
-
-    // @todo make this an extenstion to arrays
-    static func split<T>(values: [T], count: Int) -> [[T]] {
-        return stride(from: 0, to: values.count, by: count).map {
-            Array(values[$0 ..< min($0 + count, values.count)])
-        }
-    }
-
-    static func getShuffling(seed: Data, validators: [Validator], slot: UInt64) -> [[Int]] {
-        var slot = slot - (slot.mod(EPOCH_LENGTH))
-
-        let activeValidatorIndices = getActiveValidatorIndices(validators: validators, slot: slot)
-        let committeesPerSlot = BeaconChain.getCommitteeCountPerSlot(activeValidatorCount: activeValidatorIndices.count)
-
-        let shuffledValidatorIndices = activeValidatorIndices.shuffle(
-            seed: (seed ^ Data(bytes: &slot, count: MemoryLayout.size(ofValue: slot)))
-        )
-
-        return split(values: shuffledValidatorIndices, count: committeesPerSlot * Int(EPOCH_LENGTH))
+    static func prepareValidatorForWithdrawal(state: inout BeaconState, index: ValidatorIndex) {
+        state.validatorRegistry[Int(index)].statusFlags |= StatusFlag.WITHDRAWABLE.rawValue
     }
 }

@@ -1,21 +1,24 @@
 import Foundation
 
-func ^(left: Data, right: Data) -> Data {
-    var temp = left
+extension Data {
 
-    for i in 0..<left.count {
-        temp[i] ^= right[i % right.count]
-    }
+    static func ^(left: Data, right: Data) -> Data {
+        var temp = left
 
-    return temp
-}
-
-func <(left: Data, right: Data) -> Bool {
-    for i in 0...left.count {
-        if left[i] > right[i] {
-            return false
+        for i in 0..<left.count {
+            temp[i] ^= right[i % right.count]
         }
+
+        return temp
     }
 
-    return true
+    static func <(left: Data, right: Data) -> Bool {
+        for i in 0...left.count {
+            if left[i] > right[i] {
+                return false
+            }
+        }
+
+        return true
+    }
 }
