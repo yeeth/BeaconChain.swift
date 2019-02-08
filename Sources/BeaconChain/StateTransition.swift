@@ -575,10 +575,53 @@ extension StateTransition {
         }
 
         if state.finalizedEpoch > state.validatorRegistryUpdateEpoch && shards.count == 0 {
-            // @todo update_validator_registry
+            updateValidatorRegistry(state: &state)
         } else {
-            // If a validator registry update does not happen do the following:
+            let epochsSinceLastRegistryChange = currentEpoch - state.validatorRegistryUpdateEpoch
+            if isPowerOfTwo(Int(epochsSinceLastRegistryChange)) {
+                state.currentCalculationEpoch = nextEpoch
+                state.currentEpochSeed = BeaconChain.generateSeed(state: state, epoch: state.currentCalculationEpoch)
+            }
         }
+
+        // @todo process_penalties_and_exits
+    }
+
+    static func updateValidatorRegistry(state: inout BeaconState) {
+        let currentEpoch = BeaconChain.getCurrentEpoch(state: state)
+        let activeValidatorIndices = BeaconChain.getActiveValidatorIndices(
+            validators: state.validatorRegistry,
+            epoch: currentEpoch
+        )
+
+        let totalBalance = self.totalBalance(state: state, validators: activeValidatorIndices)
+        let maxBalanceChurn = max(MAX_DEPOSIT_AMOUNT, totalBalance / (2 * MAX_BALANCE_CHURN_QUOTIENT))
+
+        var balanceChurn = UInt64(0)
+        for (i, v) in state.validatorRegistry.enumerated() {
+            if v.activationEpoch > BeaconChain.getEntryExitEpoch(currentEpoch) && state.validatorBalances[Int(i)] >= MAX_DEPOSIT_AMOUNT {
+                balanceChurn += BeaconChain.getEffectiveBalance(state: state, index: ValidatorIndex(i))
+                if balanceChurn > maxBalanceChurn {
+                    break
+                }
+
+                BeaconChain.activateValidator(state: &state, index: ValidatorIndex(i), genesis: false)
+            }
+        }
+
+        balanceChurn = 0
+        for (i, v) in state.validatorRegistry.enumerated() {
+            if v.exitCount > BeaconChain.getEntryExitEpoch(currentEpoch) && v.statusFlags & StatusFlag.INITIATED_EXIT.rawValue == 1 {
+                balanceChurn += BeaconChain.getEffectiveBalance(state: state, index: ValidatorIndex(i))
+                if balanceChurn > maxBalanceChurn {
+                    break
+                }
+
+                BeaconChain.exitValidator(state: &state, index: ValidatorIndex(i))
+            }
+        }
+
+        state.validatorRegistryUpdateEpoch = currentEpoch
     }
 
     static func shufflingSeedData(state: inout BeaconState, nextEpoch: EpochNumber) {
@@ -671,6 +714,15 @@ extension StateTransition {
 
     private static func baseReward(state: BeaconState, index: ValidatorIndex, baseRewardQuotient: UInt64) -> UInt64 {
         return BeaconChain.getEffectiveBalance(state: state, index: index) / baseRewardQuotient / 5
+    }
+
+    // @todo maybe make these extension functions on an int?
+    private static func isPowerOfTwo(_ n: Int) -> Bool {
+        return ceil(log2(n)) == floor(log2(n))
+    }
+
+    private static func log2(_ n: Int) -> Double {
+        return log10(Double(n)) / log10(2.0)
     }
 
     private static func inactivityPenalty(
