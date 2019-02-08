@@ -584,7 +584,53 @@ extension StateTransition {
             }
         }
 
-        // @todo process_penalties_and_exits
+        processPenaltiesAndExit(state: &state)
+    }
+
+    static func processPenaltiesAndExit(state: inout BeaconState) {
+        let currentEpoch = BeaconChain.getCurrentEpoch(state: state)
+        let activeValidatorIndices = BeaconChain.getActiveValidatorIndices(
+            validators: state.validatorRegistry,
+            epoch: currentEpoch
+        )
+
+        let totalBalance = self.totalBalance(state: state, validators: activeValidatorIndices)
+
+        for (i, v) in state.validatorRegistry.enumerated() {
+            if currentEpoch != v.penalizedEpoch + LATEST_PENALIZED_EXIT_LENGTH / 2 {
+                continue
+            }
+
+            let e = currentEpoch % LATEST_PENALIZED_EXIT_LENGTH
+            let totalAtStart = state.latestPenalizedBalances[Int((e + 1) % LATEST_PENALIZED_EXIT_LENGTH)]
+            let totalAtEnd = state.latestPenalizedBalances[Int(e)]
+            let totalPenalties = totalAtEnd - totalAtStart
+            let penalty = BeaconChain.getEffectiveBalance(state: state, index: ValidatorIndex(i)) * min(totalPenalties * 3, totalBalance) / totalBalance
+            state.validatorBalances[i] -= penalty
+        }
+
+        var eligibleIndices = (0..<state.validatorRegistry.count).filter {
+            let validator = state.validatorRegistry[$0]
+            if validator.penalizedEpoch <= currentEpoch {
+                let penalizedWithdrawalEpochs = LATEST_PENALIZED_EXIT_LENGTH / 2
+                return currentEpoch >= validator.penalizedEpoch + penalizedWithdrawalEpochs
+            } else {
+                return currentEpoch >= validator.penalizedEpoch + MIN_VALIDATOR_WITHDRAWAL_EPOCHS
+            }
+        }
+
+        eligibleIndices.sort {
+            state.validatorRegistry[$0].exitCount > state.validatorRegistry[$1].exitCount
+        }
+
+        var withdrawan = 0
+        for i in eligibleIndices {
+            BeaconChain.prepareValidatorForWithdrawal(state: &state, index: ValidatorIndex(i))
+            withdrawan += 1
+            if withdrawan >= MAX_WITHDRAWALS_PER_EPOCH {
+                break
+            }
+        }
     }
 
     static func updateValidatorRegistry(state: inout BeaconState) {
