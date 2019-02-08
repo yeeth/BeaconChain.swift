@@ -1,6 +1,6 @@
 import Foundation
 
-struct CasperSlashing {
+struct AttesterSlashing {
     let slashableVoteData1: SlashableVoteData
     let slashableVoteData2: SlashableVoteData
 }

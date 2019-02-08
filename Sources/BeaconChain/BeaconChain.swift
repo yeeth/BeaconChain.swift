@@ -110,6 +110,15 @@ extension BeaconChain {
         return getEpochCommitteeCount(activeValidatorCount: currentActiveValidators.count)
     }
 
+    static func getNextEpochCommitteeCount(state: BeaconState) -> Int {
+        let nextActiveValidators = getActiveValidatorIndices(
+            validators: state.validatorRegistry,
+            epoch: getCurrentEpoch(state: state) + 1
+        )
+
+        return getEpochCommitteeCount(activeValidatorCount: nextActiveValidators.count)
+    }
+
     static func getCrosslinkCommitteesAtSlot(state: BeaconState, slot: SlotNumber) -> [([ValidatorIndex], ShardNumber)] {
         let epoch = slotToEpoch(slot)
         let currentEpoch = getCurrentEpoch(state: state)
@@ -243,7 +252,7 @@ extension BeaconChain {
 extension BeaconChain {
 
     static func verifySlashableVoteData(state: BeaconState, data: SlashableVoteData) -> Bool {
-        if data.custodyBit0Indices.count + data.custodyBit1Indices.count > MAX_CASPER_VOTES {
+        if data.custodyBit0Indices.count + data.custodyBit1Indices.count > MAX_INDICES_PER_SLASHABLE_VOTE {
             return false
         }
 

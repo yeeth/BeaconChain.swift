@@ -23,7 +23,7 @@ extension StateTransition {
         randao(state: &state, block: block)
         eth1data(state: &state, block: block)
         proposerSlashings(state: &state, block: block)
-        casperSlashings(state: &state, block: block)
+        attesterSlashings(state: &state, block: block)
         attestations(state: &state, block: block)
         deposits(state: &state, block: block)
         exits(state: &state, block: block)
@@ -116,12 +116,12 @@ extension StateTransition {
         }
     }
 
-    static func casperSlashings(state: inout BeaconState, block: BeaconBlock) {
-        assert(block.body.casperSlashings.count <= MAX_CASPER_SLASHINGS)
+    static func attesterSlashings(state: inout BeaconState, block: BeaconBlock) {
+        assert(block.body.attesterSlashings.count <= MAX_ATTESTER_SLASHINGS)
 
-        for casperSlashing in block.body.casperSlashings {
-            let slashableVoteData1 = casperSlashing.slashableVoteData1
-            let slashableVoteData2 = casperSlashing.slashableVoteData2
+        for attesterSlashing in block.body.attesterSlashings {
+            let slashableVoteData1 = attesterSlashing.slashableVoteData1
+            let slashableVoteData2 = attesterSlashing.slashableVoteData2
 
             let slashableVoteData1Indices = slashableVoteData1.custodyBit0Indices + slashableVoteData1.custodyBit1Indices
             let slashableVoteData2Indices = slashableVoteData2.custodyBit0Indices + slashableVoteData2.custodyBit1Indices
