@@ -938,3 +938,11 @@ extension StateTransition {
         return 0
     }
 }
+
+extension StateTransition {
+
+    static func processStateRoot(state: BeaconState) {
+        // @todo Verify block.state_root == hash_tree_root(state) if there exists a block for the slot being processed.
+    }
+
+}
