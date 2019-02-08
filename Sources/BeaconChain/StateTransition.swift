@@ -352,6 +352,54 @@ extension StateTransition {
             currentEpochAttestations: currentEpochAttestations,
             previousEpochAttestations: previousEpochAttestations
         )
+
+        rewardsAndPenalties(
+            state: &state,
+            previousEpoch: previousEpoch,
+            currentEpoch: currentEpoch,
+            nextEpoch: nextEpoch,
+            previousTotalBalance: previousTotalBalance,
+            totalBalance: currentTotalBalance,
+            previousEpochJustifiedAttesterIndices: previousEpochJustifiedAttesterIndices,
+            previousEpochJustifiedAttestingBalance: previousEpochJustifiedAttestingBalance,
+            previousEpochBoundaryAttesterIndices: previousEpochBoundaryAttesterIndices,
+            previousEpochBoundaryAttestingBalance: previousEpochBoundaryAttestingBalance,
+            previousEpochHeadAttesterIndices: previousEpochHeadAttesterIndices,
+            previousEpochHeadAttestingBalance: previousEpochHeadAttestingBalance,
+            previousEpochAttesterIndices: previousEpochAttesterIndices,
+            currentEpochAttestations: currentEpochAttestations,
+            previousEpochAttestations: previousEpochAttestations
+        )
+
+        processEjections(state: &state)
+
+        shufflingSeedData(state: &state, nextEpoch: nextEpoch)
+
+        let shards = (0..<BeaconChain.getCurrentEpochCommitteeCount(state: state)).filter {
+            state.latestCrosslinks[Int((state.currentCalculationEpoch + UInt64($0)) % SHARD_COUNT)].epoch <= state.validatorRegistryUpdateEpoch
+        }
+
+        if state.finalizedEpoch > state.validatorRegistryUpdateEpoch && shards.count == 0 {
+            updateValidatorRegistry(state: &state)
+        } else {
+            let epochsSinceLastRegistryChange = currentEpoch - state.validatorRegistryUpdateEpoch
+            if isPowerOfTwo(Int(epochsSinceLastRegistryChange)) {
+                state.currentCalculationEpoch = nextEpoch
+                state.currentEpochSeed = BeaconChain.generateSeed(state: state, epoch: state.currentCalculationEpoch)
+            }
+        }
+
+        processPenaltiesAndExit(state: &state)
+
+        state.latestPenalizedBalances[Int(nextEpoch % LATEST_PENALIZED_EXIT_LENGTH)] = state.latestPenalizedBalances[Int(currentEpoch % LATEST_PENALIZED_EXIT_LENGTH)]
+        state.latestRandaoMixes[Int(nextEpoch % LATEST_RANDAO_MIXES_LENGTH)] = BeaconChain.getRandaoMix(
+            state: state,
+            epoch: currentEpoch
+        )
+
+        // @todo check this
+        // Remove any attestation in state.latest_attestations such that slot_to_epoch(attestation.data.slot) < current_epoch.
+        state.latestAttestations.removeAll { BeaconChain.slotToEpoch($0.data.slot) >= currentEpoch }
     }
 
     private static func eth1data(state: inout BeaconState, nextEpoch: EpochNumber) {
@@ -565,26 +613,6 @@ extension StateTransition {
                 }
             }
         }
-
-        processEjections(state: &state)
-
-        shufflingSeedData(state: &state, nextEpoch: nextEpoch)
-
-        let shards = (0..<BeaconChain.getCurrentEpochCommitteeCount(state: state)).filter {
-            state.latestCrosslinks[Int((state.currentCalculationEpoch + UInt64($0)) % SHARD_COUNT)].epoch <= state.validatorRegistryUpdateEpoch
-        }
-
-        if state.finalizedEpoch > state.validatorRegistryUpdateEpoch && shards.count == 0 {
-            updateValidatorRegistry(state: &state)
-        } else {
-            let epochsSinceLastRegistryChange = currentEpoch - state.validatorRegistryUpdateEpoch
-            if isPowerOfTwo(Int(epochsSinceLastRegistryChange)) {
-                state.currentCalculationEpoch = nextEpoch
-                state.currentEpochSeed = BeaconChain.generateSeed(state: state, epoch: state.currentCalculationEpoch)
-            }
-        }
-
-        processPenaltiesAndExit(state: &state)
     }
 
     static func processPenaltiesAndExit(state: inout BeaconState) {
