@@ -12,8 +12,8 @@ import XCTest
 //        ]
 //
 //        for test in tests {
-//            let state = BeaconChain.genesisState(
-//                genesisTime: TimeInterval(0),
+//            var state = BeaconChain.genesisState(
+//                genesisTime: 0,
 //                latestEth1Data: Eth1Data(depositRoot: Data(count: 32), blockHash: Data(count: 32))
 //            )
 //
