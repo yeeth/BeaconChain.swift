@@ -120,30 +120,26 @@ extension StateTransition {
         assert(block.body.attesterSlashings.count <= MAX_ATTESTER_SLASHINGS)
 
         for attesterSlashing in block.body.attesterSlashings {
-            let slashableVoteData1 = attesterSlashing.slashableVoteData1
-            let slashableVoteData2 = attesterSlashing.slashableVoteData2
+            let slashableAttestation1 = attesterSlashing.slashableAttestation1
+            let slashableAttestation2 = attesterSlashing.slashableAttestation2
 
-            let slashableVoteData1Indices = slashableVoteData1.custodyBit0Indices + slashableVoteData1.custodyBit1Indices
-            let slashableVoteData2Indices = slashableVoteData2.custodyBit0Indices + slashableVoteData2.custodyBit1Indices
-
-            let intersection = Set(slashableVoteData1Indices).intersection(Set(slashableVoteData2Indices))
-
-            assert(intersection.count > 1)
-
-            assert(slashableVoteData1.data != slashableVoteData2.data)
+            assert(slashableAttestation1.data != slashableAttestation2.data)
             assert(
-                BeaconChain.isDoubleVote(slashableVoteData1.data, slashableVoteData2.data)
-                || BeaconChain.isSurroundVote(slashableVoteData1.data, slashableVoteData2.data)
+                BeaconChain.isDoubleVote(slashableAttestation1.data, slashableAttestation2.data)
+                || BeaconChain.isSurroundVote(slashableAttestation1.data, slashableAttestation2.data)
             )
 
-            assert(BeaconChain.verifySlashableVoteData(state: state, data: slashableVoteData1))
-            assert(BeaconChain.verifySlashableVoteData(state: state, data: slashableVoteData2))
+            assert(BeaconChain.verifySlashableAttestation(state: state, slashableAttestation: slashableAttestation1))
+            assert(BeaconChain.verifySlashableAttestation(state: state, slashableAttestation: slashableAttestation2))
 
-            for i in intersection {
-                if state.validatorRegistry[Int(i)].penalizedEpoch <= BeaconChain.getCurrentEpoch(state: state) {
-                    continue
-                }
+            let slashableIndices = slashableAttestation1.validatorIndices.filter {
+                slashableAttestation2.validatorIndices.contains($0)
+                && state.validatorRegistry[Int($0)].penalizedEpoch > BeaconChain.getCurrentEpoch(state: state)
+            }
 
+            assert(slashableIndices.count >= 1)
+
+            for i in slashableIndices {
                 BeaconChain.penalizeValidator(state: &state, index: i)
             }
         }

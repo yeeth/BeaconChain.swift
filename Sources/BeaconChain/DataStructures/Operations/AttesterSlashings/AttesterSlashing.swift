@@ -1,6 +1,6 @@
 import Foundation
 
 struct AttesterSlashing {
-    let slashableVoteData1: SlashableVoteData
-    let slashableVoteData2: SlashableVoteData
+    let slashableAttestation1: SlashableAttestation
+    let slashableAttestation2: SlashableAttestation
 }
