@@ -295,14 +295,14 @@ extension StateTransition {
         }
 
         let previousEpochAttesterIndices = previousEpochAttestations.flatMap {
-            return BeaconChain.getAttestationParticipants(state: state, attestationData: $0.data, aggregationBitfield: $0.aggregationBitfield)
+            return BeaconChain.getAttestationParticipants(state: state, attestationData: $0.data, bitfield: $0.aggregationBitfield)
         }
 
         let previousEpochJustifiedAttestations = (currentEpochAttestations + previousEpochAttestations)
             .filter { $0.data.justifiedEpoch == state.previousJustifiedEpoch }
 
         let previousEpochJustifiedAttesterIndices = previousEpochJustifiedAttestations.flatMap {
-            return BeaconChain.getAttestationParticipants(state: state, attestationData: $0.data, aggregationBitfield: $0.aggregationBitfield)
+            return BeaconChain.getAttestationParticipants(state: state, attestationData: $0.data, bitfield: $0.aggregationBitfield)
         }
 
         let previousEpochJustifiedAttestingBalance = totalBalance(state: state, validators: previousEpochJustifiedAttesterIndices)
@@ -312,7 +312,7 @@ extension StateTransition {
         }
 
         let previousEpochBoundaryAttesterIndices = previousEpochBoundaryAttestations.flatMap {
-            return BeaconChain.getAttestationParticipants(state: state, attestationData: $0.data, aggregationBitfield: $0.aggregationBitfield)
+            return BeaconChain.getAttestationParticipants(state: state, attestationData: $0.data, bitfield: $0.aggregationBitfield)
         }
 
         let previousEpochBoundaryAttestingBalance = totalBalance(state: state, validators: previousEpochBoundaryAttesterIndices)
@@ -322,7 +322,7 @@ extension StateTransition {
         }
 
         let previousEpochHeadAttesterIndices = previousEpochHeadAttestations.flatMap {
-            return BeaconChain.getAttestationParticipants(state: state, attestationData: $0.data, aggregationBitfield: $0.aggregationBitfield)
+            return BeaconChain.getAttestationParticipants(state: state, attestationData: $0.data, bitfield: $0.aggregationBitfield)
         }
 
         let previousEpochHeadAttestingBalance = totalBalance(state: state, validators: previousEpochHeadAttesterIndices)
