@@ -119,28 +119,48 @@ extension BeaconChain {
         return getEpochCommitteeCount(activeValidatorCount: nextActiveValidators.count)
     }
 
-    static func getCrosslinkCommitteesAtSlot(state: BeaconState, slot: SlotNumber) -> [([ValidatorIndex], ShardNumber)] {
+    static func getCrosslinkCommitteesAtSlot(
+        state: BeaconState,
+        slot: SlotNumber,
+        registryChange: Bool = false
+    ) -> [([ValidatorIndex], ShardNumber)] {
         let epoch = slotToEpoch(slot)
         let currentEpoch = getCurrentEpoch(state: state)
         let previousEpoch = currentEpoch > GENESIS_EPOCH ? currentEpoch - 1 : currentEpoch
         let nextEpoch = currentEpoch + 1
 
-        assert(previousEpoch <= epoch && epoch < nextEpoch)
+        assert(previousEpoch <= epoch && epoch <= nextEpoch)
 
         var committeesPerEpoch: Int
         var seed: Data
         var shufflingEpoch: UInt64
         var shufflingStartShard: UInt64
-        if epoch < currentEpoch {
+
+        if epoch == previousEpoch {
             committeesPerEpoch = getPreviousEpochCommitteeCount(state: state)
             seed = state.previousEpochSeed
             shufflingEpoch = state.previousCalculationEpoch
             shufflingStartShard = state.previousEpochStartShard
-        } else {
+        } else if epoch == currentEpoch {
             committeesPerEpoch = getCurrentEpochCommitteeCount(state: state)
             seed = state.currentEpochSeed
             shufflingEpoch = state.currentCalculationEpoch
             shufflingStartShard = state.currentEpochStartShard
+        } else if epoch == nextEpoch {
+            let currentCommitteesPerEpoch = getCurrentEpochCommitteeCount(state: state)
+            committeesPerEpoch = getNextEpochCommitteeCount(state: state)
+            shufflingEpoch = nextEpoch
+            let epochsSinceLastRegistryUpdate = currentEpoch - state.validatorRegistryUpdateEpoch
+            if registryChange {
+                seed = generateSeed(state: state, epoch: nextEpoch)
+                shufflingStartShard = (state.currentEpochStartShard + UInt64(currentCommitteesPerEpoch)) % SHARD_COUNT
+            } else if epochsSinceLastRegistryUpdate > 1 && isPowerOfTwo(Int(epochsSinceLastRegistryUpdate)) {
+                seed = generateSeed(state: state, epoch: nextEpoch)
+                shufflingStartShard = state.currentEpochStartShard
+            } else {
+                seed = state.currentEpochSeed
+                shufflingStartShard = state.currentEpochStartShard
+            }
         }
 
         let shuffling = getShuffling(seed: seed, validators: state.validatorRegistry, epoch: shufflingEpoch)
@@ -175,7 +195,7 @@ extension BeaconChain {
 
     static func getActiveIndexRoot(state: BeaconState, epoch: EpochNumber) -> Bytes32 {
         let currentEpoch = getCurrentEpoch(state: state)
-        assert(currentEpoch - LATEST_INDEX_ROOTS_LENGTH < epoch && epoch <= currentEpoch)
+        assert(currentEpoch - LATEST_INDEX_ROOTS_LENGTH + ENTRY_EXIT_DELAY < epoch && epoch <= currentEpoch + ENTRY_EXIT_DELAY)
         return state.latestIndexRoots[Int(epoch % LATEST_INDEX_ROOTS_LENGTH)]
     }
 }
@@ -207,7 +227,7 @@ extension BeaconChain {
     static func getAttestationParticipants(
         state: BeaconState,
         attestationData: AttestationData,
-        aggregationBitfield: Data
+        bitfield: Data
     ) -> [ValidatorIndex] {
         let crosslinkCommittees = getCrosslinkCommitteesAtSlot(state: state, slot: attestationData.slot)
 
@@ -220,16 +240,23 @@ extension BeaconChain {
             assert(false)
         }
 
-        assert(aggregationBitfield.count == (crosslinkCommittee.count + 7) / 8)
+        assert(verifyBitfield(bitfield, crosslinkCommittee.count))
 
         return crosslinkCommittee.enumerated().compactMap {
-            let i = $0.offset
-            if aggregationBitfield[i / 8] >> (7 - (i % 8)) % 2 == 1 {
+            if getBitfieldBit(bitfield, $0.offset) == 0b1 {
                 return $0.element
             }
 
             return nil
         }
+    }
+
+    static func isPowerOfTwo(_ value: Int) -> Bool {
+        if value == 0 {
+            return false
+        }
+
+        return 2**Int(log2(Double(value))) == value
     }
 
     static func getEffectiveBalance(state: BeaconState, index: ValidatorIndex) -> Gwei {
@@ -247,30 +274,77 @@ extension BeaconChain {
     static func getDomain(fork: Fork, epoch: EpochNumber, domainType: Domain) -> UInt64 {
         return getForkVersion(fork: fork, epoch: epoch) * 2**32 + domainType.rawValue
     }
+
+    static func getBitfieldBit(bitfield: Data, i: Int) -> Int {
+        return Int((bitfield[i / 8] >> (7 - (i % 8))) % 2)
+    }
+
+    static func verifyBitfield(bitfield: Data, committeeSize: Int) -> Bool {
+        if bitfield.count != (committeeSize + 7) / 8 {
+            return false
+        }
+
+        for i in (committeeSize + 1)..<(committeeSize - committeeSize % 8 + 8) {
+            if getBitfieldBit(bitfield: bitfield, i: i) == 0b1 {
+                return false
+            }
+        }
+
+        return true
+    }
 }
 
 extension BeaconChain {
 
-    static func verifySlashableVoteData(state: BeaconState, data: SlashableVoteData) -> Bool {
-        if data.custodyBit0Indices.count + data.custodyBit1Indices.count > MAX_INDICES_PER_SLASHABLE_VOTE {
+    static func verifySlashableAttestation(state: BeaconState, slashableAttestation: SlashableAttestation) -> Bool {
+        if slashableAttestation.custodyBitfield != Data(repeating: 0, count: slashableAttestation.custodyBitfield.count) {
             return false
+        }
+
+        if slashableAttestation.validatorIndices.count == 0 {
+            return false
+        }
+
+        for i in 0..<(slashableAttestation.validatorIndices.count - 1) {
+            if slashableAttestation.validatorIndices[i] >= slashableAttestation.validatorIndices[i + 1] {
+                return false
+            }
+        }
+
+        if !verifyBitfield(bitfield: slashableAttestation.custodyBitfield, committeeSize: slashableAttestation.validatorIndices.count) {
+            return false
+        }
+
+        if slashableAttestation.validatorIndices.count > MAX_INDICES_PER_SLASHABLE_VOTE {
+            return false
+        }
+
+        var custodyBit0Indices = [UInt64]()
+        var custodyBit1Indices = [UInt64]()
+
+        for (i, validatorIndex) in slashableAttestation.validatorIndices.enumerated() {
+            if getBitfieldBit(bitfield: slashableAttestation.custodyBitfield, i: i) == 0b0 {
+                custodyBit0Indices.append(validatorIndex)
+            } else {
+                custodyBit1Indices.append(validatorIndex)
+            }
         }
 
         return BLS.verify(
             pubkeys: [
                 BLS.aggregate(
-                    pubkeys: data.custodyBit0Indices.map { (i) in return state.validatorRegistry[Int(i)].pubkey }
+                    pubkeys: custodyBit0Indices.map { (i) in return state.validatorRegistry[Int(i)].pubkey }
                 ),
                 BLS.aggregate(
-                    pubkeys: data.custodyBit1Indices.map { (i) in return state.validatorRegistry[Int(i)].pubkey }
+                    pubkeys: custodyBit1Indices.map { (i) in return state.validatorRegistry[Int(i)].pubkey }
                 )
             ],
             messages: [
-                hashTreeRoot(AttestationDataAndCustodyBit(data: data.data, custodyBit: false)),
-                hashTreeRoot(AttestationDataAndCustodyBit(data: data.data, custodyBit: true)),
+                hashTreeRoot(AttestationDataAndCustodyBit(data: slashableAttestation.data, custodyBit: false)),
+                hashTreeRoot(AttestationDataAndCustodyBit(data: slashableAttestation.data, custodyBit: true)),
             ],
-            signature: data.aggregateSignature,
-            domain: getDomain(fork: state.fork, epoch: slotToEpoch(data.data.slot), domainType: Domain.ATTESTATION)
+            signature: slashableAttestation.aggregateSignature,
+            domain: getDomain(fork: state.fork, epoch: slotToEpoch(slashableAttestation.data.slot), domainType: Domain.ATTESTATION)
         )
     }
 
@@ -280,7 +354,6 @@ extension BeaconChain {
 
     static func isSurroundVote(_ left: AttestationData, _ right: AttestationData) -> Bool {
         return left.justifiedEpoch < right.justifiedEpoch &&
-            right.justifiedEpoch + 1 == slotToEpoch(right.slot) &&
             slotToEpoch(right.slot) < slotToEpoch(left.slot)
     }
 }
@@ -422,10 +495,7 @@ extension BeaconChain {
                 exitEpoch: FAR_FUTURE_EPOCH,
                 withdrawalEpoch: FAR_FUTURE_EPOCH,
                 penalizedEpoch: FAR_FUTURE_EPOCH,
-                exitCount: 0,
-                statusFlags: 0,
-                latestCustodyReseedSlot: GENESIS_SLOT,
-                penultimateCustodyReseedSlot: GENESIS_SLOT
+                statusFlags: 0
             )
 
             state.validatorRegistry.append(validator)
@@ -451,8 +521,6 @@ extension BeaconChain {
         }
 
         validator.exitEpoch = getEntryExitEpoch(getCurrentEpoch(state: state))
-        state.validatorRegistryExitCount += 1
-        validator.exitCount = state.validatorRegistryExitCount
         state.validatorRegistry[Int(index)] = validator
     }
 

@@ -166,7 +166,7 @@ extension StateTransition {
             let participants = BeaconChain.getAttestationParticipants(
                 state: state,
                 attestationData: attestation.data,
-                aggregationBitfield: attestation.aggregationBitfield
+                bitfield: attestation.aggregationBitfield
             )
 
             let groupPublicKey = BLS.aggregate(pubkeys: participants.map { return state.validatorRegistry[Int($0)].pubkey })
@@ -188,8 +188,7 @@ extension StateTransition {
 
             state.latestAttestations.append(
                 PendingAttestation(
-                    data: attestation.data,
-                    aggregationBitfield: attestation.aggregationBitfield,
+                    aggregationBitfield: attestation.aggregationBitfield, data: attestation.data,
                     custodyBitfield: attestation.custodyBitfield,
                     slotIncluded: state.slot
                 )
@@ -285,7 +284,7 @@ extension StateTransition {
         }
 
         let currentEpochBoundaryAttesterIndices = currentEpochAttestations.flatMap {
-            return BeaconChain.getAttestationParticipants(state: state, attestationData: $0.data, aggregationBitfield: $0.aggregationBitfield)
+            return BeaconChain.getAttestationParticipants(state: state, attestationData: $0.data, bitfield: $0.aggregationBitfield)
         }
 
         let currentEpochBoundaryAttestingBalance = totalBalance(state: state, validators: currentEpochBoundaryAttesterIndices)
@@ -383,7 +382,7 @@ extension StateTransition {
             updateValidatorRegistry(state: &state)
         } else {
             let epochsSinceLastRegistryChange = currentEpoch - state.validatorRegistryUpdateEpoch
-            if isPowerOfTwo(Int(epochsSinceLastRegistryChange)) {
+            if BeaconChain.isPowerOfTwo(Int(epochsSinceLastRegistryChange)) {
                 state.currentCalculationEpoch = nextEpoch
                 state.currentEpochSeed = BeaconChain.generateSeed(state: state, epoch: state.currentCalculationEpoch)
             }
@@ -788,15 +787,6 @@ extension StateTransition {
 
     private static func baseReward(state: BeaconState, index: ValidatorIndex, baseRewardQuotient: UInt64) -> UInt64 {
         return BeaconChain.getEffectiveBalance(state: state, index: index) / baseRewardQuotient / 5
-    }
-
-    // @todo maybe make these extension functions on an int?
-    private static func isPowerOfTwo(_ n: Int) -> Bool {
-        return ceil(log2(n)) == floor(log2(n))
-    }
-
-    private static func log2(_ n: Int) -> Double {
-        return log10(Double(n)) / log10(2.0)
     }
 
     private static func inactivityPenalty(
