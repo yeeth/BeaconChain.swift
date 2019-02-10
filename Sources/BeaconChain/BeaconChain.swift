@@ -66,9 +66,28 @@ extension BeaconChain {
 
 extension BeaconChain {
 
-    // @todo use generic instead of any
-    static func shuffle<T>(values: [T], seed: Bytes32) -> [T] {
-        return [T]()
+    // @todo check this shit
+    static func getPermutedIndex(index i: Int, listSize: Int, seed: Bytes32) -> Int {
+        var index = i
+        for round in 0..<SHUFFLE_ROUND_COUNT {
+            var pointer = round
+            let roundBytes = Data(bytes: &pointer, count: 1)
+            let pivot = hash(seed + roundBytes)[0...8].withUnsafeBytes {
+                (ptr: UnsafePointer<Int>) -> Int in
+                return ptr.pointee
+            } % listSize
+            let flip = (pivot - index) % listSize
+            let position = max(index, flip)
+
+            var positionBytes = position / 256
+            let source = hash(seed + roundBytes + Data(bytes: &positionBytes, count: 4))
+
+            let byte = source[(position % 256) / 8]
+            let bit = (byte >> (position % 8)) % UInt8(2)
+            index = bit == 1 ? flip : index
+        }
+
+        return index
     }
 
     static func split<T>(values: [T], splitCount: Int) -> [[T]] {
@@ -79,9 +98,9 @@ extension BeaconChain {
         let activeValidatorIndices = getActiveValidatorIndices(validators: validators, epoch: epoch)
         let committeesPerEpoch = getEpochCommitteeCount(activeValidatorCount: validators.count)
 
-        var e = epoch
-        let newSeed = seed ^ Data(bytes: &e, count: 32)
-        let shuffledActiveValidatorIndices = shuffle(values: activeValidatorIndices, seed: newSeed)
+        let shuffledActiveValidatorIndices = activeValidatorIndices.map {
+            activeValidatorIndices[getPermutedIndex(index: Int($0), listSize: activeValidatorIndices.count, seed: seed)]
+        }
 
         return split(values: shuffledActiveValidatorIndices, splitCount: committeesPerEpoch)
     }
