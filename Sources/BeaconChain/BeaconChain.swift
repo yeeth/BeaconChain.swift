@@ -63,7 +63,12 @@ extension BeaconChain {
     }
 
     static func split<T>(values: [T], splitCount: Int) -> [[T]] {
-        return [[T]]()
+
+        let listLength = values.count
+
+        return stride(from: 0, to: values.count, by: splitCount).map {
+            Array(values[(listLength * $0 / splitCount) ..< (listLength * ($0 + 1) / splitCount)])
+        }
     }
 
     static func getShuffling(seed: Bytes32, validators: [Validator], epoch: EpochNumber) -> [[ValidatorIndex]] {
