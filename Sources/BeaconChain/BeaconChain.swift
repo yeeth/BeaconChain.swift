@@ -24,6 +24,15 @@ extension BeaconChain {
         return slot / EPOCH_LENGTH
     }
 
+    static func getPreviousEpoch(state: BeaconState) -> EpochNumber {
+        let currentEpoch = getCurrentEpoch(state: state)
+        if currentEpoch == GENESIS_EPOCH {
+            return GENESIS_EPOCH
+        }
+
+        return currentEpoch - 1
+    }
+
     static func getCurrentEpoch(state: BeaconState) -> EpochNumber {
         return slotToEpoch(state.slot)
     }

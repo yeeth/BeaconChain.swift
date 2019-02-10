@@ -6,7 +6,7 @@ struct AttestationData: Equatable {
     let beaconBlockRoot: Data
     let epochBoundaryRoot: Data
     let shardBlockRoot: Data
-    let latestCrosslinkRoot: Data
+    let latestCrosslink: Crosslink
     let justifiedEpoch: UInt64
     let justifiedBlockRoot: Data
 }
