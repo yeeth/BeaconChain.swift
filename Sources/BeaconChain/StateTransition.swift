@@ -404,14 +404,18 @@ extension StateTransition {
         if state.finalizedEpoch > state.validatorRegistryUpdateEpoch && shards.count == 0 {
             updateValidatorRegistry(state: &state)
         } else {
-            let epochsSinceLastRegistryChange = currentEpoch - state.validatorRegistryUpdateEpoch
-            if BeaconChain.isPowerOfTwo(Int(epochsSinceLastRegistryChange)) {
+            let epochsSinceLastRegistryUpdate = currentEpoch - state.validatorRegistryUpdateEpoch
+            if epochsSinceLastRegistryUpdate > 1 && BeaconChain.isPowerOfTwo(Int(epochsSinceLastRegistryUpdate)) {
                 state.currentCalculationEpoch = nextEpoch
                 state.currentEpochSeed = BeaconChain.generateSeed(state: state, epoch: state.currentCalculationEpoch)
             }
         }
 
         processPenaltiesAndExit(state: &state)
+
+        state.latestIndexRoots[Int((nextEpoch % ENTRY_EXIT_DELAY) % LATEST_INDEX_ROOTS_LENGTH)] = BeaconChain.hashTreeRoot(
+            BeaconChain.getActiveValidatorIndices(validators: state.validatorRegistry, epoch: nextEpoch + ENTRY_EXIT_DELAY)
+        )
 
         state.latestPenalizedBalances[Int(nextEpoch % LATEST_PENALIZED_EXIT_LENGTH)] = state.latestPenalizedBalances[Int(currentEpoch % LATEST_PENALIZED_EXIT_LENGTH)]
         state.latestRandaoMixes[Int(nextEpoch % LATEST_RANDAO_MIXES_LENGTH)] = BeaconChain.getRandaoMix(
@@ -651,9 +655,9 @@ extension StateTransition {
                 continue
             }
 
-            let e = currentEpoch % LATEST_PENALIZED_EXIT_LENGTH
-            let totalAtStart = state.latestPenalizedBalances[Int((e + 1) % LATEST_PENALIZED_EXIT_LENGTH)]
-            let totalAtEnd = state.latestPenalizedBalances[Int(e)]
+            let epochIndex = currentEpoch % LATEST_PENALIZED_EXIT_LENGTH
+            let totalAtStart = state.latestPenalizedBalances[Int((epochIndex + 1) % LATEST_PENALIZED_EXIT_LENGTH)]
+            let totalAtEnd = state.latestPenalizedBalances[Int(epochIndex)]
             let totalPenalties = totalAtEnd - totalAtStart
             let penalty = BeaconChain.getEffectiveBalance(state: state, index: ValidatorIndex(i)) * min(totalPenalties * 3, totalBalance) / totalBalance
             state.validatorBalances[i] -= penalty
@@ -771,7 +775,7 @@ extension StateTransition {
         previousEpochBoundaryAttestingBalance: UInt64,
         baseRewardQuotient: UInt64,
         totalBalance: UInt64
-    ) -> BeaconState {
+    ) {
         for index in previousEpochBoundaryAttesterIndices {
             state.validatorBalances[Int(index)] += baseReward(state: state, index: index, baseRewardQuotient: baseRewardQuotient) * previousEpochBoundaryAttestingBalance / totalBalance
         }
@@ -780,8 +784,6 @@ extension StateTransition {
             (index) in
             state.validatorBalances[Int(index)] -= baseReward(state: state, index: index, baseRewardQuotient: baseRewardQuotient)
         })
-
-        return state
     }
 
     static func expectedBeaconChainHead(
@@ -791,7 +793,7 @@ extension StateTransition {
         previousEpochHeadAttestingBalance: UInt64,
         baseRewardQuotient: UInt64,
         totalBalance: UInt64
-    ) -> BeaconState {
+    ) {
         for index in previousEpochHeadAttesterIndices {
             state.validatorBalances[Int(index)] += baseReward(state: state, index: index, baseRewardQuotient: baseRewardQuotient) * previousEpochHeadAttestingBalance / totalBalance
         }
@@ -800,8 +802,6 @@ extension StateTransition {
             (index) in
             state.validatorBalances[Int(index)] -= baseReward(state: state, index: index, baseRewardQuotient: baseRewardQuotient)
         })
-
-        return state
     }
 
     private static func baseReward(state: BeaconState, index: ValidatorIndex, baseRewardQuotient: UInt64) -> UInt64 {
