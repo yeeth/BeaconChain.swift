@@ -724,10 +724,6 @@ extension StateTransition {
         state.previousCalculationEpoch = state.currentCalculationEpoch
         state.previousEpochSeed = state.currentEpochSeed
         state.previousEpochStartShard = state.currentEpochStartShard
-
-        state.latestIndexRoots[Int(nextEpoch % LATEST_INDEX_ROOTS_LENGTH)] = BeaconChain.hashTreeRoot(
-            BeaconChain.getActiveValidatorIndices(validators: state.validatorRegistry, epoch: nextEpoch)
-        )
     }
 
     static func processEjections(state: inout BeaconState) {
