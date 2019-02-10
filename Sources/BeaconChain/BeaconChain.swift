@@ -154,7 +154,7 @@ extension BeaconChain {
     ) -> [([ValidatorIndex], ShardNumber)] {
         let epoch = slotToEpoch(slot)
         let currentEpoch = getCurrentEpoch(state: state)
-        let previousEpoch = currentEpoch > GENESIS_EPOCH ? currentEpoch - 1 : currentEpoch
+        let previousEpoch = getPreviousEpoch(state: state)
         let nextEpoch = currentEpoch + 1
 
         assert(previousEpoch <= epoch && epoch <= nextEpoch)
