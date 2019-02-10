@@ -126,7 +126,7 @@ extension StateTransition {
             assert(slashableAttestation1.data != slashableAttestation2.data)
             assert(
                 BeaconChain.isDoubleVote(slashableAttestation1.data, slashableAttestation2.data)
-                || BeaconChain.isSurroundVote(slashableAttestation1.data, slashableAttestation2.data)
+                    || BeaconChain.isSurroundVote(slashableAttestation1.data, slashableAttestation2.data)
             )
 
             assert(BeaconChain.verifySlashableAttestation(state: state, slashableAttestation: slashableAttestation1))
@@ -134,7 +134,7 @@ extension StateTransition {
 
             let slashableIndices = slashableAttestation1.validatorIndices.filter {
                 slashableAttestation2.validatorIndices.contains($0)
-                && state.validatorRegistry[Int($0)].penalizedEpoch > BeaconChain.getCurrentEpoch(state: state)
+                    && state.validatorRegistry[Int($0)].penalizedEpoch > BeaconChain.getCurrentEpoch(state: state)
             }
 
             assert(slashableIndices.count >= 1)
@@ -191,8 +191,12 @@ extension StateTransition {
             assert(
                 BLS.verify(
                     pubkeys: [
-                        BLS.aggregate(pubkeys: custodyBit0Participants.map { return state.validatorRegistry[Int($0)].pubkey }),
-                        BLS.aggregate(pubkeys: custodyBit1Participants.map { return state.validatorRegistry[Int($0)].pubkey })
+                        BLS.aggregate(pubkeys: custodyBit0Participants.map {
+                            return state.validatorRegistry[Int($0)].pubkey
+                        }),
+                        BLS.aggregate(pubkeys: custodyBit1Participants.map {
+                            return state.validatorRegistry[Int($0)].pubkey
+                        })
                     ],
                     messages: [
                         BeaconChain.hashTreeRoot(AttestationDataAndCustodyBit(data: attestation.data, custodyBit: false)),
@@ -275,7 +279,7 @@ extension StateTransition {
     static func verifyMerkleBranch(leaf: Bytes32, branch: [Bytes32], depth: Int, index: Int, root: Bytes32) -> Bool {
         var value = leaf
         for i in 0..<depth {
-            if index / (2**i) % 2 == 1 {
+            if index / (2 ** i) % 2 == 1 {
                 value = BeaconChain.hash(branch[i] + value)
             } else {
                 value = BeaconChain.hash(value + branch[i])
@@ -325,8 +329,9 @@ extension StateTransition {
             return BeaconChain.getAttestationParticipants(state: state, attestationData: $0.data, bitfield: $0.aggregationBitfield)
         }
 
-        let previousEpochJustifiedAttestations = (currentEpochAttestations + previousEpochAttestations)
-            .filter { $0.data.justifiedEpoch == state.previousJustifiedEpoch }
+        let previousEpochJustifiedAttestations = (currentEpochAttestations + previousEpochAttestations).filter {
+            $0.data.justifiedEpoch == state.previousJustifiedEpoch
+        }
 
         let previousEpochJustifiedAttesterIndices = previousEpochJustifiedAttestations.flatMap {
             return BeaconChain.getAttestationParticipants(state: state, attestationData: $0.data, bitfield: $0.aggregationBitfield)
@@ -425,7 +430,9 @@ extension StateTransition {
 
         // @todo check this
         // Remove any attestation in state.latest_attestations such that slot_to_epoch(attestation.data.slot) < current_epoch.
-        state.latestAttestations.removeAll { BeaconChain.slotToEpoch($0.data.slot) >= currentEpoch }
+        state.latestAttestations.removeAll {
+            BeaconChain.slotToEpoch($0.data.slot) >= currentEpoch
+        }
     }
 
     private static func eth1data(state: inout BeaconState, nextEpoch: EpochNumber) {
@@ -862,7 +869,9 @@ extension StateTransition {
     }
 
     private static func totalBalance(state: BeaconState, validators: [ValidatorIndex]) -> UInt64 {
-        return validators.map { return BeaconChain.getEffectiveBalance(state: state, index: $0) }
+        return validators.map {
+                return BeaconChain.getEffectiveBalance(state: state, index: $0)
+            }
             .reduce(0, +)
     }
 
@@ -875,7 +884,9 @@ extension StateTransition {
         previousEpochAttestations: [PendingAttestation]
     ) -> [ValidatorIndex] {
         return (currentEpochAttestations + previousEpochAttestations)
-            .filter { $0.data.shard == shard && $0.data.shardBlockRoot == shardBlockRoot }
+            .filter {
+                $0.data.shard == shard && $0.data.shardBlockRoot == shardBlockRoot
+            }
             .flatMap {
                 return BeaconChain.getAttestationParticipants(
                     state: state,
@@ -893,8 +904,12 @@ extension StateTransition {
         previousEpochAttestations: [PendingAttestation]
     ) -> Data {
         let candidateRoots = (currentEpochAttestations + previousEpochAttestations)
-            .filter { $0.data.shard == shard }
-            .map { $0.data.shardBlockRoot }
+            .filter {
+                $0.data.shard == shard
+            }
+            .map {
+                $0.data.shardBlockRoot
+            }
 
         var winnerRoot = Data(count: 0)
         var winnerBalance = UInt64(0)

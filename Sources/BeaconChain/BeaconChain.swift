@@ -231,7 +231,7 @@ extension BeaconChain {
     ) -> [ValidatorIndex] {
         let crosslinkCommittees = getCrosslinkCommitteesAtSlot(state: state, slot: attestationData.slot)
 
-        assert(crosslinkCommittees.map({return $0.1 }).contains(attestationData.shard))
+        assert(crosslinkCommittees.map({ return $0.1 }).contains(attestationData.shard))
 
         // @todo clean this ugly up
         guard let crosslinkCommittee = crosslinkCommittees.first(where: {
@@ -256,7 +256,7 @@ extension BeaconChain {
             return false
         }
 
-        return 2**Int(log2(Double(value))) == value
+        return 2 ** Int(log2(Double(value))) == value
     }
 
     static func getEffectiveBalance(state: BeaconState, index: ValidatorIndex) -> Gwei {
@@ -272,7 +272,7 @@ extension BeaconChain {
     }
 
     static func getDomain(fork: Fork, epoch: EpochNumber, domainType: Domain) -> UInt64 {
-        return getForkVersion(fork: fork, epoch: epoch) * 2**32 + domainType.rawValue
+        return getForkVersion(fork: fork, epoch: epoch) * 2 ** 32 + domainType.rawValue
     }
 
     static func getBitfieldBit(bitfield: Data, i: Int) -> Int {
@@ -333,10 +333,14 @@ extension BeaconChain {
         return BLS.verify(
             pubkeys: [
                 BLS.aggregate(
-                    pubkeys: custodyBit0Indices.map { (i) in return state.validatorRegistry[Int(i)].pubkey }
+                    pubkeys: custodyBit0Indices.map { (i) in
+                        return state.validatorRegistry[Int(i)].pubkey
+                    }
                 ),
                 BLS.aggregate(
-                    pubkeys: custodyBit1Indices.map { (i) in return state.validatorRegistry[Int(i)].pubkey }
+                    pubkeys: custodyBit1Indices.map { (i) in
+                        return state.validatorRegistry[Int(i)].pubkey
+                    }
                 )
             ],
             messages: [
