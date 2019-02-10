@@ -1,8 +1,8 @@
 import Foundation
 
 struct PendingAttestation {
-    let data: AttestationData
     let aggregationBitfield: Data
+    let data: AttestationData
     let custodyBitfield: Data
-    let slotIncluded: UInt64
+    let inclusionSlot: UInt64
 }

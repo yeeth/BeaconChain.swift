@@ -8,19 +8,14 @@ struct BeaconState {
     var validatorRegistry: [Validator]
     var validatorBalances: [UInt64]
     var validatorRegistryUpdateEpoch: UInt64
-    var validatorRegistryExitCount: UInt64
 
     var latestRandaoMixes: [Data]
-    let latestVdfOutputs: [Data]
     var previousEpochStartShard: UInt64
     let currentEpochStartShard: UInt64
     var previousCalculationEpoch: UInt64
     var currentCalculationEpoch: UInt64
     var previousEpochSeed: Data
     var currentEpochSeed: Data
-
-//    @todo will be defined in 1.0
-//    let custodyChallenges: [CustodyChallenges]
 
     var previousJustifiedEpoch: UInt64
     var justifiedEpoch: UInt64

@@ -93,10 +93,7 @@ final class BeaconChainTests: XCTestCase {
                     exitEpoch: 0,
                     withdrawalEpoch: 0,
                     penalizedEpoch: 0,
-                    exitCount: 0,
-                    statusFlags: 0,
-                    latestCustodyReseedSlot: 0,
-                    penultimateCustodyReseedSlot: 0
+                    statusFlags: 0
                 )
             )
         }
@@ -122,10 +119,7 @@ final class BeaconChainTests: XCTestCase {
                 exitEpoch: 0,
                 withdrawalEpoch: 0,
                 penalizedEpoch: 0,
-                exitCount: 0,
-                statusFlags: 0,
-                latestCustodyReseedSlot: 0,
-                penultimateCustodyReseedSlot: 0
+                statusFlags: 0
             )
         )
 
