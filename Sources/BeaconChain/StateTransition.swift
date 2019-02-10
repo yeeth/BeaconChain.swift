@@ -306,7 +306,7 @@ extension StateTransition {
                 && $0.data.justifiedEpoch == state.justifiedEpoch
         }
 
-        let currentEpochBoundaryAttesterIndices = currentEpochAttestations.flatMap {
+        let currentEpochBoundaryAttesterIndices = currentEpochBoundryAttestations.flatMap {
             return BeaconChain.getAttestationParticipants(state: state, attestationData: $0.data, bitfield: $0.aggregationBitfield)
         }
 
@@ -674,7 +674,7 @@ extension StateTransition {
         }
 
         eligibleIndices.sort {
-            state.validatorRegistry[$0].exitCount > state.validatorRegistry[$1].exitCount
+            state.validatorRegistry[$0].exitEpoch > state.validatorRegistry[$1].exitEpoch
         }
 
         var withdrawan = 0
@@ -711,7 +711,7 @@ extension StateTransition {
 
         balanceChurn = 0
         for (i, v) in state.validatorRegistry.enumerated() {
-            if v.exitCount > BeaconChain.getEntryExitEpoch(currentEpoch) && v.statusFlags & StatusFlag.INITIATED_EXIT.rawValue == 1 {
+            if v.exitEpoch > BeaconChain.getEntryExitEpoch(currentEpoch) && v.statusFlags & StatusFlag.INITIATED_EXIT.rawValue == 1 {
                 balanceChurn += BeaconChain.getEffectiveBalance(state: state, index: ValidatorIndex(i))
                 if balanceChurn > maxBalanceChurn {
                     break
@@ -880,7 +880,7 @@ extension StateTransition {
                 return BeaconChain.getAttestationParticipants(
                     state: state,
                     attestationData: $0.data,
-                    aggregationBitfield: $0.aggregationBitfield
+                    bitfield: $0.aggregationBitfield
                 )
             }
     }
@@ -921,11 +921,11 @@ extension StateTransition {
 
     private static func inclusionDistance(state: BeaconState, index: ValidatorIndex) -> UInt64 {
         for a in state.latestAttestations {
-            let participated = BeaconChain.getAttestationParticipants(state: state, attestationData: a.data, aggregationBitfield: a.aggregationBitfield)
+            let participated = BeaconChain.getAttestationParticipants(state: state, attestationData: a.data, bitfield: a.aggregationBitfield)
 
             for i in participated {
                 if index == i {
-                    return a.slotIncluded - a.data.slot
+                    return a.inclusionSlot - a.data.slot
                 }
             }
         }
@@ -935,11 +935,11 @@ extension StateTransition {
 
     private static func inclusionSlot(state: BeaconState, index: Int) -> UInt64 {
         for a in state.latestAttestations {
-            let participated = BeaconChain.getAttestationParticipants(state: state, attestationData: a.data, aggregationBitfield: a.aggregationBitfield)
+            let participated = BeaconChain.getAttestationParticipants(state: state, attestationData: a.data, bitfield: a.aggregationBitfield)
 
             for i in participated {
                 if index == i {
-                    return a.slotIncluded
+                    return a.inclusionSlot
                 }
             }
         }

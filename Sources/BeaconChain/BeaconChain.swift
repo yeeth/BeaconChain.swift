@@ -131,10 +131,10 @@ extension BeaconChain {
 
         assert(previousEpoch <= epoch && epoch <= nextEpoch)
 
-        var committeesPerEpoch: Int
-        var seed: Data
-        var shufflingEpoch: UInt64
-        var shufflingStartShard: UInt64
+        var committeesPerEpoch: Int!
+        var seed: Data!
+        var shufflingEpoch: UInt64!
+        var shufflingStartShard: UInt64!
 
         if epoch == previousEpoch {
             committeesPerEpoch = getPreviousEpochCommitteeCount(state: state)
@@ -240,10 +240,10 @@ extension BeaconChain {
             assert(false)
         }
 
-        assert(verifyBitfield(bitfield, crosslinkCommittee.count))
+        assert(verifyBitfield(bitfield: bitfield, committeeSize: crosslinkCommittee.count))
 
         return crosslinkCommittee.enumerated().compactMap {
-            if getBitfieldBit(bitfield, $0.offset) == 0b1 {
+            if getBitfieldBit(bitfield: bitfield, i: $0.offset) == 0b1 {
                 return $0.element
             }
 
@@ -421,9 +421,7 @@ extension BeaconChain {
             validatorRegistry: [Validator](),
             validatorBalances: [UInt64](),
             validatorRegistryUpdateEpoch: GENESIS_EPOCH,
-            validatorRegistryExitCount: 0,
             latestRandaoMixes: [Data](repeating: ZERO_HASH, count: Int(LATEST_RANDAO_MIXES_LENGTH)),
-            latestVdfOutputs: [Data](repeating: ZERO_HASH, count: Int(LATEST_RANDAO_MIXES_LENGTH / EPOCH_LENGTH)),
             previousEpochStartShard: GENESIS_START_SHARD,
             currentEpochStartShard: GENESIS_START_SHARD,
             previousCalculationEpoch: GENESIS_EPOCH,
