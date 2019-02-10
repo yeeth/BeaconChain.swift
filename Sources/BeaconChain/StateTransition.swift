@@ -149,8 +149,8 @@ extension StateTransition {
         assert(block.body.attestations.count <= MAX_ATTESTATIONS)
 
         for attestation in block.body.attestations {
-            assert(attestation.data.slot + MIN_ATTESTATION_INCLUSION_DELAY <= state.slot)
-            assert(attestation.data.slot + EPOCH_LENGTH >= state.slot)
+            assert(attestation.data.slot <= state.slot - MIN_ATTESTATION_INCLUSION_DELAY)
+            assert(state.slot - MIN_ATTESTATION_INCLUSION_DELAY < attestation.data.slot + EPOCH_LENGTH)
 
             let e = attestation.data.justifiedEpoch >= BeaconChain.getCurrentEpoch(state: state) ? state.justifiedEpoch : state.previousJustifiedEpoch
             assert(attestation.data.justifiedEpoch == e)
@@ -159,18 +159,45 @@ extension StateTransition {
             let shardBlockRoot = state.latestCrosslinks[Int(attestation.data.shard)].shardBlockRoot
             assert(attestation.data.latestCrosslinkRoot == shardBlockRoot || attestation.data.shardBlockRoot == shardBlockRoot)
 
+            assert(attestation.custodyBitfield == Data(repeating: 0, count: 32))
+            assert(attestation.aggregationBitfield != Data(repeating: 0, count: 32))
+
+            let crosslinkCommittee = BeaconChain.getCrosslinkCommitteesAtSlot(state: state, slot: attestation.data.slot).filter {
+                $0.1 == attestation.data.shard
+            }.first?.0
+
+            for i in 0..<crosslinkCommittee!.count {
+                if BeaconChain.getBitfieldBit(bitfield: attestation.aggregationBitfield, i: i) == 0b0 {
+                    assert(BeaconChain.getBitfieldBit(bitfield: attestation.custodyBitfield, i: i) == 0b1)
+                }
+            }
+
             let participants = BeaconChain.getAttestationParticipants(
                 state: state,
                 attestationData: attestation.data,
                 bitfield: attestation.aggregationBitfield
             )
 
-            let groupPublicKey = BLS.aggregate(pubkeys: participants.map { return state.validatorRegistry[Int($0)].pubkey })
+            let custodyBit1Participants = BeaconChain.getAttestationParticipants(
+                state: state,
+                attestationData: attestation.data,
+                bitfield: attestation.custodyBitfield
+            )
+
+            let custodyBit0Participants = participants.filter {
+                !custodyBit1Participants.contains($0)
+            }
 
             assert(
                 BLS.verify(
-                    pubkey: groupPublicKey,
-                    message: BeaconChain.hashTreeRoot(AttestationDataAndCustodyBit(data: attestation.data, custodyBit: false)),
+                    pubkeys: [
+                        BLS.aggregate(pubkeys: custodyBit0Participants.map { return state.validatorRegistry[Int($0)].pubkey }),
+                        BLS.aggregate(pubkeys: custodyBit1Participants.map { return state.validatorRegistry[Int($0)].pubkey })
+                    ],
+                    messages: [
+                        BeaconChain.hashTreeRoot(AttestationDataAndCustodyBit(data: attestation.data, custodyBit: false)),
+                        BeaconChain.hashTreeRoot(AttestationDataAndCustodyBit(data: attestation.data, custodyBit: true))
+                    ],
                     signature: attestation.aggregateSignature,
                     domain: BeaconChain.getDomain(
                         fork: state.fork,
@@ -186,7 +213,7 @@ extension StateTransition {
                 PendingAttestation(
                     aggregationBitfield: attestation.aggregationBitfield, data: attestation.data,
                     custodyBitfield: attestation.custodyBitfield,
-                    slotIncluded: state.slot
+                    inclusionSlot: state.slot
                 )
             )
         }
