@@ -1,6 +1,6 @@
 import Foundation
 
-struct Crosslink {
+struct Crosslink: Equatable {
     let epoch: UInt64
     let shardBlockRoot: Data
 }

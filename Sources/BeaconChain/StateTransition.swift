@@ -157,7 +157,13 @@ extension StateTransition {
             assert(attestation.data.justifiedBlockRoot == BeaconChain.getBlockRoot(state: state, slot: BeaconChain.getEpochStartSlot(attestation.data.justifiedEpoch)))
 
             let shardBlockRoot = state.latestCrosslinks[Int(attestation.data.shard)].shardBlockRoot
-            assert(attestation.data.latestCrosslinkRoot == shardBlockRoot || attestation.data.shardBlockRoot == shardBlockRoot)
+            assert(
+                state.latestCrosslinks[Int(attestation.data.shard)] == attestation.data.latestCrosslink ||
+                state.latestCrosslinks[Int(attestation.data.shard)] == Crosslink(
+                    epoch: BeaconChain.slotToEpoch(attestation.data.slot),
+                    shardBlockRoot: attestation.data.shardBlockRoot
+                )
+            )
 
             assert(attestation.custodyBitfield == Data(repeating: 0, count: 32))
             assert(attestation.aggregationBitfield != Data(repeating: 0, count: 32))
@@ -296,7 +302,7 @@ extension StateTransition {
         assert(state.slot + 1 % EPOCH_LENGTH == 0) // @todo not sure if this should be here
 
         let currentEpoch = BeaconChain.getCurrentEpoch(state: state)
-        let previousEpoch = currentEpoch > GENESIS_EPOCH ? currentEpoch - 1 : currentEpoch
+        let previousEpoch = BeaconChain.getPreviousEpoch(state: state)
         let nextEpoch = currentEpoch + 1
 
         let currentTotalBalance = BeaconChain.getTotalBalance(state: state, validators: BeaconChain.getActiveValidatorIndices(validators: state.validatorRegistry, epoch: currentEpoch))
@@ -508,7 +514,7 @@ extension StateTransition {
                 // @todo clean up this pile of turd
                 if 3 * totalAttestingBalance(state: state, committee: crosslinkCommittee, shard: shard, currentEpochAttestations: currentEpochAttestations, previousEpochAttestations: previousEpochAttestations) >= 2 * BeaconChain.getTotalBalance(state: state, validators: crosslinkCommittee) {
                     state.latestCrosslinks[Int(shard)] = Crosslink(
-                        epoch: currentEpoch,
+                        epoch: BeaconChain.slotToEpoch(slot),
                         shardBlockRoot: winningRoot(
                             state: state,
                             committee: crosslinkCommittee,
