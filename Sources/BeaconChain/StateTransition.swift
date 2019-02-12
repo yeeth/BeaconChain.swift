@@ -545,7 +545,7 @@ extension StateTransition {
         currentEpochAttestations: [PendingAttestation],
         previousEpochAttestations: [PendingAttestation]
     ) {
-        let baseRewardQuotient = BeaconChain.integerSquareRoot(n: previousTotalBalance) / BASE_REWARD_QUOTIENT
+        let baseRewardQuotient = previousTotalBalance.sqrt() / BASE_REWARD_QUOTIENT
 
         let epochsSinceFinality = nextEpoch - state.finalizedEpoch
 
