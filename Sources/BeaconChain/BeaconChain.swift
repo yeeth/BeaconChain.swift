@@ -232,7 +232,9 @@ extension BeaconChain {
 
     static func generateSeed(state: BeaconState, epoch: EpochNumber) -> Data {
         return hash(
-            getRandaoMix(state: state, epoch: epoch - SEED_LOOKAHEAD) + getActiveIndexRoot(state: state, epoch: epoch)
+            getRandaoMix(state: state, epoch: epoch - SEED_LOOKAHEAD) +
+            getActiveIndexRoot(state: state, epoch: epoch) +
+            epoch.bytes32
         )
     }
 
@@ -291,6 +293,13 @@ extension BeaconChain {
         return min(state.validatorBalances[Int(index)], MAX_DEPOSIT_AMOUNT)
     }
 
+    static func getTotalBalance(state: BeaconState, validators: [ValidatorIndex]) -> Gwei {
+        return validators.map {
+            return BeaconChain.getEffectiveBalance(state: state, index: $0)
+        }
+        .reduce(0, +)
+    }
+
     static func getForkVersion(fork: Fork, epoch: EpochNumber) -> UInt64 {
         if epoch < fork.epoch {
             return fork.previousVersion
@@ -312,7 +321,7 @@ extension BeaconChain {
             return false
         }
 
-        for i in (committeeSize + 1)..<(committeeSize - committeeSize % 8 + 8) {
+        for i in (committeeSize + 1)..<(bitfield.count * 8) {
             if getBitfieldBit(bitfield: bitfield, i: i) == 0b1 {
                 return false
             }
