@@ -17,7 +17,7 @@ final class BeaconChainTests: XCTestCase {
             beaconBlockRoot: dummy,
             epochBoundaryRoot: dummy,
             shardBlockRoot: dummy,
-            latestCrosslinkRoot: dummy,
+            latestCrosslink: Crosslink(epoch: 0, shardBlockRoot: dummy),
             justifiedEpoch: 0,
             justifiedBlockRoot: dummy
         )
