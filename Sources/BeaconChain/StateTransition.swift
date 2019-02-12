@@ -157,7 +157,13 @@ extension StateTransition {
             assert(attestation.data.justifiedBlockRoot == BeaconChain.getBlockRoot(state: state, slot: BeaconChain.getEpochStartSlot(attestation.data.justifiedEpoch)))
 
             let shardBlockRoot = state.latestCrosslinks[Int(attestation.data.shard)].shardBlockRoot
-            assert(attestation.data.latestCrosslinkRoot == shardBlockRoot || attestation.data.shardBlockRoot == shardBlockRoot)
+            assert(
+                state.latestCrosslinks[Int(attestation.data.shard)] == attestation.data.latestCrosslink ||
+                state.latestCrosslinks[Int(attestation.data.shard)] == Crosslink(
+                    epoch: BeaconChain.slotToEpoch(attestation.data.slot),
+                    shardBlockRoot: attestation.data.shardBlockRoot
+                )
+            )
 
             assert(attestation.custodyBitfield == Data(repeating: 0, count: 32))
             assert(attestation.aggregationBitfield != Data(repeating: 0, count: 32))
@@ -296,10 +302,10 @@ extension StateTransition {
         assert(state.slot + 1 % EPOCH_LENGTH == 0) // @todo not sure if this should be here
 
         let currentEpoch = BeaconChain.getCurrentEpoch(state: state)
-        let previousEpoch = currentEpoch > GENESIS_EPOCH ? currentEpoch - 1 : currentEpoch
+        let previousEpoch = BeaconChain.getPreviousEpoch(state: state)
         let nextEpoch = currentEpoch + 1
 
-        let currentTotalBalance = totalBalance(state: state, validators: BeaconChain.getActiveValidatorIndices(validators: state.validatorRegistry, epoch: currentEpoch))
+        let currentTotalBalance = BeaconChain.getTotalBalance(state: state, validators: BeaconChain.getActiveValidatorIndices(validators: state.validatorRegistry, epoch: currentEpoch))
 
         let currentEpochAttestations = state.latestAttestations.filter {
             currentEpoch == BeaconChain.slotToEpoch($0.data.slot)
@@ -314,9 +320,9 @@ extension StateTransition {
             return BeaconChain.getAttestationParticipants(state: state, attestationData: $0.data, bitfield: $0.aggregationBitfield)
         }
 
-        let currentEpochBoundaryAttestingBalance = totalBalance(state: state, validators: currentEpochBoundaryAttesterIndices)
+        let currentEpochBoundaryAttestingBalance = BeaconChain.getTotalBalance(state: state, validators: currentEpochBoundaryAttesterIndices)
 
-        let previousTotalBalance = totalBalance(
+        let previousTotalBalance = BeaconChain.getTotalBalance(
             state: state,
             validators: BeaconChain.getActiveValidatorIndices(validators: state.validatorRegistry, epoch: previousEpoch)
         )
@@ -337,7 +343,7 @@ extension StateTransition {
             return BeaconChain.getAttestationParticipants(state: state, attestationData: $0.data, bitfield: $0.aggregationBitfield)
         }
 
-        let previousEpochJustifiedAttestingBalance = totalBalance(state: state, validators: previousEpochJustifiedAttesterIndices)
+        let previousEpochJustifiedAttestingBalance = BeaconChain.getTotalBalance(state: state, validators: previousEpochJustifiedAttesterIndices)
 
         let previousEpochBoundaryAttestations = previousEpochJustifiedAttestations.filter {
             $0.data.epochBoundaryRoot == BeaconChain.getBlockRoot(state: state, slot: BeaconChain.getEpochStartSlot(previousEpoch))
@@ -347,7 +353,7 @@ extension StateTransition {
             return BeaconChain.getAttestationParticipants(state: state, attestationData: $0.data, bitfield: $0.aggregationBitfield)
         }
 
-        let previousEpochBoundaryAttestingBalance = totalBalance(state: state, validators: previousEpochBoundaryAttesterIndices)
+        let previousEpochBoundaryAttestingBalance = BeaconChain.getTotalBalance(state: state, validators: previousEpochBoundaryAttesterIndices)
 
         let previousEpochHeadAttestations = previousEpochAttestations.filter {
             $0.data.beaconBlockRoot == BeaconChain.getBlockRoot(state: state, slot: $0.data.slot)
@@ -357,7 +363,7 @@ extension StateTransition {
             return BeaconChain.getAttestationParticipants(state: state, attestationData: $0.data, bitfield: $0.aggregationBitfield)
         }
 
-        let previousEpochHeadAttestingBalance = totalBalance(state: state, validators: previousEpochHeadAttesterIndices)
+        let previousEpochHeadAttestingBalance = BeaconChain.getTotalBalance(state: state, validators: previousEpochHeadAttesterIndices)
 
         eth1data(state: &state, nextEpoch: nextEpoch)
 
@@ -506,9 +512,9 @@ extension StateTransition {
             for (_, (crosslinkCommittee, shard)) in crosslinkCommitteesAtSlot.enumerated() {
 
                 // @todo clean up this pile of turd
-                if 3 * totalAttestingBalance(state: state, committee: crosslinkCommittee, shard: shard, currentEpochAttestations: currentEpochAttestations, previousEpochAttestations: previousEpochAttestations) >= 2 * totalBalance(state: state, validators: crosslinkCommittee) {
+                if 3 * totalAttestingBalance(state: state, committee: crosslinkCommittee, shard: shard, currentEpochAttestations: currentEpochAttestations, previousEpochAttestations: previousEpochAttestations) >= 2 * BeaconChain.getTotalBalance(state: state, validators: crosslinkCommittee) {
                     state.latestCrosslinks[Int(shard)] = Crosslink(
-                        epoch: currentEpoch,
+                        epoch: BeaconChain.slotToEpoch(slot),
                         shardBlockRoot: winningRoot(
                             state: state,
                             committee: crosslinkCommittee,
@@ -634,7 +640,7 @@ extension StateTransition {
                     previousEpochAttestations: previousEpochAttestations
                 )
 
-                let totalBalance = self.totalBalance(state: state, validators: crosslinkCommittee)
+                let totalBalance = BeaconChain.getTotalBalance(state: state, validators: crosslinkCommittee)
                 let totalAttestingBalance = self.totalAttestingBalance(state: state, committee: crosslinkCommittee, shard: shard, currentEpochAttestations: previousEpochAttestations, previousEpochAttestations: previousEpochAttestations)
 
                 for i in crosslinkCommittee {
@@ -655,7 +661,7 @@ extension StateTransition {
             epoch: currentEpoch
         )
 
-        let totalBalance = self.totalBalance(state: state, validators: activeValidatorIndices)
+        let totalBalance = BeaconChain.getTotalBalance(state: state, validators: activeValidatorIndices)
 
         for (i, v) in state.validatorRegistry.enumerated() {
             if currentEpoch != v.penalizedEpoch + LATEST_PENALIZED_EXIT_LENGTH / 2 {
@@ -701,7 +707,7 @@ extension StateTransition {
             epoch: currentEpoch
         )
 
-        let totalBalance = self.totalBalance(state: state, validators: activeValidatorIndices)
+        let totalBalance = BeaconChain.getTotalBalance(state: state, validators: activeValidatorIndices)
         let maxBalanceChurn = max(MAX_DEPOSIT_AMOUNT, totalBalance / (2 * MAX_BALANCE_CHURN_QUOTIENT))
 
         var balanceChurn = UInt64(0)
@@ -856,7 +862,7 @@ extension StateTransition {
         currentEpochAttestations: [PendingAttestation],
         previousEpochAttestations: [PendingAttestation]
     ) -> UInt64 {
-        return totalBalance(
+        return BeaconChain.getTotalBalance(
             state: state,
             validators: attestingValidators(
                 state: state,
@@ -866,13 +872,6 @@ extension StateTransition {
                 previousEpochAttestations: previousEpochAttestations
             )
         )
-    }
-
-    private static func totalBalance(state: BeaconState, validators: [ValidatorIndex]) -> UInt64 {
-        return validators.map {
-                return BeaconChain.getEffectiveBalance(state: state, index: $0)
-            }
-            .reduce(0, +)
     }
 
     private static func attestingValidatorIndices(
@@ -923,7 +922,7 @@ extension StateTransition {
                 previousEpochAttestations: previousEpochAttestations
             )
 
-            let rootBalance = self.totalBalance(state: state, validators: indices)
+            let rootBalance = BeaconChain.getTotalBalance(state: state, validators: indices)
 
             if rootBalance > winnerBalance || (rootBalance == winnerBalance && root < winnerRoot) {
                 winnerBalance = rootBalance

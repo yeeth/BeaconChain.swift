@@ -24,6 +24,15 @@ extension BeaconChain {
         return slot / EPOCH_LENGTH
     }
 
+    static func getPreviousEpoch(state: BeaconState) -> EpochNumber {
+        let currentEpoch = getCurrentEpoch(state: state)
+        if currentEpoch == GENESIS_EPOCH {
+            return GENESIS_EPOCH
+        }
+
+        return currentEpoch - 1
+    }
+
     static func getCurrentEpoch(state: BeaconState) -> EpochNumber {
         return slotToEpoch(state.slot)
     }
@@ -57,9 +66,28 @@ extension BeaconChain {
 
 extension BeaconChain {
 
-    // @todo use generic instead of any
-    static func shuffle<T>(values: [T], seed: Bytes32) -> [T] {
-        return [T]()
+    // @todo check this shit
+    static func getPermutedIndex(index i: Int, listSize: Int, seed: Bytes32) -> Int {
+        var index = i
+        for round in 0..<SHUFFLE_ROUND_COUNT {
+            var pointer = round
+            let roundBytes = Data(bytes: &pointer, count: 1)
+            let pivot = hash(seed + roundBytes)[0...8].withUnsafeBytes {
+                (ptr: UnsafePointer<Int>) -> Int in
+                return ptr.pointee
+            } % listSize
+            let flip = (pivot - index) % listSize
+            let position = max(index, flip)
+
+            var positionBytes = position / 256
+            let source = hash(seed + roundBytes + Data(bytes: &positionBytes, count: 4))
+
+            let byte = source[(position % 256) / 8]
+            let bit = (byte >> (position % 8)) % UInt8(2)
+            index = bit == 1 ? flip : index
+        }
+
+        return index
     }
 
     static func split<T>(values: [T], splitCount: Int) -> [[T]] {
@@ -70,9 +98,9 @@ extension BeaconChain {
         let activeValidatorIndices = getActiveValidatorIndices(validators: validators, epoch: epoch)
         let committeesPerEpoch = getEpochCommitteeCount(activeValidatorCount: validators.count)
 
-        var e = epoch
-        let newSeed = seed ^ Data(bytes: &e, count: 32)
-        let shuffledActiveValidatorIndices = shuffle(values: activeValidatorIndices, seed: newSeed)
+        let shuffledActiveValidatorIndices = activeValidatorIndices.map {
+            activeValidatorIndices[getPermutedIndex(index: Int($0), listSize: activeValidatorIndices.count, seed: seed)]
+        }
 
         return split(values: shuffledActiveValidatorIndices, splitCount: committeesPerEpoch)
     }
@@ -126,7 +154,7 @@ extension BeaconChain {
     ) -> [([ValidatorIndex], ShardNumber)] {
         let epoch = slotToEpoch(slot)
         let currentEpoch = getCurrentEpoch(state: state)
-        let previousEpoch = currentEpoch > GENESIS_EPOCH ? currentEpoch - 1 : currentEpoch
+        let previousEpoch = getPreviousEpoch(state: state)
         let nextEpoch = currentEpoch + 1
 
         assert(previousEpoch <= epoch && epoch <= nextEpoch)
@@ -204,7 +232,9 @@ extension BeaconChain {
 
     static func generateSeed(state: BeaconState, epoch: EpochNumber) -> Data {
         return hash(
-            getRandaoMix(state: state, epoch: epoch - SEED_LOOKAHEAD) + getActiveIndexRoot(state: state, epoch: epoch)
+            getRandaoMix(state: state, epoch: epoch - SEED_LOOKAHEAD) +
+            getActiveIndexRoot(state: state, epoch: epoch) +
+            epoch.bytes32
         )
     }
 
@@ -263,6 +293,13 @@ extension BeaconChain {
         return min(state.validatorBalances[Int(index)], MAX_DEPOSIT_AMOUNT)
     }
 
+    static func getTotalBalance(state: BeaconState, validators: [ValidatorIndex]) -> Gwei {
+        return validators.map {
+            return BeaconChain.getEffectiveBalance(state: state, index: $0)
+        }
+        .reduce(0, +)
+    }
+
     static func getForkVersion(fork: Fork, epoch: EpochNumber) -> UInt64 {
         if epoch < fork.epoch {
             return fork.previousVersion
@@ -284,7 +321,7 @@ extension BeaconChain {
             return false
         }
 
-        for i in (committeeSize + 1)..<(committeeSize - committeeSize % 8 + 8) {
+        for i in (committeeSize + 1)..<(bitfield.count * 8) {
             if getBitfieldBit(bitfield: bitfield, i: i) == 0b1 {
                 return false
             }
