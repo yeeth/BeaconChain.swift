@@ -156,7 +156,6 @@ extension StateTransition {
             assert(attestation.data.justifiedEpoch == e)
             assert(attestation.data.justifiedBlockRoot == BeaconChain.getBlockRoot(state: state, slot: BeaconChain.getEpochStartSlot(attestation.data.justifiedEpoch)))
 
-            let shardBlockRoot = state.latestCrosslinks[Int(attestation.data.shard)].shardBlockRoot
             assert(
                 state.latestCrosslinks[Int(attestation.data.shard)] == attestation.data.latestCrosslink ||
                 state.latestCrosslinks[Int(attestation.data.shard)] == Crosslink(
