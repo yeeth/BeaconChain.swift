@@ -5,6 +5,7 @@ public func allTests() -> [XCTestCaseEntry] {
     return [
         testCase(BeaconChainTests.allTests),
         testCase(ArrayTests.allTests),
+        testCase(ArrayValidatorIndexTests.allTests),
 //        testCase(StateTransitionTests.allTests)
     ]
 }
