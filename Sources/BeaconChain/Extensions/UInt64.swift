@@ -3,14 +3,14 @@ import Foundation
 extension UInt64 {
 
     func sqrt() -> UInt64 {
-        assert(n >= 0)
+        assert(self >= 0)
 
-        var x = n
+        var x = self
         var y = (x + 1) / 2
 
         while y < x {
             x = y
-            y = (x + n / x) / 2
+            y = (x + self / x) / 2
         }
 
         return x
