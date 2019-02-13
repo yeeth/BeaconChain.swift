@@ -9,6 +9,7 @@ final class ArrayValidatorIndexTests: XCTestCase {
             latestEth1Data: Eth1Data(depositRoot: Data(count: 32), blockHash: Data(count: 32))
         )
 
+        // @todo make dynamic
         state.validatorBalances.append(10)
         state.validatorBalances.append(10)
 
