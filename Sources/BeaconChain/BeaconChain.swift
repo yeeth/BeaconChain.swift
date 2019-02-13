@@ -90,15 +90,6 @@ extension BeaconChain {
         return index
     }
 
-    static func split<T>(values: [T], splitCount: Int) -> [[T]] {
-
-        let listLength = values.count
-
-        return stride(from: 0, to: values.count, by: splitCount).map {
-            Array(values[(listLength * $0 / splitCount) ..< (listLength * ($0 + 1) / splitCount)])
-        }
-    }
-
     static func getShuffling(seed: Bytes32, validators: [Validator], epoch: EpochNumber) -> [[ValidatorIndex]] {
         let activeValidatorIndices = getActiveValidatorIndices(validators: validators, epoch: epoch)
         let committeesPerEpoch = getEpochCommitteeCount(activeValidatorCount: validators.count)
@@ -107,7 +98,7 @@ extension BeaconChain {
             activeValidatorIndices[getPermutedIndex(index: Int($0), listSize: activeValidatorIndices.count, seed: seed)]
         }
 
-        return split(values: shuffledActiveValidatorIndices, splitCount: committeesPerEpoch)
+        return shuffledActiveValidatorIndices.split(splitCount: committeesPerEpoch)
     }
 }
 
