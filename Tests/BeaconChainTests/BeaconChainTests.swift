@@ -29,7 +29,7 @@ final class BeaconChainTests: XCTestCase {
         let numbers = [(UInt64(20), UInt64(4)), (200, 14), (1987, 44), (34989843, 5915), (97282, 311)]
 
         for num in numbers {
-            XCTAssertEqual(num.1, BeaconChain.integerSquareRoot(n: num.0))
+            XCTAssertEqual(num.1, num.0.sqrt())
         }
     }
 
