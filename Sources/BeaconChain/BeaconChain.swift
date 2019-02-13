@@ -406,23 +406,6 @@ extension BeaconChain {
 
 extension BeaconChain {
 
-    static func integerSquareRoot(n: UInt64) -> UInt64 {
-        assert(n >= 0)
-
-        var x = n
-        var y = (x + 1) / 2
-
-        while y < x {
-            x = y
-            y = (x + n / x) / 2
-        }
-
-        return x
-    }
-}
-
-extension BeaconChain {
-
     static func getInitialBeaconState(
         initialValidatorDeposits: [Deposit],
         genesisTime: UInt64,
