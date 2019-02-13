@@ -98,7 +98,7 @@ extension BeaconChain {
             activeValidatorIndices[getPermutedIndex(index: Int($0), listSize: activeValidatorIndices.count, seed: seed)]
         }
 
-        return shuffledActiveValidatorIndices.split(splitCount: committeesPerEpoch)
+        return shuffledActiveValidatorIndices.split(count: committeesPerEpoch)
     }
 }
 
