@@ -71,8 +71,7 @@ extension StateTransition {
     }
 
     static func eth1data(state: inout BeaconState, block: BeaconBlock) {
-        let votes = state.eth1DataVotes.enumerated()
-        for (i, vote) in votes {
+        for (i, vote) in state.eth1DataVotes.enumerated() {
             if vote.eth1Data == block.eth1Data {
                 state.eth1DataVotes[i].voteCount += 1
                 continue
