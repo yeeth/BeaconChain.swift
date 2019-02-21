@@ -51,17 +51,6 @@ extension BeaconChain {
     static func isActive(validator: Validator, epoch: EpochNumber) -> Bool {
         return validator.activationEpoch <= epoch && epoch < validator.exitEpoch
     }
-
-    static func getActiveValidatorIndices(validators: [Validator], epoch: EpochNumber) -> [ValidatorIndex] {
-        return validators.enumerated().compactMap {
-            (k, v) in
-            if isActive(validator: v, epoch: epoch) {
-                return ValidatorIndex(k)
-            }
-
-            return nil
-        }
-    }
 }
 
 extension BeaconChain {
@@ -91,7 +80,7 @@ extension BeaconChain {
     }
 
     static func getShuffling(seed: Bytes32, validators: [Validator], epoch: EpochNumber) -> [[ValidatorIndex]] {
-        let activeValidatorIndices = getActiveValidatorIndices(validators: validators, epoch: epoch)
+        let activeValidatorIndices = validators.activeIndices(epoch: epoch)
         let committeesPerEpoch = getEpochCommitteeCount(activeValidatorCount: validators.count)
 
         let shuffledActiveValidatorIndices = activeValidatorIndices.map {
@@ -117,29 +106,17 @@ extension BeaconChain {
     }
 
     static func getPreviousEpochCommitteeCount(state: BeaconState) -> Int {
-        let previousActiveValidators = getActiveValidatorIndices(
-            validators: state.validatorRegistry,
-            epoch: state.previousCalculationEpoch
-        )
-
+        let previousActiveValidators = state.validatorRegistry.activeIndices(epoch: state.previousCalculationEpoch)
         return getEpochCommitteeCount(activeValidatorCount: previousActiveValidators.count)
     }
 
     static func getCurrentEpochCommitteeCount(state: BeaconState) -> Int {
-        let currentActiveValidators = getActiveValidatorIndices(
-            validators: state.validatorRegistry,
-            epoch: state.currentCalculationEpoch
-        )
-
+        let currentActiveValidators = state.validatorRegistry.activeIndices(epoch: state.currentCalculationEpoch)
         return getEpochCommitteeCount(activeValidatorCount: currentActiveValidators.count)
     }
 
     static func getNextEpochCommitteeCount(state: BeaconState) -> Int {
-        let nextActiveValidators = getActiveValidatorIndices(
-            validators: state.validatorRegistry,
-            epoch: getCurrentEpoch(state: state) + 1
-        )
-
+        let nextActiveValidators = state.validatorRegistry.activeIndices(epoch: getCurrentEpoch(state: state) + 1)
         return getEpochCommitteeCount(activeValidatorCount: nextActiveValidators.count)
     }
 
@@ -415,7 +392,7 @@ extension BeaconChain {
         }
 
         state.latestIndexRoots[Int(GENESIS_EPOCH % LATEST_INDEX_ROOTS_LENGTH)] = hashTreeRoot(
-            getActiveValidatorIndices(validators: state.validatorRegistry, epoch: GENESIS_EPOCH)
+            state.validatorRegistry.activeIndices(epoch: GENESIS_EPOCH)
         )
         state.currentEpochSeed = generateSeed(state: state, epoch: GENESIS_EPOCH)
 
