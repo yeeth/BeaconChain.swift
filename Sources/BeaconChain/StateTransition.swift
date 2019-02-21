@@ -303,8 +303,7 @@ extension StateTransition {
         let previousEpoch = BeaconChain.getPreviousEpoch(state: state)
         let nextEpoch = currentEpoch + 1
 
-        let currentTotalBalance = BeaconChain.getActiveValidatorIndices(validators: state.validatorRegistry, epoch: currentEpoch)
-            .totalBalance(state: state)
+        let currentTotalBalance = state.validatorRegistry.activeIndices(epoch: currentEpoch).totalBalance(state: state)
 
         let currentEpochAttestations = state.latestAttestations.filter {
             currentEpoch == BeaconChain.slotToEpoch($0.data.slot)
@@ -321,8 +320,7 @@ extension StateTransition {
 
         let currentEpochBoundaryAttestingBalance = (currentEpochBoundaryAttesterIndices as [ValidatorIndex]).totalBalance(state: state)
 
-        let previousTotalBalance = BeaconChain.getActiveValidatorIndices(validators: state.validatorRegistry, epoch: previousEpoch)
-            .totalBalance(state: state)
+        let previousTotalBalance = state.validatorRegistry.activeIndices(epoch: previousEpoch).totalBalance(state: state)
 
         let previousEpochAttestations = state.latestAttestations.filter {
             previousEpoch == BeaconChain.slotToEpoch($0.data.slot)
@@ -422,7 +420,7 @@ extension StateTransition {
         processPenaltiesAndExit(state: &state)
 
         state.latestIndexRoots[Int((nextEpoch % ENTRY_EXIT_DELAY) % LATEST_INDEX_ROOTS_LENGTH)] = BeaconChain.hashTreeRoot(
-            BeaconChain.getActiveValidatorIndices(validators: state.validatorRegistry, epoch: nextEpoch + ENTRY_EXIT_DELAY)
+            state.validatorRegistry.activeIndices(epoch: nextEpoch + ENTRY_EXIT_DELAY)
         )
 
         state.latestPenalizedBalances[Int(nextEpoch % LATEST_PENALIZED_EXIT_LENGTH)] = state.latestPenalizedBalances[Int(currentEpoch % LATEST_PENALIZED_EXIT_LENGTH)]
@@ -546,7 +544,7 @@ extension StateTransition {
 
         let epochsSinceFinality = nextEpoch - state.finalizedEpoch
 
-        let activeValidators = Set(BeaconChain.getActiveValidatorIndices(validators: state.validatorRegistry, epoch: currentEpoch))
+        let activeValidators = Set(state.validatorRegistry.activeIndices(epoch: currentEpoch))
 
         if epochsSinceFinality <= 4 {
 
@@ -653,10 +651,7 @@ extension StateTransition {
 
     static func processPenaltiesAndExit(state: inout BeaconState) {
         let currentEpoch = BeaconChain.getCurrentEpoch(state: state)
-        let activeValidatorIndices = BeaconChain.getActiveValidatorIndices(
-            validators: state.validatorRegistry,
-            epoch: currentEpoch
-        )
+        let activeValidatorIndices = state.validatorRegistry.activeIndices(epoch: currentEpoch)
 
         let totalBalance = activeValidatorIndices.totalBalance(state: state)
 
@@ -699,10 +694,7 @@ extension StateTransition {
 
     static func updateValidatorRegistry(state: inout BeaconState) {
         let currentEpoch = BeaconChain.getCurrentEpoch(state: state)
-        let activeValidatorIndices = BeaconChain.getActiveValidatorIndices(
-            validators: state.validatorRegistry,
-            epoch: currentEpoch
-        )
+        let activeValidatorIndices = state.validatorRegistry.activeIndices(epoch: currentEpoch)
 
         let totalBalance = activeValidatorIndices.totalBalance(state: state)
         let maxBalanceChurn = max(MAX_DEPOSIT_AMOUNT, totalBalance / (2 * MAX_BALANCE_CHURN_QUOTIENT))
@@ -741,7 +733,7 @@ extension StateTransition {
     }
 
     static func processEjections(state: inout BeaconState) {
-        for i in BeaconChain.getActiveValidatorIndices(validators: state.validatorRegistry, epoch: BeaconChain.getCurrentEpoch(state: state)) {
+        for i in state.validatorRegistry.activeIndices(epoch: BeaconChain.getCurrentEpoch(state: state)) {
             if state.validatorBalances[Int(i)] < EJECTION_BALANCE {
                 BeaconChain.exitValidator(state: &state, index: i)
             }
