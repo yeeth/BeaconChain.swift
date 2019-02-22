@@ -35,13 +35,6 @@ extension BeaconChain {
 
 extension BeaconChain {
 
-    static func isActive(validator: Validator, epoch: EpochNumber) -> Bool {
-        return validator.activationEpoch <= epoch && epoch < validator.exitEpoch
-    }
-}
-
-extension BeaconChain {
-
     // @todo check this shit
     static func getPermutedIndex(index i: Int, listSize: Int, seed: Bytes32) -> Int {
         var index = i

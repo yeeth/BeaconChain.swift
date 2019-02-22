@@ -8,4 +8,8 @@ struct Validator {
     let withdrawalEpoch: UInt64
     var penalizedEpoch: UInt64
     var statusFlags: UInt64
+    
+    func isActive(epoch: EpochNumber) -> Bool {
+        return self.activationEpoch <= epoch && epoch < self.exitEpoch
+    }
 }
