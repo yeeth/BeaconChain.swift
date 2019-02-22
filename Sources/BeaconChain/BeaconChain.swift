@@ -135,7 +135,7 @@ extension BeaconChain {
             if registryChange {
                 seed = generateSeed(state: state, epoch: nextEpoch)
                 shufflingStartShard = (state.currentEpochStartShard + UInt64(currentCommitteesPerEpoch)) % SHARD_COUNT
-            } else if epochsSinceLastRegistryUpdate > 1 && isPowerOfTwo(Int(epochsSinceLastRegistryUpdate)) {
+            } else if epochsSinceLastRegistryUpdate > 1 && Int(epochsSinceLastRegistryUpdate).isPowerOfTwo() {
                 seed = generateSeed(state: state, epoch: nextEpoch)
                 shufflingStartShard = state.currentEpochStartShard
             } else {
@@ -232,14 +232,6 @@ extension BeaconChain {
 
             return nil
         }
-    }
-
-    static func isPowerOfTwo(_ value: Int) -> Bool {
-        if value == 0 {
-            return false
-        }
-
-        return 2 ** Int(log2(Double(value))) == value
     }
 
     static func getEffectiveBalance(state: BeaconState, index: ValidatorIndex) -> Gwei {

@@ -411,7 +411,7 @@ extension StateTransition {
             updateValidatorRegistry(state: &state)
         } else {
             let epochsSinceLastRegistryUpdate = currentEpoch - state.validatorRegistryUpdateEpoch
-            if epochsSinceLastRegistryUpdate > 1 && BeaconChain.isPowerOfTwo(Int(epochsSinceLastRegistryUpdate)) {
+            if epochsSinceLastRegistryUpdate > 1 && Int(epochsSinceLastRegistryUpdate).isPowerOfTwo() {
                 state.currentCalculationEpoch = nextEpoch
                 state.currentEpochSeed = BeaconChain.generateSeed(state: state, epoch: state.currentCalculationEpoch)
             }
