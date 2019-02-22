@@ -2,7 +2,6 @@ import Foundation
 
 extension EpochNumber {
 
-
     func startSlot() -> SlotNumber {
         return self * EPOCH_LENGTH
     }
@@ -10,5 +9,4 @@ extension EpochNumber {
     func entryExitEpoch() -> EpochNumber {
         return self + 1 + ENTRY_EXIT_DELAY
     }
-
 }

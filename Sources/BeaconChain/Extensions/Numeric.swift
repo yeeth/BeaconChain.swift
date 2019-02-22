@@ -8,5 +8,4 @@ extension Numeric {
 
         return Data(bytes: &source, count: 32)
     }
-
 }
