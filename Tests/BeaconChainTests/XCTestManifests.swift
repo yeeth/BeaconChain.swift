@@ -8,6 +8,7 @@ public func allTests() -> [XCTestCaseEntry] {
         testCase(ArrayValidatorIndexTests.allTests),
         testCase(ArrayValidatorTests.allTests),
         testCase(SlotNumberTests.allTests),
+        testCase(EpochNumberTests.allTests),
 //        testCase(StateTransitionTests.allTests)
     ]
 }

@@ -153,7 +153,7 @@ extension StateTransition {
 
             let e = attestation.data.justifiedEpoch >= BeaconChain.getCurrentEpoch(state: state) ? state.justifiedEpoch : state.previousJustifiedEpoch
             assert(attestation.data.justifiedEpoch == e)
-            assert(attestation.data.justifiedBlockRoot == BeaconChain.getBlockRoot(state: state, slot: BeaconChain.getEpochStartSlot(attestation.data.justifiedEpoch)))
+            assert(attestation.data.justifiedBlockRoot == BeaconChain.getBlockRoot(state: state, slot: attestation.data.justifiedEpoch.startSlot()))
 
             assert(
                 state.latestCrosslinks[Int(attestation.data.shard)] == attestation.data.latestCrosslink ||
@@ -260,7 +260,7 @@ extension StateTransition {
             let validator = state.validatorRegistry[Int(exit.validatorIndex)]
 
             let epoch = BeaconChain.getCurrentEpoch(state: state)
-            assert(validator.exitEpoch > BeaconChain.getEntryExitEpoch(epoch))
+            assert(validator.exitEpoch > epoch.entryExitEpoch())
             assert(epoch >= exit.epoch)
 
             let exitMessage = BeaconChain.hashTreeRoot(
@@ -310,7 +310,7 @@ extension StateTransition {
         }
 
         let currentEpochBoundryAttestations = currentEpochAttestations.filter {
-            $0.data.epochBoundaryRoot == BeaconChain.getBlockRoot(state: state, slot: BeaconChain.getEpochStartSlot(currentEpoch))
+            $0.data.epochBoundaryRoot == BeaconChain.getBlockRoot(state: state, slot: currentEpoch.startSlot())
                 && $0.data.justifiedEpoch == state.justifiedEpoch
         }
 
@@ -341,7 +341,7 @@ extension StateTransition {
         let previousEpochJustifiedAttestingBalance = (previousEpochJustifiedAttesterIndices as [ValidatorIndex]).totalBalance(state: state)
 
         let previousEpochBoundaryAttestations = previousEpochJustifiedAttestations.filter {
-            $0.data.epochBoundaryRoot == BeaconChain.getBlockRoot(state: state, slot: BeaconChain.getEpochStartSlot(previousEpoch))
+            $0.data.epochBoundaryRoot == BeaconChain.getBlockRoot(state: state, slot: previousEpoch.startSlot())
         }
 
         let previousEpochBoundaryAttesterIndices = previousEpochBoundaryAttestations.flatMap {
@@ -501,7 +501,7 @@ extension StateTransition {
         previousEpochAttestations: [PendingAttestation]
     ) {
 
-        for slot in BeaconChain.getEpochStartSlot(previousEpoch)..<BeaconChain.getEpochStartSlot(nextEpoch) {
+        for slot in previousEpoch.startSlot()..<nextEpoch.startSlot() {
             let crosslinkCommitteesAtSlot = BeaconChain.getCrosslinkCommitteesAtSlot(state: state, slot: slot)
 
             for (_, (crosslinkCommittee, shard)) in crosslinkCommitteesAtSlot.enumerated() {
@@ -622,7 +622,7 @@ extension StateTransition {
             state.validatorBalances[Int(proposer)] += baseReward(state: state, index: index, baseRewardQuotient: baseRewardQuotient) / INCLUDER_REWARD_QUOTIENT
         }
 
-        for slot in BeaconChain.getEpochStartSlot(previousEpoch)..<BeaconChain.getEpochStartSlot(currentEpoch) {
+        for slot in previousEpoch.startSlot()..<currentEpoch.startSlot() {
             let crosslinkCommitteesAtSlot = BeaconChain.getCrosslinkCommitteesAtSlot(state: state, slot: slot)
 
             for (_, (crosslinkCommittee, shard)) in crosslinkCommitteesAtSlot.enumerated() {
@@ -701,7 +701,7 @@ extension StateTransition {
 
         var balanceChurn = UInt64(0)
         for (i, v) in state.validatorRegistry.enumerated() {
-            if v.activationEpoch > BeaconChain.getEntryExitEpoch(currentEpoch) && state.validatorBalances[Int(i)] >= MAX_DEPOSIT_AMOUNT {
+            if v.activationEpoch > currentEpoch.entryExitEpoch() && state.validatorBalances[Int(i)] >= MAX_DEPOSIT_AMOUNT {
                 balanceChurn += BeaconChain.getEffectiveBalance(state: state, index: ValidatorIndex(i))
                 if balanceChurn > maxBalanceChurn {
                     break
@@ -713,7 +713,7 @@ extension StateTransition {
 
         balanceChurn = 0
         for (i, v) in state.validatorRegistry.enumerated() {
-            if v.exitEpoch > BeaconChain.getEntryExitEpoch(currentEpoch) && v.statusFlags & StatusFlag.INITIATED_EXIT.rawValue == 1 {
+            if v.exitEpoch > currentEpoch.entryExitEpoch() && v.statusFlags & StatusFlag.INITIATED_EXIT.rawValue == 1 {
                 balanceChurn += BeaconChain.getEffectiveBalance(state: state, index: ValidatorIndex(i))
                 if balanceChurn > maxBalanceChurn {
                     break

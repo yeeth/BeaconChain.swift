@@ -31,14 +31,6 @@ extension BeaconChain {
     static func getCurrentEpoch(state: BeaconState) -> EpochNumber {
         return state.slot.toEpoch()
     }
-
-    static func getEpochStartSlot(_ epoch: EpochNumber) -> SlotNumber {
-        return epoch * EPOCH_LENGTH
-    }
-
-    static func getEntryExitEpoch(_ epoch: EpochNumber) -> EpochNumber {
-        return epoch + 1 + ENTRY_EXIT_DELAY
-    }
 }
 
 extension BeaconChain {
@@ -490,7 +482,7 @@ extension BeaconChain {
 extension BeaconChain {
 
     static func activateValidator(state: inout BeaconState, index: ValidatorIndex, genesis: Bool) {
-        state.validatorRegistry[Int(index)].activationEpoch = genesis ? GENESIS_EPOCH : getEntryExitEpoch(getCurrentEpoch(state: state))
+        state.validatorRegistry[Int(index)].activationEpoch = genesis ? GENESIS_EPOCH : getCurrentEpoch(state: state).entryExitEpoch()
     }
 
     static func initiateValidatorExit(state: inout BeaconState, index: ValidatorIndex) {
@@ -499,11 +491,11 @@ extension BeaconChain {
 
     static func exitValidator(state: inout BeaconState, index: ValidatorIndex) {
         var validator = state.validatorRegistry[Int(index)]
-        if validator.exitEpoch <= getEntryExitEpoch(getCurrentEpoch(state: state)) {
+        if validator.exitEpoch <= getCurrentEpoch(state: state).entryExitEpoch() {
             return
         }
 
-        validator.exitEpoch = getEntryExitEpoch(getCurrentEpoch(state: state))
+        validator.exitEpoch = getCurrentEpoch(state: state).entryExitEpoch()
         state.validatorRegistry[Int(index)] = validator
     }
 
