@@ -19,11 +19,6 @@ class BeaconChain {
 
 extension BeaconChain {
 
-    // @todo should be a function on slot number types
-    static func slotToEpoch(_ slot: SlotNumber) -> EpochNumber {
-        return slot / EPOCH_LENGTH
-    }
-
     static func getPreviousEpoch(state: BeaconState) -> EpochNumber {
         let currentEpoch = getCurrentEpoch(state: state)
         if currentEpoch == GENESIS_EPOCH {
@@ -34,7 +29,7 @@ extension BeaconChain {
     }
 
     static func getCurrentEpoch(state: BeaconState) -> EpochNumber {
-        return slotToEpoch(state.slot)
+        return state.slot.toEpoch()
     }
 
     static func getEpochStartSlot(_ epoch: EpochNumber) -> SlotNumber {
@@ -125,7 +120,7 @@ extension BeaconChain {
         slot: SlotNumber,
         registryChange: Bool = false
     ) -> [([ValidatorIndex], ShardNumber)] {
-        let epoch = slotToEpoch(slot)
+        let epoch = slot.toEpoch()
         let currentEpoch = getCurrentEpoch(state: state)
         let previousEpoch = getPreviousEpoch(state: state)
         let nextEpoch = currentEpoch + 1
@@ -351,17 +346,17 @@ extension BeaconChain {
                 hashTreeRoot(AttestationDataAndCustodyBit(data: slashableAttestation.data, custodyBit: true)),
             ],
             signature: slashableAttestation.aggregateSignature,
-            domain: getDomain(fork: state.fork, epoch: slotToEpoch(slashableAttestation.data.slot), domainType: Domain.ATTESTATION)
+            domain: getDomain(fork: state.fork, epoch: slashableAttestation.data.slot.toEpoch(), domainType: Domain.ATTESTATION)
         )
     }
 
     static func isDoubleVote(_ left: AttestationData, _ right: AttestationData) -> Bool {
-        return slotToEpoch(left.slot) == slotToEpoch(right.slot)
+        return left.slot.toEpoch() == right.slot.toEpoch()
     }
 
     static func isSurroundVote(_ left: AttestationData, _ right: AttestationData) -> Bool {
         return left.justifiedEpoch < right.justifiedEpoch &&
-            slotToEpoch(right.slot) < slotToEpoch(left.slot)
+            right.slot.toEpoch() < left.slot.toEpoch()
     }
 }
 

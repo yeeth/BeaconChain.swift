@@ -158,7 +158,7 @@ extension StateTransition {
             assert(
                 state.latestCrosslinks[Int(attestation.data.shard)] == attestation.data.latestCrosslink ||
                 state.latestCrosslinks[Int(attestation.data.shard)] == Crosslink(
-                    epoch: BeaconChain.slotToEpoch(attestation.data.slot),
+                    epoch: attestation.data.slot.toEpoch(),
                     shardBlockRoot: attestation.data.shardBlockRoot
                 )
             )
@@ -209,7 +209,7 @@ extension StateTransition {
                     signature: attestation.aggregateSignature,
                     domain: BeaconChain.getDomain(
                         fork: state.fork,
-                        epoch: BeaconChain.slotToEpoch(attestation.data.slot),
+                        epoch: attestation.data.slot.toEpoch(),
                         domainType: Domain.ATTESTATION
                     )
                 )
@@ -306,7 +306,7 @@ extension StateTransition {
         let currentTotalBalance = state.validatorRegistry.activeIndices(epoch: currentEpoch).totalBalance(state: state)
 
         let currentEpochAttestations = state.latestAttestations.filter {
-            currentEpoch == BeaconChain.slotToEpoch($0.data.slot)
+            currentEpoch == $0.data.slot.toEpoch()
         }
 
         let currentEpochBoundryAttestations = currentEpochAttestations.filter {
@@ -323,7 +323,7 @@ extension StateTransition {
         let previousTotalBalance = state.validatorRegistry.activeIndices(epoch: previousEpoch).totalBalance(state: state)
 
         let previousEpochAttestations = state.latestAttestations.filter {
-            previousEpoch == BeaconChain.slotToEpoch($0.data.slot)
+            previousEpoch == $0.data.slot.toEpoch()
         }
 
         let previousEpochAttesterIndices = previousEpochAttestations.flatMap {
@@ -432,7 +432,7 @@ extension StateTransition {
         // @todo check this
         // Remove any attestation in state.latest_attestations such that slot_to_epoch(attestation.data.slot) < current_epoch.
         state.latestAttestations.removeAll {
-            BeaconChain.slotToEpoch($0.data.slot) >= currentEpoch
+            $0.data.slot.toEpoch() >= currentEpoch
         }
     }
 
@@ -509,7 +509,7 @@ extension StateTransition {
                 // @todo clean up this pile of turd
                 if 3 * totalAttestingBalance(state: state, committee: crosslinkCommittee, shard: shard, currentEpochAttestations: currentEpochAttestations, previousEpochAttestations: previousEpochAttestations) >= 2 * crosslinkCommittee.totalBalance(state: state) {
                     state.latestCrosslinks[Int(shard)] = Crosslink(
-                        epoch: BeaconChain.slotToEpoch(slot),
+                        epoch: slot.toEpoch(),
                         shardBlockRoot: winningRoot(
                             state: state,
                             committee: crosslinkCommittee,

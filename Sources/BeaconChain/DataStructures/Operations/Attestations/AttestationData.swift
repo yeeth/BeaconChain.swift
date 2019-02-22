@@ -1,7 +1,7 @@
 import Foundation
 
 struct AttestationData: Equatable {
-    let slot: UInt64
+    let slot: SlotNumber
     let shard: UInt64
     let beaconBlockRoot: Data
     let epochBoundaryRoot: Data
