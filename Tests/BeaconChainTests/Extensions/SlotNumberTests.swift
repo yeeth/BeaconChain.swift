@@ -3,6 +3,7 @@ import XCTest
 
 final class SlotNumberTests: XCTestCase {
 
-    // @todo
-
+    func testToEpoch() {
+        XCTAssertEqual(SlotNumber(128).toEpoch(), 2)
+    }
 }
