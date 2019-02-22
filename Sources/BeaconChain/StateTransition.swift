@@ -260,7 +260,7 @@ extension StateTransition {
             let validator = state.validatorRegistry[Int(exit.validatorIndex)]
 
             let epoch = BeaconChain.getCurrentEpoch(state: state)
-            assert(validator.exitEpoch > BeaconChain.getEntryExitEpoch(epoch))
+            assert(validator.exitEpoch > epoch.entryExitEpoch())
             assert(epoch >= exit.epoch)
 
             let exitMessage = BeaconChain.hashTreeRoot(
@@ -701,7 +701,7 @@ extension StateTransition {
 
         var balanceChurn = UInt64(0)
         for (i, v) in state.validatorRegistry.enumerated() {
-            if v.activationEpoch > BeaconChain.getEntryExitEpoch(currentEpoch) && state.validatorBalances[Int(i)] >= MAX_DEPOSIT_AMOUNT {
+            if v.activationEpoch > currentEpoch.entryExitEpoch() && state.validatorBalances[Int(i)] >= MAX_DEPOSIT_AMOUNT {
                 balanceChurn += BeaconChain.getEffectiveBalance(state: state, index: ValidatorIndex(i))
                 if balanceChurn > maxBalanceChurn {
                     break
@@ -713,7 +713,7 @@ extension StateTransition {
 
         balanceChurn = 0
         for (i, v) in state.validatorRegistry.enumerated() {
-            if v.exitEpoch > BeaconChain.getEntryExitEpoch(currentEpoch) && v.statusFlags & StatusFlag.INITIATED_EXIT.rawValue == 1 {
+            if v.exitEpoch > currentEpoch.entryExitEpoch() && v.statusFlags & StatusFlag.INITIATED_EXIT.rawValue == 1 {
                 balanceChurn += BeaconChain.getEffectiveBalance(state: state, index: ValidatorIndex(i))
                 if balanceChurn > maxBalanceChurn {
                     break
