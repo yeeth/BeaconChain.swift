@@ -32,10 +32,6 @@ extension BeaconChain {
         return state.slot.toEpoch()
     }
 
-    static func getEpochStartSlot(_ epoch: EpochNumber) -> SlotNumber {
-        return epoch * EPOCH_LENGTH
-    }
-
     static func getEntryExitEpoch(_ epoch: EpochNumber) -> EpochNumber {
         return epoch + 1 + ENTRY_EXIT_DELAY
     }

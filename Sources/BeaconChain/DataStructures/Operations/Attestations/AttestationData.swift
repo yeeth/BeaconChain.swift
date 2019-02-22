@@ -7,6 +7,6 @@ struct AttestationData: Equatable {
     let epochBoundaryRoot: Data
     let shardBlockRoot: Data
     let latestCrosslink: Crosslink
-    let justifiedEpoch: UInt64
+    let justifiedEpoch: EpochNumber
     let justifiedBlockRoot: Data
 }
