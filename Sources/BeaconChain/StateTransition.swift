@@ -280,6 +280,10 @@ extension StateTransition {
         }
     }
 
+    static func transfers(state: inout BeaconState, block: BeaconBlock) {
+
+    }
+
     static func verifyMerkleBranch(leaf: Bytes32, branch: [Bytes32], depth: Int, index: Int, root: Bytes32) -> Bool {
         var value = leaf
         for i in 0..<depth {
@@ -674,7 +678,7 @@ extension StateTransition {
                 let penalizedWithdrawalEpochs = LATEST_SLASHED_EXIT_LENGTH / 2
                 return currentEpoch >= validator.slashedEpoch + penalizedWithdrawalEpochs
             } else {
-                return currentEpoch >= validator.slashedEpoch + MIN_VALIDATOR_WITHDRAWAL_DELAY
+                return currentEpoch >= validator.slashedEpoch + MIN_VALIDATOR_WITHDRAWABILITY_DELAY
             }
         }
 

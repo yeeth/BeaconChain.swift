@@ -4,7 +4,7 @@ import XCTest
 final class ValidatorTests: XCTestCase {
 
     func testIsActive() {
-        let epoch = EpochNumber(10)
+        let epoch = Epoch(10)
 
         XCTAssertFalse(createValidator(epoch: epoch).isActive(epoch: epoch + 2))
         XCTAssertTrue(createValidator(epoch: epoch).isActive(epoch: epoch))

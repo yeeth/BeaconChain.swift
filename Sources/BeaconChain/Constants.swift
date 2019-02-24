@@ -22,7 +22,7 @@ let EJECTION_BALANCE = UInt64(2**4 * UInt64(1e9))
 // Initial Values
 let GENESIS_FORK_VERSION = UInt64(0)
 let GENESIS_SLOT = UInt64(2**19)
-let GENESIS_EPOCH = SlotNumber(GENESIS_SLOT).toEpoch()
+let GENESIS_EPOCH = Slot(GENESIS_SLOT).toEpoch()
 let GENESIS_START_SHARD = UInt64(0)
 let FAR_FUTURE_EPOCH = UInt64.max
 let ZERO_HASH = Data(repeating: 0, count: 32) // @todo create type
@@ -36,7 +36,7 @@ let SLOTS_PER_EPOCH = UInt64(2**6)
 let MIN_SEED_LOOKAHEAD = UInt64(2**0)
 let ACTIVATION_EXIT_DELAY = UInt64(2**2)
 let EPOCHS_PER_ETH1_VOTING_PERIOD = UInt64(2**4)
-let MIN_VALIDATOR_WITHDRAWAL_DELAY = UInt64(2**8)
+let MIN_VALIDATOR_WITHDRAWABILITY_DELAY = UInt64(2**8)
 
 // State list lengths
 let LATEST_BLOCK_ROOTS_LENGTH = UInt64(2**13)

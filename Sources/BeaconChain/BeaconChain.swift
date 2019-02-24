@@ -373,7 +373,7 @@ extension BeaconChain {
         let genesisActiveIndexRoot = hashTreeRoot(state.validatorRegistry.activeIndices(epoch: GENESIS_EPOCH))
 
         for i in 0..<LATEST_ACTIVE_INDEX_ROOTS_LENGTH {
-            state.latestActiveIndexRoots[i] = genesisActiveIndexRoot
+            state.latestActiveIndexRoots[Int(i)] = genesisActiveIndexRoot
         }
 
         state.currentShufflingSeed = generateSeed(state: state, epoch: GENESIS_EPOCH)

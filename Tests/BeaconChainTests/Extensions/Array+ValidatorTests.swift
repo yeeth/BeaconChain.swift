@@ -5,12 +5,12 @@ final class ArrayValidatorTests: XCTestCase {
 
     func testActiveIndices() {
 
-        let epoch = EpochNumber(10)
+        let epoch = Epoch(10)
 
         let validators = [
             createValidator(epoch: epoch),
             createValidator(epoch: epoch),
-            createValidator(epoch: EpochNumber(12))
+            createValidator(epoch: Epoch(12))
         ]
 
         XCTAssertEqual(validators.activeIndices(epoch: epoch), [ValidatorIndex(0), 1])
