@@ -149,7 +149,7 @@ extension StateTransition {
 
         for attestation in block.body.attestations {
             assert(attestation.data.slot <= state.slot - MIN_ATTESTATION_INCLUSION_DELAY)
-            assert(state.slot - MIN_ATTESTATION_INCLUSION_DELAY < attestation.data.slot + EPOCH_LENGTH)
+            assert(state.slot - MIN_ATTESTATION_INCLUSION_DELAY < attestation.data.slot + SLOTS_PER_EPOCH)
 
             let e = attestation.data.justifiedEpoch >= BeaconChain.getCurrentEpoch(state: state) ? state.justifiedEpoch : state.previousJustifiedEpoch
             assert(attestation.data.justifiedEpoch == e)
@@ -254,7 +254,7 @@ extension StateTransition {
     }
 
     static func exits(state: inout BeaconState, block: BeaconBlock) {
-        assert(block.body.exits.count <= MAX_EXITS)
+        assert(block.body.exits.count <= MAX_VOLUNTARY_EXITS)
 
         for exit in block.body.exits {
             let validator = state.validatorRegistry[Int(exit.validatorIndex)]
@@ -297,7 +297,7 @@ extension StateTransition {
 extension StateTransition {
 
     static func processEpoch(state: inout BeaconState) {
-        assert(state.slot + 1 % EPOCH_LENGTH == 0) // @todo not sure if this should be here
+        assert(state.slot + 1 % SLOTS_PER_EPOCH == 0) // @todo not sure if this should be here
 
         let currentEpoch = BeaconChain.getCurrentEpoch(state: state)
         let previousEpoch = BeaconChain.getPreviousEpoch(state: state)
@@ -419,11 +419,11 @@ extension StateTransition {
 
         processPenaltiesAndExit(state: &state)
 
-        state.latestIndexRoots[Int((nextEpoch % ENTRY_EXIT_DELAY) % LATEST_INDEX_ROOTS_LENGTH)] = BeaconChain.hashTreeRoot(
-            state.validatorRegistry.activeIndices(epoch: nextEpoch + ENTRY_EXIT_DELAY)
+        state.latestIndexRoots[Int((nextEpoch % ACTIVATION_EXIT_DELAY) % LATEST_ACTIVE_INDEX_ROOTS_LENGTH)] = BeaconChain.hashTreeRoot(
+            state.validatorRegistry.activeIndices(epoch: nextEpoch + ACTIVATION_EXIT_DELAY)
         )
 
-        state.latestPenalizedBalances[Int(nextEpoch % LATEST_PENALIZED_EXIT_LENGTH)] = state.latestPenalizedBalances[Int(currentEpoch % LATEST_PENALIZED_EXIT_LENGTH)]
+        state.latestPenalizedBalances[Int(nextEpoch % LATEST_SLASHED_EXIT_LENGTH)] = state.latestPenalizedBalances[Int(currentEpoch % LATEST_SLASHED_EXIT_LENGTH)]
         state.latestRandaoMixes[Int(nextEpoch % LATEST_RANDAO_MIXES_LENGTH)] = BeaconChain.getRandaoMix(
             state: state,
             epoch: currentEpoch
@@ -437,12 +437,12 @@ extension StateTransition {
     }
 
     private static func eth1data(state: inout BeaconState, nextEpoch: EpochNumber) {
-        if nextEpoch % ETH1_DATA_VOTING_PERIOD != 0 {
+        if nextEpoch % EPOCHS_PER_ETH1_VOTING_PERIOD != 0 {
             return
         }
 
         for vote in state.eth1DataVotes {
-            if vote.voteCount * 2 > ETH1_DATA_VOTING_PERIOD * EPOCH_LENGTH {
+            if vote.voteCount * 2 > EPOCHS_PER_ETH1_VOTING_PERIOD * SLOTS_PER_EPOCH {
                 state.latestEth1Data = vote.eth1Data
             }
         }
@@ -619,7 +619,7 @@ extension StateTransition {
                 state: state,
                 slot: inclusionSlot(state: state, index: Int(index))
             )
-            state.validatorBalances[Int(proposer)] += baseReward(state: state, index: index, baseRewardQuotient: baseRewardQuotient) / INCLUDER_REWARD_QUOTIENT
+            state.validatorBalances[Int(proposer)] += baseReward(state: state, index: index, baseRewardQuotient: baseRewardQuotient) / ATTESTATION_INCLUSION_REWARD_QUOTIENT
         }
 
         for slot in previousEpoch.startSlot()..<currentEpoch.startSlot() {
@@ -656,12 +656,12 @@ extension StateTransition {
         let totalBalance = activeValidatorIndices.totalBalance(state: state)
 
         for (i, v) in state.validatorRegistry.enumerated() {
-            if currentEpoch != v.penalizedEpoch + LATEST_PENALIZED_EXIT_LENGTH / 2 {
+            if currentEpoch != v.penalizedEpoch + LATEST_SLASHED_EXIT_LENGTH / 2 {
                 continue
             }
 
-            let epochIndex = currentEpoch % LATEST_PENALIZED_EXIT_LENGTH
-            let totalAtStart = state.latestPenalizedBalances[Int((epochIndex + 1) % LATEST_PENALIZED_EXIT_LENGTH)]
+            let epochIndex = currentEpoch % LATEST_SLASHED_EXIT_LENGTH
+            let totalAtStart = state.latestPenalizedBalances[Int((epochIndex + 1) % LATEST_SLASHED_EXIT_LENGTH)]
             let totalAtEnd = state.latestPenalizedBalances[Int(epochIndex)]
             let totalPenalties = totalAtEnd - totalAtStart
             let penalty = BeaconChain.getEffectiveBalance(state: state, index: ValidatorIndex(i)) * min(totalPenalties * 3, totalBalance) / totalBalance
@@ -671,10 +671,10 @@ extension StateTransition {
         var eligibleIndices = (0..<state.validatorRegistry.count).filter {
             let validator = state.validatorRegistry[$0]
             if validator.penalizedEpoch <= currentEpoch {
-                let penalizedWithdrawalEpochs = LATEST_PENALIZED_EXIT_LENGTH / 2
+                let penalizedWithdrawalEpochs = LATEST_SLASHED_EXIT_LENGTH / 2
                 return currentEpoch >= validator.penalizedEpoch + penalizedWithdrawalEpochs
             } else {
-                return currentEpoch >= validator.penalizedEpoch + MIN_VALIDATOR_WITHDRAWAL_EPOCHS
+                return currentEpoch >= validator.penalizedEpoch + MIN_VALIDATOR_WITHDRAWAL_DELAY
             }
         }
 
@@ -686,7 +686,7 @@ extension StateTransition {
         for i in eligibleIndices {
             BeaconChain.prepareValidatorForWithdrawal(state: &state, index: ValidatorIndex(i))
             withdrawan += 1
-            if withdrawan >= MAX_WITHDRAWALS_PER_EPOCH {
+            if withdrawan >= MAX_EXIT_DEQUEUES_PER_EPOCH {
                 break
             }
         }

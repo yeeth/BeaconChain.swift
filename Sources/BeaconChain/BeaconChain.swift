@@ -78,10 +78,10 @@ extension BeaconChain {
             max(
                 1,
                 min(
-                    SHARD_COUNT / EPOCH_LENGTH,
-                    UInt64(activeValidatorCount) / EPOCH_LENGTH / TARGET_COMMITTEE_SIZE
+                    SHARD_COUNT / SLOTS_PER_EPOCH,
+                    UInt64(activeValidatorCount) / SLOTS_PER_EPOCH / TARGET_COMMITTEE_SIZE
                 )
-            ) * EPOCH_LENGTH
+            ) * SLOTS_PER_EPOCH
         )
     }
 
@@ -146,8 +146,8 @@ extension BeaconChain {
 
         let shuffling = getShuffling(seed: seed, validators: state.validatorRegistry, epoch: shufflingEpoch)
 
-        let offset = slot % EPOCH_LENGTH
-        let committeesPerSlot = UInt64(committeesPerEpoch) / EPOCH_LENGTH
+        let offset = slot % SLOTS_PER_EPOCH
+        let committeesPerSlot = UInt64(committeesPerEpoch) / SLOTS_PER_EPOCH
         let slotStartShard = (shufflingStartShard + committeesPerSlot * offset) % SHARD_COUNT
 
         return (0..<committeesPerSlot).map {
@@ -176,8 +176,8 @@ extension BeaconChain {
 
     static func getActiveIndexRoot(state: BeaconState, epoch: EpochNumber) -> Bytes32 {
         let currentEpoch = getCurrentEpoch(state: state)
-        assert(currentEpoch - LATEST_INDEX_ROOTS_LENGTH + ENTRY_EXIT_DELAY < epoch && epoch <= currentEpoch + ENTRY_EXIT_DELAY)
-        return state.latestIndexRoots[Int(epoch % LATEST_INDEX_ROOTS_LENGTH)]
+        assert(currentEpoch - LATEST_ACTIVE_INDEX_ROOTS_LENGTH + ACTIVATION_EXIT_DELAY < epoch && epoch <= currentEpoch + ACTIVATION_EXIT_DELAY)
+        return state.latestIndexRoots[Int(epoch % LATEST_ACTIVE_INDEX_ROOTS_LENGTH)]
     }
 }
 
@@ -185,7 +185,7 @@ extension BeaconChain {
 
     static func generateSeed(state: BeaconState, epoch: EpochNumber) -> Data {
         return hash(
-            getRandaoMix(state: state, epoch: epoch - SEED_LOOKAHEAD) +
+            getRandaoMix(state: state, epoch: epoch - MIN_SEED_LOOKAHEAD) +
             getActiveIndexRoot(state: state, epoch: epoch) +
             epoch.bytes32
         )
@@ -363,7 +363,7 @@ extension BeaconChain {
             }
         }
 
-        state.latestIndexRoots[Int(GENESIS_EPOCH % LATEST_INDEX_ROOTS_LENGTH)] = hashTreeRoot(
+        state.latestIndexRoots[Int(GENESIS_EPOCH % LATEST_ACTIVE_INDEX_ROOTS_LENGTH)] = hashTreeRoot(
             state.validatorRegistry.activeIndices(epoch: GENESIS_EPOCH)
         )
         state.currentEpochSeed = generateSeed(state: state, epoch: GENESIS_EPOCH)
@@ -396,8 +396,8 @@ extension BeaconChain {
             finalizedEpoch: GENESIS_EPOCH,
             latestCrosslinks: [Crosslink](repeating: Crosslink(epoch: GENESIS_EPOCH, shardBlockRoot: ZERO_HASH), count: Int(SHARD_COUNT)),
             latestBlockRoots: [Data](repeating: ZERO_HASH, count: Int(LATEST_BLOCK_ROOTS_LENGTH)),
-            latestIndexRoots: [Data](repeating: ZERO_HASH, count: Int(LATEST_INDEX_ROOTS_LENGTH)),
-            latestPenalizedBalances: [UInt64](repeating: 0, count: Int(LATEST_PENALIZED_EXIT_LENGTH)),
+            latestIndexRoots: [Data](repeating: ZERO_HASH, count: Int(LATEST_ACTIVE_INDEX_ROOTS_LENGTH)),
+            latestPenalizedBalances: [UInt64](repeating: 0, count: Int(LATEST_SLASHED_EXIT_LENGTH)),
             latestAttestations: [PendingAttestation](),
             batchedBlockRoots: [Data](),
             latestEth1Data: latestEth1Data,
@@ -487,7 +487,7 @@ extension BeaconChain {
     static func penalizeValidator(state: inout BeaconState, index: ValidatorIndex) {
         exitValidator(state: &state, index: index)
 
-        state.latestPenalizedBalances[Int(getCurrentEpoch(state: state) % LATEST_PENALIZED_EXIT_LENGTH)] += getEffectiveBalance(state: state, index: index)
+        state.latestPenalizedBalances[Int(getCurrentEpoch(state: state) % LATEST_SLASHED_EXIT_LENGTH)] += getEffectiveBalance(state: state, index: index)
 
         let whistleblowerIndex = getBeaconProposerIndex(state: state, slot: state.slot)
         let whistleblowerReward = getEffectiveBalance(state: state, index: index) / WHISTLEBLOWER_REWARD_QUOTIENT

@@ -3,6 +3,6 @@ import Foundation
 extension SlotNumber {
 
     func toEpoch() -> EpochNumber {
-        return self / EPOCH_LENGTH
+        return self / SLOTS_PER_EPOCH
     }
 }
