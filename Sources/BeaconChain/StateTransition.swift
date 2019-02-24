@@ -281,7 +281,19 @@ extension StateTransition {
     }
 
     static func transfers(state: inout BeaconState, block: BeaconBlock) {
+        assert(block.body.transfers.count <= MAX_TRANSFERS)
 
+        for transfer in block.body.transfers {
+            assert(
+                state.validatorBalances[Int(transfer.from)] == transfer.amount + transfer.fee
+                || state.validatorBalances[Int(transfer.from)] >= transfer.amount + transfer.fee + MIN_DEPOSIT_AMOUNT
+            )
+
+            assert(state.slot == transfer.slot)
+            assert(BeaconChain.getCurrentEpoch(state: state) >= state.validatorRegistry[Int(transfer.from)].withdrawableEpoch)
+
+            // @todo * Verify that `state.validator_registry[transfer.from].withdrawal_credentials == BLS_WITHDRAWAL_PREFIX_BYTE + hash(transfer.pubkey)[1:]`.
+        }
     }
 
     static func verifyMerkleBranch(leaf: Bytes32, branch: [Bytes32], depth: Int, index: Int, root: Bytes32) -> Bool {
