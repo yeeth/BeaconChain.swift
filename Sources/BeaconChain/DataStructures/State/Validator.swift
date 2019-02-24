@@ -10,6 +10,6 @@ struct Validator {
     var statusFlags: UInt64
     
     func isActive(epoch: Epoch) -> Bool {
-        return self.activationEpoch <= epoch && epoch < self.exitEpoch
+        return activationEpoch <= epoch && epoch < exitEpoch
     }
 }
