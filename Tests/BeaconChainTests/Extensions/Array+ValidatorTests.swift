@@ -22,8 +22,8 @@ final class ArrayValidatorTests: XCTestCase {
             withdrawalCredentials: ZERO_HASH,
             activationEpoch: epoch - 1,
             exitEpoch: epoch + 1,
-            withdrawalEpoch: 1,
-            penalizedEpoch: 0,
+            withdrawableEpoch: 1,
+            slashedEpoch: 0,
             statusFlags: 0
         )
     }

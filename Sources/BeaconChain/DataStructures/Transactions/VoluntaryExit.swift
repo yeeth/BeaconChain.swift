@@ -1,6 +1,6 @@
 import Foundation
 
-struct Exit {
+struct VoluntaryExit {
     let epoch: UInt64
     let validatorIndex: UInt64
     let signature: Data

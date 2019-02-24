@@ -10,12 +10,12 @@ struct BeaconState {
     var validatorRegistryUpdateEpoch: UInt64
 
     var latestRandaoMixes: [Data]
-    var previousEpochStartShard: UInt64
-    let currentEpochStartShard: UInt64
-    var previousCalculationEpoch: UInt64
-    var currentCalculationEpoch: UInt64
-    var previousEpochSeed: Data
-    var currentEpochSeed: Data
+    var previousShufflingStartShard: UInt64
+    let currentShufflingStartShard: UInt64
+    var previousShufflingEpoch: UInt64
+    var currentShufflingEpoch: UInt64
+    var previousShufflingSeed: Data
+    var currentShufflingSeed: Data
 
     var previousJustifiedEpoch: UInt64
     var justifiedEpoch: UInt64
@@ -24,11 +24,12 @@ struct BeaconState {
 
     var latestCrosslinks: [Crosslink]
     var latestBlockRoots: [Data]
-    var latestIndexRoots: [Data]
-    var latestPenalizedBalances: [UInt64]
+    var latestActiveIndexRoots: [Data]
+    var latestSlashedBalances: [UInt64]
     var latestAttestations: [PendingAttestation]
     var batchedBlockRoots: [Data]
 
     var latestEth1Data: Eth1Data
     var eth1DataVotes: [Eth1DataVote]
+    let depositIndex: UInt64
 }

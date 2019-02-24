@@ -91,8 +91,8 @@ final class BeaconChainTests: XCTestCase {
                     withdrawalCredentials: Data(count: 32),
                     activationEpoch: 0,
                     exitEpoch: 0,
-                    withdrawalEpoch: 0,
-                    penalizedEpoch: 0,
+                    withdrawableEpoch: 0,
+                    slashedEpoch: 0,
                     statusFlags: 0
                 )
             )
@@ -117,8 +117,8 @@ final class BeaconChainTests: XCTestCase {
                 withdrawalCredentials: Data(count: 32),
                 activationEpoch: 0,
                 exitEpoch: 0,
-                withdrawalEpoch: 0,
-                penalizedEpoch: 0,
+                withdrawableEpoch: 0,
+                slashedEpoch: 0,
                 statusFlags: 0
             )
         )

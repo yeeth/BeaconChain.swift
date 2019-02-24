@@ -5,8 +5,8 @@ struct Validator {
     let withdrawalCredentials: Data
     var activationEpoch: UInt64
     var exitEpoch: UInt64
-    let withdrawalEpoch: UInt64
-    var penalizedEpoch: UInt64
+    let withdrawableEpoch: UInt64
+    var slashedEpoch: UInt64
     var statusFlags: UInt64
     
     func isActive(epoch: EpochNumber) -> Bool {

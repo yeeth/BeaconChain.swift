@@ -17,8 +17,8 @@ final class ValidatorTests: XCTestCase {
             withdrawalCredentials: ZERO_HASH,
             activationEpoch: epoch - 1,
             exitEpoch: epoch + 1,
-            withdrawalEpoch: epoch,
-            penalizedEpoch: epoch,
+            withdrawableEpoch: epoch,
+            slashedEpoch: epoch,
             statusFlags: 0
         )
     }
