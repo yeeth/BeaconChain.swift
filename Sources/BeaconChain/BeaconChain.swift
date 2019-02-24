@@ -19,7 +19,7 @@ class BeaconChain {
 
 extension BeaconChain {
 
-    static func getPreviousEpoch(state: BeaconState) -> EpochNumber {
+    static func getPreviousEpoch(state: BeaconState) -> Epoch {
         let currentEpoch = getCurrentEpoch(state: state)
         if currentEpoch == GENESIS_EPOCH {
             return GENESIS_EPOCH
@@ -28,7 +28,7 @@ extension BeaconChain {
         return currentEpoch - 1
     }
 
-    static func getCurrentEpoch(state: BeaconState) -> EpochNumber {
+    static func getCurrentEpoch(state: BeaconState) -> Epoch {
         return state.slot.toEpoch()
     }
 }
@@ -59,7 +59,7 @@ extension BeaconChain {
         return index
     }
 
-    static func getShuffling(seed: Bytes32, validators: [Validator], epoch: EpochNumber) -> [[ValidatorIndex]] {
+    static func getShuffling(seed: Bytes32, validators: [Validator], epoch: Epoch) -> [[ValidatorIndex]] {
         let activeValidatorIndices = validators.activeIndices(epoch: epoch)
         let committeesPerEpoch = getEpochCommitteeCount(activeValidatorCount: validators.count)
 
@@ -102,9 +102,9 @@ extension BeaconChain {
 
     static func getCrosslinkCommitteesAtSlot(
         state: BeaconState,
-        slot: SlotNumber,
+        slot: Slot,
         registryChange: Bool = false
-    ) -> [([ValidatorIndex], ShardNumber)] {
+    ) -> [([ValidatorIndex], Shard)] {
         let epoch = slot.toEpoch()
         let currentEpoch = getCurrentEpoch(state: state)
         let previousEpoch = getPreviousEpoch(state: state)
@@ -162,19 +162,19 @@ extension BeaconChain {
 
 extension BeaconChain {
 
-    static func getBlockRoot(state: BeaconState, slot: SlotNumber) -> Bytes32 {
+    static func getBlockRoot(state: BeaconState, slot: Slot) -> Bytes32 {
         assert(state.slot <= slot + LATEST_BLOCK_ROOTS_LENGTH)
         assert(slot < state.slot)
         return state.latestBlockRoots[Int(slot % LATEST_BLOCK_ROOTS_LENGTH)]
     }
 
-    static func getRandaoMix(state: BeaconState, epoch: EpochNumber) -> Bytes32 {
+    static func getRandaoMix(state: BeaconState, epoch: Epoch) -> Bytes32 {
         let currentEpoch = getCurrentEpoch(state: state)
         assert(currentEpoch - LATEST_RANDAO_MIXES_LENGTH < epoch && epoch <= currentEpoch)
         return state.latestRandaoMixes[Int(epoch % LATEST_RANDAO_MIXES_LENGTH)]
     }
 
-    static func getActiveIndexRoot(state: BeaconState, epoch: EpochNumber) -> Bytes32 {
+    static func getActiveIndexRoot(state: BeaconState, epoch: Epoch) -> Bytes32 {
         let currentEpoch = getCurrentEpoch(state: state)
         assert(currentEpoch - LATEST_ACTIVE_INDEX_ROOTS_LENGTH + ACTIVATION_EXIT_DELAY < epoch && epoch <= currentEpoch + ACTIVATION_EXIT_DELAY)
         return state.latestActiveIndexRoots[Int(epoch % LATEST_ACTIVE_INDEX_ROOTS_LENGTH)]
@@ -183,7 +183,7 @@ extension BeaconChain {
 
 extension BeaconChain {
 
-    static func generateSeed(state: BeaconState, epoch: EpochNumber) -> Data {
+    static func generateSeed(state: BeaconState, epoch: Epoch) -> Data {
         return hash(
             getRandaoMix(state: state, epoch: epoch - MIN_SEED_LOOKAHEAD) +
             getActiveIndexRoot(state: state, epoch: epoch) +
@@ -191,7 +191,7 @@ extension BeaconChain {
         )
     }
 
-    static func getBeaconProposerIndex(state: BeaconState, slot: SlotNumber) -> ValidatorIndex {
+    static func getBeaconProposerIndex(state: BeaconState, slot: Slot) -> ValidatorIndex {
         let (firstCommittee, _) = getCrosslinkCommitteesAtSlot(state: state, slot: slot)[0]
         return firstCommittee[Int(slot) % firstCommittee.count]
     }
@@ -238,7 +238,7 @@ extension BeaconChain {
         return min(state.validatorBalances[Int(index)], MAX_DEPOSIT_AMOUNT)
     }
 
-    static func getForkVersion(fork: Fork, epoch: EpochNumber) -> UInt64 {
+    static func getForkVersion(fork: Fork, epoch: Epoch) -> UInt64 {
         if epoch < fork.epoch {
             return fork.previousVersion
         }
@@ -246,7 +246,7 @@ extension BeaconChain {
         return fork.currentVersion
     }
 
-    static func getDomain(fork: Fork, epoch: EpochNumber, domainType: Domain) -> UInt64 {
+    static func getDomain(fork: Fork, epoch: Epoch, domainType: Domain) -> UInt64 {
         return getForkVersion(fork: fork, epoch: epoch) * 2 ** 32 + domainType.rawValue
     }
 

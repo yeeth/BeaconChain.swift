@@ -1,12 +1,12 @@
 import Foundation
 
-extension EpochNumber {
+extension Epoch {
 
-    func startSlot() -> SlotNumber {
+    func startSlot() -> Slot {
         return self * SLOTS_PER_EPOCH
     }
 
-    func entryExitEpoch() -> EpochNumber {
+    func entryExitEpoch() -> Epoch {
         return self + 1 + ACTIVATION_EXIT_DELAY
     }
 }

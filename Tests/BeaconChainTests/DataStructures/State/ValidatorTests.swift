@@ -11,7 +11,7 @@ final class ValidatorTests: XCTestCase {
 
     }
 
-    private func createValidator(epoch: EpochNumber) -> Validator {
+    private func createValidator(epoch: Epoch) -> Validator {
         return Validator(
             pubkey: ZERO_HASH,
             withdrawalCredentials: ZERO_HASH,

@@ -9,7 +9,7 @@ struct Validator {
     var slashedEpoch: UInt64
     var statusFlags: UInt64
     
-    func isActive(epoch: EpochNumber) -> Bool {
+    func isActive(epoch: Epoch) -> Bool {
         return self.activationEpoch <= epoch && epoch < self.exitEpoch
     }
 }

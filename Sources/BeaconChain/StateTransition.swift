@@ -436,7 +436,7 @@ extension StateTransition {
         }
     }
 
-    private static func eth1data(state: inout BeaconState, nextEpoch: EpochNumber) {
+    private static func eth1data(state: inout BeaconState, nextEpoch: Epoch) {
         if nextEpoch % EPOCHS_PER_ETH1_VOTING_PERIOD != 0 {
             return
         }
@@ -452,8 +452,8 @@ extension StateTransition {
 
     private static func justification(
         state: inout BeaconState,
-        previousEpoch: EpochNumber,
-        currentEpoch: EpochNumber,
+        previousEpoch: Epoch,
+        currentEpoch: Epoch,
         previousTotalBalance: Gwei,
         previousEpochBoundaryAttestingBalance: Gwei,
         currentTotalBalance: Gwei,
@@ -494,9 +494,9 @@ extension StateTransition {
 
     private static func crosslink(
         state: inout BeaconState,
-        previousEpoch: EpochNumber,
-        currentEpoch: EpochNumber,
-        nextEpoch: EpochNumber,
+        previousEpoch: Epoch,
+        currentEpoch: Epoch,
+        nextEpoch: Epoch,
         currentEpochAttestations: [PendingAttestation],
         previousEpochAttestations: [PendingAttestation]
     ) {
@@ -525,9 +525,9 @@ extension StateTransition {
 
     private static func rewardsAndPenalties(
         state: inout BeaconState,
-        previousEpoch: EpochNumber,
-        currentEpoch: EpochNumber,
-        nextEpoch: EpochNumber,
+        previousEpoch: Epoch,
+        currentEpoch: Epoch,
+        nextEpoch: Epoch,
         previousTotalBalance: Gwei,
         totalBalance: UInt64,
         previousEpochJustifiedAttesterIndices: [ValidatorIndex],
@@ -726,7 +726,7 @@ extension StateTransition {
         state.validatorRegistryUpdateEpoch = currentEpoch
     }
 
-    static func shufflingSeedData(state: inout BeaconState, nextEpoch: EpochNumber) {
+    static func shufflingSeedData(state: inout BeaconState, nextEpoch: Epoch) {
         state.previousShufflingEpoch = state.currentShufflingEpoch
         state.previousShufflingSeed = state.currentShufflingSeed
         state.previousShufflingStartShard = state.currentShufflingStartShard

@@ -16,7 +16,7 @@ final class ArrayValidatorTests: XCTestCase {
         XCTAssertEqual(validators.activeIndices(epoch: epoch), [ValidatorIndex(0), 1])
     }
 
-    private func createValidator(epoch: EpochNumber) -> Validator {
+    private func createValidator(epoch: Epoch) -> Validator {
         return Validator(
             pubkey: ZERO_HASH,
             withdrawalCredentials: ZERO_HASH,

@@ -1,8 +1,8 @@
 import Foundation
 
-extension SlotNumber {
+extension Slot {
 
-    func toEpoch() -> EpochNumber {
+    func toEpoch() -> Epoch {
         return self / SLOTS_PER_EPOCH
     }
 }
