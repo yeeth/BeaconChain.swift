@@ -293,25 +293,16 @@ extension StateTransition {
             )
 
             assert(state.slot == transfer.slot)
-            assert(BeaconChain.getCurrentEpoch(state: state) >= state.validatorRegistry[Int(transfer.from)].withdrawableEpoch)
-            assert(state.validatorRegistry[Int(transfer.from)].withdrawalCredentials == BLS_WITHDRAWAL_PREFIX_BYTE + BeaconChain.hash(transfer.pubkey).suffix(from: 1))
-
-            let message = BeaconChain.hashTreeRoot(
-                Transfer(
-                    from: transfer.from,
-                    to: transfer.to,
-                    amount: transfer.amount,
-                    fee: transfer.fee,
-                    slot: transfer.slot,
-                    pubkey: transfer.pubkey,
-                    signature: EMPTY_SIGNATURE
-                )
+            assert(
+                BeaconChain.getCurrentEpoch(state: state) >= state.validatorRegistry[Int(transfer.from)].withdrawableEpoch
+                || state.validatorRegistry[Int(transfer.from)].activationEpoch == FAR_FUTURE_EPOCH
             )
+            assert(state.validatorRegistry[Int(transfer.from)].withdrawalCredentials == BLS_WITHDRAWAL_PREFIX_BYTE + BeaconChain.hash(transfer.pubkey).suffix(from: 1))
 
             assert(
                 BLS.verify(
                     pubkey: transfer.pubkey,
-                    message: message,
+                    message: BeaconChain.signedRoot(transfer, field: "signature"),
                     signature: transfer.signature,
                     domain: BeaconChain.getDomain(fork: state.fork, epoch: transfer.slot.toEpoch(), domainType: Domain.TRANSFER)
                 )
