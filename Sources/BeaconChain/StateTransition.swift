@@ -934,7 +934,7 @@ extension StateTransition {
                 $0.data.shard == shard
             }
             .map {
-                $0.data.shardBlockRoot
+                $0.data.crosslinkDataRoot
             }
 
         var winnerRoot = Data(count: 0)
