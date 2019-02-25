@@ -26,7 +26,7 @@ extension StateTransition {
         attesterSlashings(state: &state, block: block)
         attestations(state: &state, block: block)
         deposits(state: &state, block: block)
-        exits(state: &state, block: block)
+        voluntaryExits(state: &state, block: block)
     }
 
     static func proposerSignature(state: inout BeaconState, block: BeaconBlock) {
@@ -253,7 +253,7 @@ extension StateTransition {
         }
     }
 
-    static func exits(state: inout BeaconState, block: BeaconBlock) {
+    static func voluntaryExits(state: inout BeaconState, block: BeaconBlock) {
         assert(block.body.voluntaryExits.count <= MAX_VOLUNTARY_EXITS)
 
         for exit in block.body.voluntaryExits {
@@ -294,7 +294,7 @@ extension StateTransition {
             assert(state.slot == transfer.slot)
             assert(BeaconChain.getCurrentEpoch(state: state) >= state.validatorRegistry[Int(transfer.from)].withdrawableEpoch)
             // @todo does this work (-1)?
-            assert(state.validatorRegistry[Int(transfer.from)].withdrawalCredentials == BLS_WITHDRAWAL_PREFIX_BYTE + BeaconChain.hash(transfer.pubkey)[1 ..< -1])
+            assert(state.validatorRegistry[Int(transfer.from)].withdrawalCredentials == BLS_WITHDRAWAL_PREFIX_BYTE + BeaconChain.hash(transfer.pubkey).suffix(from: 1))
 
             let message = BeaconChain.hashTreeRoot(
                 Transfer(
