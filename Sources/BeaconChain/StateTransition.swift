@@ -352,11 +352,11 @@ extension StateTransition {
             currentEpoch == $0.data.slot.toEpoch()
         }
 
-        let currentEpochBoundryAttestations = currentEpochAttestations.filter {
+        let currentEpochBoundaryAttestations = currentEpochAttestations.filter {
             $0.data.epochBoundaryRoot == BeaconChain.getBlockRoot(state: state, slot: currentEpoch.startSlot())
         }
 
-        let currentEpochBoundaryAttesterIndices = currentEpochBoundryAttestations.flatMap {
+        let currentEpochBoundaryAttesterIndices = currentEpochBoundaryAttestations.flatMap {
             return BeaconChain.getAttestationParticipants(state: state, attestationData: $0.data, bitfield: $0.aggregationBitfield)
         }
 
