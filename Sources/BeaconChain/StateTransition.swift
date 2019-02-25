@@ -627,7 +627,7 @@ extension StateTransition {
 
             activeValidators.forEach({
                 index in
-                if state.validatorRegistry[Int(index)].slashedEpoch <= currentEpoch {
+                if state.validatorRegistry[Int(index)].slashed {
                     state.validatorBalances[Int(index)] -= 2 * inactivityPenalty(state: state, index: index, epochsSinceFinality: epochsSinceFinality, baseRewardQuotient: baseRewardQuotient) + baseReward(state: state, index: index, baseRewardQuotient: baseRewardQuotient)
                 }
             })
@@ -680,7 +680,7 @@ extension StateTransition {
         let totalBalance = activeValidatorIndices.totalBalance(state: state)
 
         for (i, v) in state.validatorRegistry.enumerated() {
-            if currentEpoch != v.slashedEpoch + LATEST_SLASHED_EXIT_LENGTH / 2 {
+            if !(v.slashed && currentEpoch == v.withdrawableEpoch - LATEST_SLASHED_EXIT_LENGTH / 2) {
                 continue
             }
 
@@ -698,7 +698,7 @@ extension StateTransition {
 
         var eligibleIndices = (0..<state.validatorRegistry.count).filter {
             let validator = state.validatorRegistry[$0]
-            if validator.withdrawableEpoch <= FAR_FUTURE_EPOCH {
+            if validator.withdrawableEpoch != FAR_FUTURE_EPOCH {
                 return false
             } else {
                 return currentEpoch >= validator.exitEpoch + MIN_VALIDATOR_WITHDRAWABILITY_DELAY
@@ -727,7 +727,7 @@ extension StateTransition {
 
         var balanceChurn = UInt64(0)
         for (i, v) in state.validatorRegistry.enumerated() {
-            if v.activationEpoch > currentEpoch.delayedActivationExitEpoch() && state.validatorBalances[Int(i)] >= MAX_DEPOSIT_AMOUNT {
+            if v.activationEpoch == FAR_FUTURE_EPOCH && state.validatorBalances[Int(i)] >= MAX_DEPOSIT_AMOUNT {
                 balanceChurn += BeaconChain.getEffectiveBalance(state: state, index: ValidatorIndex(i))
                 if balanceChurn > maxBalanceChurn {
                     break
@@ -739,7 +739,7 @@ extension StateTransition {
 
         balanceChurn = 0
         for (i, v) in state.validatorRegistry.enumerated() {
-            if v.exitEpoch > currentEpoch.delayedActivationExitEpoch() && v.statusFlags & StatusFlag.INITIATED_EXIT.rawValue == 1 {
+            if v.activationEpoch == FAR_FUTURE_EPOCH && v.initiatedExit {
                 balanceChurn += BeaconChain.getEffectiveBalance(state: state, index: ValidatorIndex(i))
                 if balanceChurn > maxBalanceChurn {
                     break
