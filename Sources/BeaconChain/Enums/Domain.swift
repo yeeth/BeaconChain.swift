@@ -6,4 +6,5 @@ enum Domain: UInt64 {
     case PROPOSAL
     case EXIT
     case RANDAO
+    case TRANSFER
 }

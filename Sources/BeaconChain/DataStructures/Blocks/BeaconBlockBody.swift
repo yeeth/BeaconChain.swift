@@ -5,5 +5,6 @@ struct BeaconBlockBody {
     let attesterSlashings: [AttesterSlashing]
     let attestations: [Attestation]
     let deposits: [Deposit]
-    let exits: [Exit]
+    let voluntaryExits: [VoluntaryExit]
+    let transfers: [Transfer]
 }

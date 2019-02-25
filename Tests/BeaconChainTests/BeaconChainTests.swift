@@ -69,19 +69,20 @@ final class BeaconChainTests: XCTestCase {
 
         XCTAssertEqual(
             BeaconChain.getDomain(fork: data, epoch: 9, domainType: Domain.PROPOSAL),
-            EpochNumber((2*constant)+2)
+            Epoch((2*constant)+2)
         )
 
         XCTAssertEqual(
             BeaconChain.getDomain(fork: data, epoch: 11, domainType: Domain.EXIT),
-            EpochNumber((3*constant)+3)
+            Epoch((3*constant)+3)
         )
     }
 
     func testInitiateValidatorExit() {
         var state = BeaconChain.genesisState(
             genesisTime: 0,
-            latestEth1Data: Eth1Data(depositRoot: Data(count: 32), blockHash: Data(count: 32))
+            latestEth1Data: Eth1Data(depositRoot: Data(count: 32), blockHash: Data(count: 32)),
+            depositLength: 0
         )
 
         for _ in 0..<3 {
@@ -91,8 +92,8 @@ final class BeaconChainTests: XCTestCase {
                     withdrawalCredentials: Data(count: 32),
                     activationEpoch: 0,
                     exitEpoch: 0,
-                    withdrawalEpoch: 0,
-                    penalizedEpoch: 0,
+                    withdrawableEpoch: 0,
+                    slashedEpoch: 0,
                     statusFlags: 0
                 )
             )
@@ -107,7 +108,8 @@ final class BeaconChainTests: XCTestCase {
     func testActivateValidator() {
         var state = BeaconChain.genesisState(
             genesisTime: 0,
-            latestEth1Data: Eth1Data(depositRoot: Data(count: 32), blockHash: Data(count: 32))
+            latestEth1Data: Eth1Data(depositRoot: Data(count: 32), blockHash: Data(count: 32)),
+            depositLength: 0
         )
 
         state.slot = 10
@@ -117,8 +119,8 @@ final class BeaconChainTests: XCTestCase {
                 withdrawalCredentials: Data(count: 32),
                 activationEpoch: 0,
                 exitEpoch: 0,
-                withdrawalEpoch: 0,
-                penalizedEpoch: 0,
+                withdrawableEpoch: 0,
+                slashedEpoch: 0,
                 statusFlags: 0
             )
         )

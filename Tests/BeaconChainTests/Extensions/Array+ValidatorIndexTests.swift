@@ -6,7 +6,8 @@ final class ArrayValidatorIndexTests: XCTestCase {
     func testTotalBalance() {
         var state = BeaconChain.genesisState(
             genesisTime: 10,
-            latestEth1Data: Eth1Data(depositRoot: Data(count: 32), blockHash: Data(count: 32))
+            latestEth1Data: Eth1Data(depositRoot: Data(count: 32), blockHash: Data(count: 32)),
+            depositLength: 0
         )
 
         // @todo make dynamic
