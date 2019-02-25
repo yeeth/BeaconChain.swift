@@ -19,7 +19,7 @@ extension StateTransition {
     static func processBlock(state: inout BeaconState, block: BeaconBlock) {
         assert(state.slot == block.slot)
 
-        proposerSignature(state: &state, block: block)
+        blockSignature(state: &state, block: block)
         randao(state: &state, block: block)
         eth1data(state: &state, block: block)
         proposerSlashings(state: &state, block: block)
@@ -29,22 +29,20 @@ extension StateTransition {
         voluntaryExits(state: &state, block: block)
     }
 
-    static func proposerSignature(state: inout BeaconState, block: BeaconBlock) {
-        var signatureBlock = block
-        signatureBlock.signature = EMPTY_SIGNATURE
-
-        let proposalRoot = BeaconChain.hashTreeRoot(ProposalSignedData(
-                slot: state.slot,
-                shard: BEACON_CHAIN_SHARD_NUMBER,
-                blockRoot: BeaconChain.hashTreeRoot(signatureBlock)
-            )
+    static func blockSignature(state: inout BeaconState, block: BeaconBlock) {
+        let proposer = state.validatorRegistry[Int(BeaconChain.getBeaconProposerIndex(state: state, slot: state.slot))]
+        let proposal = Proposal(
+            slot: block.slot,
+            shard: BEACON_CHAIN_SHARD_NUMBER,
+            blockRoot: BeaconChain.signedRoot(block, field: "signature"),
+            signature: block.signature
         )
 
         assert(
             BLS.verify(
-                pubkey: state.validatorRegistry[Int(BeaconChain.getBeaconProposerIndex(state: state, slot: state.slot))].pubkey,
-                message: proposalRoot,
-                signature: block.signature,
+                pubkey: proposer.pubkey,
+                message: BeaconChain.signedRoot(proposal, field: "signature"),
+                signature: proposal.signature,
                 domain: BeaconChain.getDomain(
                     fork: state.fork,
                     epoch: BeaconChain.getCurrentEpoch(state: state),
@@ -86,28 +84,35 @@ extension StateTransition {
 
         for proposerSlashing in block.body.proposerSlashings {
             let proposer = state.validatorRegistry[Int(proposerSlashing.proposerIndex)]
-            let epoch = BeaconChain.getCurrentEpoch(state: state)
             // @todo none of these should be asserts
-            assert(proposerSlashing.proposalData1.slot == proposerSlashing.proposalData2.slot)
-            assert(proposerSlashing.proposalData1.shard == proposerSlashing.proposalData2.shard)
-            assert(proposerSlashing.proposalData1.blockRoot != proposerSlashing.proposalData2.blockRoot)
-            assert(proposer.slashedEpoch > epoch)
+            assert(proposerSlashing.proposal1.slot == proposerSlashing.proposal2.slot)
+            assert(proposerSlashing.proposal1.shard == proposerSlashing.proposal2.shard)
+            assert(proposerSlashing.proposal1.blockRoot != proposerSlashing.proposal2.blockRoot)
+            assert(!proposer.slashed)
 
             assert(
                 BLS.verify(
                     pubkey: proposer.pubkey,
-                    message: BeaconChain.hashTreeRoot(proposerSlashing.proposalData1),
-                    signature: proposerSlashing.proposalSignature1,
-                    domain: BeaconChain.getDomain(fork: state.fork, epoch: epoch, domainType: Domain.PROPOSAL)
+                    message: BeaconChain.signedRoot(proposerSlashing.proposal1, field: "signature"),
+                    signature: proposerSlashing.proposal1.signature,
+                    domain: BeaconChain.getDomain(
+                        fork: state.fork,
+                        epoch: proposerSlashing.proposal1.slot.toEpoch(),
+                        domainType: Domain.PROPOSAL
+                    )
                 )
             )
 
             assert(
                 BLS.verify(
                     pubkey: proposer.pubkey,
-                    message: BeaconChain.hashTreeRoot(proposerSlashing.proposalData2),
-                    signature: proposerSlashing.proposalSignature2,
-                    domain: BeaconChain.getDomain(fork: state.fork, epoch: epoch, domainType: Domain.PROPOSAL)
+                    message: BeaconChain.signedRoot(proposerSlashing.proposal2, field: "signature"),
+                    signature: proposerSlashing.proposal2.signature,
+                    domain: BeaconChain.getDomain(
+                        fork: state.fork,
+                        epoch: proposerSlashing.proposal2.slot.toEpoch(),
+                        domainType: Domain.PROPOSAL
+                    )
                 )
             )
 
@@ -133,7 +138,7 @@ extension StateTransition {
 
             let slashableIndices = slashableAttestation1.validatorIndices.filter {
                 slashableAttestation2.validatorIndices.contains($0)
-                    && state.validatorRegistry[Int($0)].slashedEpoch > BeaconChain.getCurrentEpoch(state: state)
+                    && state.validatorRegistry[Int($0)].slashed = false
             }
 
             assert(slashableIndices.count >= 1)
@@ -144,10 +149,12 @@ extension StateTransition {
         }
     }
 
+    // @todo UPDATES FROM HERE ON
     static func attestations(state: inout BeaconState, block: BeaconBlock) {
         assert(block.body.attestations.count <= MAX_ATTESTATIONS)
 
         for attestation in block.body.attestations {
+            assert(attestation.data.slot >= GENESIS_SLOT)
             assert(attestation.data.slot <= state.slot - MIN_ATTESTATION_INCLUSION_DELAY)
             assert(state.slot - MIN_ATTESTATION_INCLUSION_DELAY < attestation.data.slot + SLOTS_PER_EPOCH)
 
@@ -159,7 +166,7 @@ extension StateTransition {
                 state.latestCrosslinks[Int(attestation.data.shard)] == attestation.data.latestCrosslink ||
                 state.latestCrosslinks[Int(attestation.data.shard)] == Crosslink(
                     epoch: attestation.data.slot.toEpoch(),
-                    shardBlockRoot: attestation.data.shardBlockRoot
+                    crosslinkDataRoot: attestation.data.crosslinkDataRoot
                 )
             )
 
@@ -215,7 +222,7 @@ extension StateTransition {
                 )
             )
 
-            assert(attestation.data.shardBlockRoot == ZERO_HASH) // @todo remove in phase 1
+            assert(attestation.data.crosslinkDataRoot == ZERO_HASH) // @todo remove in phase 1
 
             state.latestAttestations.append(
                 PendingAttestation(
@@ -245,10 +252,7 @@ extension StateTransition {
 
             BeaconChain.processDeposit(
                 state: &state,
-                pubkey: deposit.depositData.depositInput.pubkey,
-                amount: deposit.depositData.amount,
-                proofOfPossession: deposit.depositData.depositInput.proofOfPossession,
-                withdrawalCredentials: deposit.depositData.depositInput.withdrawalCredentials
+                deposit: deposit
             )
         }
     }
@@ -260,7 +264,7 @@ extension StateTransition {
             let validator = state.validatorRegistry[Int(exit.validatorIndex)]
 
             let epoch = BeaconChain.getCurrentEpoch(state: state)
-            assert(validator.exitEpoch > epoch.entryExitEpoch())
+            assert(validator.exitEpoch > epoch.delayedActivationExitEpoch())
             assert(epoch >= exit.epoch)
 
             let exitMessage = BeaconChain.hashTreeRoot(
@@ -543,7 +547,7 @@ extension StateTransition {
                 if 3 * totalAttestingBalance(state: state, committee: crosslinkCommittee, shard: shard, currentEpochAttestations: currentEpochAttestations, previousEpochAttestations: previousEpochAttestations) >= 2 * crosslinkCommittee.totalBalance(state: state) {
                     state.latestCrosslinks[Int(shard)] = Crosslink(
                         epoch: slot.toEpoch(),
-                        shardBlockRoot: winningRoot(
+                        crosslinkDataRoot: winningRoot(
                             state: state,
                             committee: crosslinkCommittee,
                             shard: shard,
@@ -735,7 +739,7 @@ extension StateTransition {
 
         var balanceChurn = UInt64(0)
         for (i, v) in state.validatorRegistry.enumerated() {
-            if v.activationEpoch > currentEpoch.entryExitEpoch() && state.validatorBalances[Int(i)] >= MAX_DEPOSIT_AMOUNT {
+            if v.activationEpoch > currentEpoch.delayedActivationExitEpoch() && state.validatorBalances[Int(i)] >= MAX_DEPOSIT_AMOUNT {
                 balanceChurn += BeaconChain.getEffectiveBalance(state: state, index: ValidatorIndex(i))
                 if balanceChurn > maxBalanceChurn {
                     break
@@ -747,7 +751,7 @@ extension StateTransition {
 
         balanceChurn = 0
         for (i, v) in state.validatorRegistry.enumerated() {
-            if v.exitEpoch > currentEpoch.entryExitEpoch() && v.statusFlags & StatusFlag.INITIATED_EXIT.rawValue == 1 {
+            if v.exitEpoch > currentEpoch.delayedActivationExitEpoch() && v.statusFlags & StatusFlag.INITIATED_EXIT.rawValue == 1 {
                 balanceChurn += BeaconChain.getEffectiveBalance(state: state, index: ValidatorIndex(i))
                 if balanceChurn > maxBalanceChurn {
                     break
