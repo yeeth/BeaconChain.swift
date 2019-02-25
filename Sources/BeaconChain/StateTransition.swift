@@ -138,7 +138,7 @@ extension StateTransition {
 
             let slashableIndices = slashableAttestation1.validatorIndices.filter {
                 slashableAttestation2.validatorIndices.contains($0)
-                    && state.validatorRegistry[Int($0)].slashed = false
+                    && state.validatorRegistry[Int($0)].slashed == false
             }
 
             assert(slashableIndices.count >= 1)
@@ -155,8 +155,8 @@ extension StateTransition {
 
         for attestation in block.body.attestations {
             assert(attestation.data.slot >= GENESIS_SLOT)
-            assert(attestation.data.slot <= state.slot - MIN_ATTESTATION_INCLUSION_DELAY)
-            assert(state.slot - MIN_ATTESTATION_INCLUSION_DELAY < attestation.data.slot + SLOTS_PER_EPOCH)
+            assert(attestation.data.slot + MIN_ATTESTATION_INCLUSION_DELAY <= state.slot)
+            assert(state.slot < attestation.data.slot + SLOTS_PER_EPOCH)
 
             let e = (attestation.data.slot + 1).toEpoch() >= BeaconChain.getCurrentEpoch(state: state) ? state.justifiedEpoch : state.previousJustifiedEpoch
             assert(attestation.data.justifiedEpoch == e)
@@ -254,6 +254,8 @@ extension StateTransition {
                 state: &state,
                 deposit: deposit
             )
+
+            state.depositIndex += 1
         }
     }
 
@@ -876,7 +878,7 @@ extension StateTransition {
             state: state,
             committee: committee,
             shard: shard,
-            shardBlockRoot: root,
+            crosslinkDataRoot: root,
             currentEpochAttestations: currentEpochAttestations,
             previousEpochAttestations: previousEpochAttestations
         )
@@ -903,13 +905,13 @@ extension StateTransition {
         state: BeaconState,
         committee: [ValidatorIndex],
         shard: UInt64,
-        shardBlockRoot: Data,
+        crosslinkDataRoot: Data,
         currentEpochAttestations: [PendingAttestation],
         previousEpochAttestations: [PendingAttestation]
     ) -> [ValidatorIndex] {
         return (currentEpochAttestations + previousEpochAttestations)
             .filter {
-                $0.data.shard == shard && $0.data.shardBlockRoot == shardBlockRoot
+                $0.data.shard == shard && $0.data.crosslinkDataRoot == crosslinkDataRoot
             }
             .flatMap {
                 return BeaconChain.getAttestationParticipants(
@@ -942,7 +944,7 @@ extension StateTransition {
                 state: state,
                 committee: committee,
                 shard: shard,
-                shardBlockRoot: root,
+                crosslinkDataRoot: root,
                 currentEpochAttestations: currentEpochAttestations,
                 previousEpochAttestations: previousEpochAttestations
             )
