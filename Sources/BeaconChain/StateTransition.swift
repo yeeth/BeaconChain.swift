@@ -149,7 +149,6 @@ extension StateTransition {
         }
     }
 
-    // @todo UPDATES FROM HERE ON
     static func attestations(state: inout BeaconState, block: BeaconBlock) {
         assert(block.body.attestations.count <= MAX_ATTESTATIONS)
 
@@ -269,14 +268,10 @@ extension StateTransition {
             assert(validator.exitEpoch > epoch.delayedActivationExitEpoch())
             assert(epoch >= exit.epoch)
 
-            let exitMessage = BeaconChain.hashTreeRoot(
-                VoluntaryExit(epoch: exit.epoch, validatorIndex: exit.validatorIndex, signature: EMPTY_SIGNATURE)
-            )
-
             assert(
                 BLS.verify(
                     pubkey: validator.pubkey,
-                    message: exitMessage,
+                    message: BeaconChain.signedRoot(exit, field: "signature"),
                     signature: exit.signature,
                     domain: BeaconChain.getDomain(fork: state.fork, epoch: exit.epoch, domainType: Domain.EXIT)
                 )
