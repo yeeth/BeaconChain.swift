@@ -293,7 +293,7 @@ extension StateTransition {
 
             assert(state.slot == transfer.slot)
             assert(BeaconChain.getCurrentEpoch(state: state) >= state.validatorRegistry[Int(transfer.from)].withdrawableEpoch)
-            assert(state.validatorRegistry[Int(transfer.from)].withdrawalCredentials == BLS_WITHDRAWAL_PREFIX_BYTE.append(BeaconChain.hash(transfer.pubkey).suffix(from: 1)))
+            assert(state.validatorRegistry[Int(transfer.from)].withdrawalCredentials == BLS_WITHDRAWAL_PREFIX_BYTE + BeaconChain.hash(transfer.pubkey).suffix(from: 1))
 
             let message = BeaconChain.hashTreeRoot(
                 Transfer(
