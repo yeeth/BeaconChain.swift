@@ -240,16 +240,8 @@ extension BeaconChain {
         return min(state.validatorBalances[Int(index)], MAX_DEPOSIT_AMOUNT)
     }
 
-    static func getForkVersion(fork: Fork, epoch: Epoch) -> UInt64 {
-        if epoch < fork.epoch {
-            return fork.previousVersion
-        }
-
-        return fork.currentVersion
-    }
-
     static func getDomain(fork: Fork, epoch: Epoch, domainType: Domain) -> UInt64 {
-        return getForkVersion(fork: fork, epoch: epoch) * 2 ** 32 + domainType.rawValue
+        return fork.version(epoch: epoch) * 2 ** 32 + domainType.rawValue
     }
 
     static func getBitfieldBit(bitfield: Data, i: Int) -> Int {
