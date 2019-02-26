@@ -119,17 +119,18 @@ extension BeaconChain {
         var shufflingEpoch: UInt64!
         var shufflingStartShard: UInt64!
 
-        if epoch == currentEpoch {
+        switch epoch {
+        case currentEpoch:
             committeesPerEpoch = getCurrentEpochCommitteeCount(state: state)
             seed = state.currentShufflingSeed
             shufflingEpoch = state.currentShufflingEpoch
             shufflingStartShard = state.currentShufflingStartShard
-        } else if epoch == previousEpoch {
+        case previousEpoch:
             committeesPerEpoch = getPreviousEpochCommitteeCount(state: state)
             seed = state.previousShufflingSeed
             shufflingEpoch = state.previousShufflingEpoch
             shufflingStartShard = state.previousShufflingStartShard
-        } else if epoch == nextEpoch {
+        case nextEpoch:
             let currentCommitteesPerEpoch = getCurrentEpochCommitteeCount(state: state)
             committeesPerEpoch = getNextEpochCommitteeCount(state: state)
             shufflingEpoch = nextEpoch
@@ -144,6 +145,8 @@ extension BeaconChain {
                 seed = state.currentShufflingSeed
                 shufflingStartShard = state.currentShufflingStartShard
             }
+        default:
+            break
         }
 
         let shuffling = getShuffling(seed: seed, validators: state.validatorRegistry, epoch: shufflingEpoch)
