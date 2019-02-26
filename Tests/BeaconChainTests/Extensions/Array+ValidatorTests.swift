@@ -23,8 +23,8 @@ final class ArrayValidatorTests: XCTestCase {
             activationEpoch: epoch - 1,
             exitEpoch: epoch + 1,
             withdrawableEpoch: 1,
-            slashedEpoch: 0,
-            statusFlags: 0
+            initiatedExit: false,
+            slashed: false
         )
     }
 }

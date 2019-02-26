@@ -31,5 +31,5 @@ struct BeaconState {
 
     var latestEth1Data: Eth1Data
     var eth1DataVotes: [Eth1DataVote]
-    let depositIndex: UInt64
+    var depositIndex: UInt64
 }

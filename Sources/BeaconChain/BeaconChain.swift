@@ -15,17 +15,17 @@ class BeaconChain {
         return Data(count: 0)
     }
 
+    static func signedRoot(_ data: Any, field: String) -> Data {
+        // @todo
+        return Data(count: 0)
+    }
+
 }
 
 extension BeaconChain {
 
     static func getPreviousEpoch(state: BeaconState) -> Epoch {
-        let currentEpoch = getCurrentEpoch(state: state)
-        if currentEpoch == GENESIS_EPOCH {
-            return GENESIS_EPOCH
-        }
-
-        return currentEpoch - 1
+        return max(getCurrentEpoch(state: state) - 1, GENESIS_EPOCH)
     }
 
     static func getCurrentEpoch(state: BeaconState) -> Epoch {
@@ -37,10 +37,10 @@ extension BeaconChain {
 
     // @todo check this shit
     static func getPermutedIndex(index i: Int, listSize: Int, seed: Bytes32) -> Int {
+        assert(i < listSize)
+        assert(listSize < 2**40)
+
         var index = i
-
-        assert(index < listSize)
-
         for round in 0..<SHUFFLE_ROUND_COUNT {
             var pointer = round
             let roundBytes = Data(bytes: &pointer, count: 1)
@@ -64,13 +64,12 @@ extension BeaconChain {
 
     static func getShuffling(seed: Bytes32, validators: [Validator], epoch: Epoch) -> [[ValidatorIndex]] {
         let activeValidatorIndices = validators.activeIndices(epoch: epoch)
-        let committeesPerEpoch = getEpochCommitteeCount(activeValidatorCount: validators.count)
 
         let shuffledActiveValidatorIndices = activeValidatorIndices.map {
             activeValidatorIndices[getPermutedIndex(index: Int($0), listSize: activeValidatorIndices.count, seed: seed)]
         }
 
-        return shuffledActiveValidatorIndices.split(count: committeesPerEpoch)
+        return shuffledActiveValidatorIndices.split(count: getEpochCommitteeCount(activeValidatorCount: activeValidatorIndices.count))
     }
 }
 
@@ -120,16 +119,16 @@ extension BeaconChain {
         var shufflingEpoch: UInt64!
         var shufflingStartShard: UInt64!
 
-        if epoch == previousEpoch {
-            committeesPerEpoch = getPreviousEpochCommitteeCount(state: state)
-            seed = state.previousShufflingSeed
-            shufflingEpoch = state.previousShufflingEpoch
-            shufflingStartShard = state.previousShufflingStartShard
-        } else if epoch == currentEpoch {
+        if epoch == currentEpoch {
             committeesPerEpoch = getCurrentEpochCommitteeCount(state: state)
             seed = state.currentShufflingSeed
             shufflingEpoch = state.currentShufflingEpoch
             shufflingStartShard = state.currentShufflingStartShard
+        } else if epoch == previousEpoch {
+            committeesPerEpoch = getPreviousEpochCommitteeCount(state: state)
+            seed = state.previousShufflingSeed
+            shufflingEpoch = state.previousShufflingEpoch
+            shufflingStartShard = state.previousShufflingStartShard
         } else if epoch == nextEpoch {
             let currentCommitteesPerEpoch = getCurrentEpochCommitteeCount(state: state)
             committeesPerEpoch = getNextEpochCommitteeCount(state: state)
@@ -355,13 +354,7 @@ extension BeaconChain {
         )
 
         for deposit in genesisValidatorDeposits {
-            processDeposit(
-                state: &state,
-                pubkey: deposit.depositData.depositInput.pubkey,
-                amount: deposit.depositData.amount,
-                proofOfPossession: deposit.depositData.depositInput.proofOfPossession,
-                withdrawalCredentials: deposit.depositData.depositInput.withdrawalCredentials
-            )
+            processDeposit(state: &state, deposit: deposit)
         }
 
         for (i, _) in state.validatorRegistry.enumerated() {
@@ -393,7 +386,7 @@ extension BeaconChain {
             validatorRegistry: [Validator](),
             validatorBalances: [UInt64](),
             validatorRegistryUpdateEpoch: GENESIS_EPOCH,
-            latestRandaoMixes: [Data](repeating: ZERO_HASH, count: Int(LATEST_RANDAO_MIXES_LENGTH)),
+            latestRandaoMixes: [Data](repeating: EMPTY_SIGNATURE, count: Int(LATEST_RANDAO_MIXES_LENGTH)),
             previousShufflingStartShard: GENESIS_START_SHARD,
             currentShufflingStartShard: GENESIS_START_SHARD,
             previousShufflingEpoch: GENESIS_EPOCH,
@@ -404,7 +397,7 @@ extension BeaconChain {
             justifiedEpoch: GENESIS_EPOCH,
             justificationBitfield: 0,
             finalizedEpoch: GENESIS_EPOCH,
-            latestCrosslinks: [Crosslink](repeating: Crosslink(epoch: GENESIS_EPOCH, shardBlockRoot: ZERO_HASH), count: Int(SHARD_COUNT)),
+            latestCrosslinks: [Crosslink](repeating: Crosslink(epoch: GENESIS_EPOCH, crosslinkDataRoot: ZERO_HASH), count: Int(SHARD_COUNT)),
             latestBlockRoots: [Data](repeating: ZERO_HASH, count: Int(LATEST_BLOCK_ROOTS_LENGTH)),
             latestActiveIndexRoots: [Data](repeating: ZERO_HASH, count: Int(LATEST_ACTIVE_INDEX_ROOTS_LENGTH)),
             latestSlashedBalances: [UInt64](repeating: 0, count: Int(LATEST_SLASHED_EXIT_LENGTH)),
@@ -419,43 +412,23 @@ extension BeaconChain {
 
 extension BeaconChain {
 
-    static func validateProofOfPossesion(
-        state: BeaconState,
-        pubkey: BLSPubkey,
-        proofOfPossession: BLSSignature,
-        withdrawalCredentials: Bytes32
-    ) -> Bool {
-        let proofOfPossesionData = DepositInput(
-            pubkey: pubkey,
-            withdrawalCredentials: withdrawalCredentials,
-            proofOfPossession: EMPTY_SIGNATURE
-        )
+    static func processDeposit(state: inout BeaconState, deposit: Deposit) {
+        let depositInput = deposit.depositData.depositInput
 
-        return BLS.verify(
-            pubkey: pubkey,
-            message: BeaconChain.hashTreeRoot(proofOfPossesionData),
-            signature: proofOfPossession,
-            domain: getDomain(fork: state.fork, epoch: getCurrentEpoch(state: state), domainType: Domain.DEPOSIT)
-        )
-    }
-
-    static func processDeposit(
-        state: inout BeaconState,
-        pubkey: BLSPubkey,
-        amount: Gwei,
-        proofOfPossession: BLSSignature,
-        withdrawalCredentials: Bytes32
-    ) {
-        let proofIsValid = validateProofOfPossesion(
-            state: state,
-            pubkey: pubkey,
-            proofOfPossession: proofOfPossession,
-            withdrawalCredentials: withdrawalCredentials
+        let proofIsValid = BLS.verify(
+            pubkey: depositInput.pubkey,
+            message: BeaconChain.signedRoot(depositInput, field: "proofOfPossession"),
+            signature: depositInput.proofOfPossession,
+            domain: BeaconChain.getDomain(fork: state.fork, epoch: BeaconChain.getCurrentEpoch(state: state), domainType: Domain.DEPOSIT)
         )
 
         if !proofIsValid {
             return
         }
+
+        let pubkey = depositInput.pubkey
+        let amount = deposit.depositData.amount
+        let withdrawalCredentials = depositInput.withdrawalCredentials
 
         if let index = state.validatorRegistry.firstIndex(where: { $0.pubkey == pubkey }) {
             assert(state.validatorRegistry[index].withdrawalCredentials == withdrawalCredentials)
@@ -467,8 +440,8 @@ extension BeaconChain {
                 activationEpoch: FAR_FUTURE_EPOCH,
                 exitEpoch: FAR_FUTURE_EPOCH,
                 withdrawableEpoch: FAR_FUTURE_EPOCH,
-                slashedEpoch: FAR_FUTURE_EPOCH,
-                statusFlags: 0
+                initiatedExit: false,
+                slashed: false
             )
 
             state.validatorRegistry.append(validator)
@@ -480,20 +453,20 @@ extension BeaconChain {
 extension BeaconChain {
 
     static func activateValidator(state: inout BeaconState, index: ValidatorIndex, genesis: Bool) {
-        state.validatorRegistry[Int(index)].activationEpoch = genesis ? GENESIS_EPOCH : getCurrentEpoch(state: state).entryExitEpoch()
+        state.validatorRegistry[Int(index)].activationEpoch = genesis ? GENESIS_EPOCH : getCurrentEpoch(state: state).delayedActivationExitEpoch()
     }
 
     static func initiateValidatorExit(state: inout BeaconState, index: ValidatorIndex) {
-        state.validatorRegistry[Int(index)].statusFlags |= StatusFlag.INITIATED_EXIT.rawValue
+        state.validatorRegistry[Int(index)].initiatedExit = true
     }
 
     static func exitValidator(state: inout BeaconState, index: ValidatorIndex) {
         var validator = state.validatorRegistry[Int(index)]
-        if validator.exitEpoch <= getCurrentEpoch(state: state).entryExitEpoch() {
+        if validator.exitEpoch <= getCurrentEpoch(state: state).delayedActivationExitEpoch() {
             return
         }
 
-        validator.exitEpoch = getCurrentEpoch(state: state).entryExitEpoch()
+        validator.exitEpoch = getCurrentEpoch(state: state).delayedActivationExitEpoch()
         state.validatorRegistry[Int(index)] = validator
     }
 
@@ -510,7 +483,7 @@ extension BeaconChain {
         state.validatorBalances[Int(index)] -= whistleblowerReward
 
         let currentEpoch = getCurrentEpoch(state: state)
-        state.validatorRegistry[Int(index)].slashedEpoch = currentEpoch
+        state.validatorRegistry[Int(index)].slashed = true
         state.validatorRegistry[Int(index)].withdrawableEpoch = currentEpoch + LATEST_SLASHED_EXIT_LENGTH
     }
 

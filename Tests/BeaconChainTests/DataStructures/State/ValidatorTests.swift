@@ -18,8 +18,8 @@ final class ValidatorTests: XCTestCase {
             activationEpoch: epoch - 1,
             exitEpoch: epoch + 1,
             withdrawableEpoch: epoch,
-            slashedEpoch: epoch,
-            statusFlags: 0
+            initiatedExit: false,
+            slashed: false
         )
     }
 

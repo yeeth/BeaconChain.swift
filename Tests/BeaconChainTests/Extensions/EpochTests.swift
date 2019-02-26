@@ -8,6 +8,6 @@ final class EpochTests: XCTestCase {
     }
 
     func testEntryExitEpoch() {
-        XCTAssertEqual(Epoch(1).entryExitEpoch(), 6)
+        XCTAssertEqual(Epoch(1).delayedActivationExitEpoch(), 6)
     }
 }

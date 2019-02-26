@@ -6,7 +6,7 @@ extension Epoch {
         return self * SLOTS_PER_EPOCH
     }
 
-    func entryExitEpoch() -> Epoch {
+    func delayedActivationExitEpoch() -> Epoch {
         return self + 1 + ACTIVATION_EXIT_DELAY
     }
 }

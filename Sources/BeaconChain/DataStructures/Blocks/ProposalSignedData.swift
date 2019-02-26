@@ -1,7 +1,8 @@
 import Foundation
 
-struct ProposalSignedData {
+struct Proposal {
     let slot: UInt64
     let shard: UInt64
     let blockRoot: Data
+    let signature: Data
 }

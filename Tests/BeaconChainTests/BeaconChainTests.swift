@@ -16,8 +16,8 @@ final class BeaconChainTests: XCTestCase {
             shard: 0,
             beaconBlockRoot: dummy,
             epochBoundaryRoot: dummy,
-            shardBlockRoot: dummy,
-            latestCrosslink: Crosslink(epoch: 0, shardBlockRoot: dummy),
+            crosslinkDataRoot: dummy,
+            latestCrosslink: Crosslink(epoch: 0, crosslinkDataRoot: dummy),
             justifiedEpoch: 0,
             justifiedBlockRoot: dummy
         )
@@ -93,16 +93,16 @@ final class BeaconChainTests: XCTestCase {
                     activationEpoch: 0,
                     exitEpoch: 0,
                     withdrawableEpoch: 0,
-                    slashedEpoch: 0,
-                    statusFlags: 0
+                    initiatedExit: false,
+                    slashed: false
                 )
             )
         }
 
         BeaconChain.initiateValidatorExit(state: &state, index: 2)
 
-        XCTAssertEqual(state.validatorRegistry[0].statusFlags, 0)
-        XCTAssertEqual(state.validatorRegistry[2].statusFlags, StatusFlag.INITIATED_EXIT.rawValue)
+        XCTAssertFalse(state.validatorRegistry[0].initiatedExit)
+        XCTAssertTrue(state.validatorRegistry[2].initiatedExit)
     }
 
     func testActivateValidator() {
@@ -120,8 +120,8 @@ final class BeaconChainTests: XCTestCase {
                 activationEpoch: 0,
                 exitEpoch: 0,
                 withdrawableEpoch: 0,
-                slashedEpoch: 0,
-                statusFlags: 0
+                initiatedExit: false,
+                slashed: false
             )
         )
 

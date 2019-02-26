@@ -6,6 +6,6 @@ struct BeaconBlock {
     let stateRoot: Data
     let randaoReveal: Data
     let eth1Data: Eth1Data
-    var signature: Data
     let body: BeaconBlockBody
+    var signature: Data
 }
