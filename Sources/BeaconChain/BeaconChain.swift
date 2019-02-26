@@ -196,7 +196,7 @@ extension BeaconChain {
     }
 
     static func getBeaconProposerIndex(state: BeaconState, slot: Slot) -> ValidatorIndex {
-        let (firstCommittee, _) = getCrosslinkCommitteesAtSlot(state: state, slot: slot)[0]
+        let firstCommittee = getCrosslinkCommitteesAtSlot(state: state, slot: slot)[0].0
         return firstCommittee[Int(slot) % firstCommittee.count]
     }
 
