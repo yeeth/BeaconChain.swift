@@ -248,10 +248,6 @@ extension BeaconChain {
         return fork.currentVersion
     }
 
-    static func getDomain(fork: Fork, epoch: Epoch, domainType: Domain) -> UInt64 {
-        return getForkVersion(fork: fork, epoch: epoch) * 2 ** 32 + domainType.rawValue
-    }
-
     static func getBitfieldBit(bitfield: Data, i: Int) -> Int {
         return Int((bitfield[i / 8] >> (i % 8))) % 2
     }
