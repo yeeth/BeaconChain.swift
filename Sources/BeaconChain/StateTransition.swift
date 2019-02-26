@@ -133,8 +133,8 @@ extension StateTransition {
                     || BeaconChain.isSurroundVote(slashableAttestation1.data, slashableAttestation2.data)
             )
 
-            assert(BeaconChain.verifySlashableAttestation(state: state, slashableAttestation: slashableAttestation1))
-            assert(BeaconChain.verifySlashableAttestation(state: state, slashableAttestation: slashableAttestation2))
+            assert(slashableAttestation1.verify(state: state))
+            assert(slashableAttestation2.verify(state: state))
 
             let slashableIndices = slashableAttestation1.validatorIndices.filter {
                 slashableAttestation2.validatorIndices.contains($0)

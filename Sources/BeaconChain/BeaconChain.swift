@@ -273,62 +273,6 @@ extension BeaconChain {
 
 extension BeaconChain {
 
-    static func verifySlashableAttestation(state: BeaconState, slashableAttestation: SlashableAttestation) -> Bool {
-        if slashableAttestation.custodyBitfield != Data(repeating: 0, count: slashableAttestation.custodyBitfield.count) {
-            return false
-        }
-
-        if slashableAttestation.validatorIndices.count == 0 {
-            return false
-        }
-
-        for i in 0..<(slashableAttestation.validatorIndices.count - 1) {
-            if slashableAttestation.validatorIndices[i] >= slashableAttestation.validatorIndices[i + 1] {
-                return false
-            }
-        }
-
-        if !verifyBitfield(bitfield: slashableAttestation.custodyBitfield, committeeSize: slashableAttestation.validatorIndices.count) {
-            return false
-        }
-
-        if slashableAttestation.validatorIndices.count > MAX_INDICES_PER_SLASHABLE_VOTE {
-            return false
-        }
-
-        var custodyBit0Indices = [UInt64]()
-        var custodyBit1Indices = [UInt64]()
-
-        for (i, validatorIndex) in slashableAttestation.validatorIndices.enumerated() {
-            if getBitfieldBit(bitfield: slashableAttestation.custodyBitfield, i: i) == 0b0 {
-                custodyBit0Indices.append(validatorIndex)
-            } else {
-                custodyBit1Indices.append(validatorIndex)
-            }
-        }
-
-        return BLS.verify(
-            pubkeys: [
-                BLS.aggregate(
-                    pubkeys: custodyBit0Indices.map { (i) in
-                        return state.validatorRegistry[Int(i)].pubkey
-                    }
-                ),
-                BLS.aggregate(
-                    pubkeys: custodyBit1Indices.map { (i) in
-                        return state.validatorRegistry[Int(i)].pubkey
-                    }
-                )
-            ],
-            messages: [
-                hashTreeRoot(AttestationDataAndCustodyBit(data: slashableAttestation.data, custodyBit: false)),
-                hashTreeRoot(AttestationDataAndCustodyBit(data: slashableAttestation.data, custodyBit: true)),
-            ],
-            signature: slashableAttestation.aggregateSignature,
-            domain: getDomain(fork: state.fork, epoch: slashableAttestation.data.slot.toEpoch(), domainType: Domain.ATTESTATION)
-        )
-    }
-
     static func isDoubleVote(_ left: AttestationData, _ right: AttestationData) -> Bool {
         return left.slot.toEpoch() == right.slot.toEpoch()
     }
