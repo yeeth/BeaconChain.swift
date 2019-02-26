@@ -4,12 +4,7 @@ import XCTest
 final class BeaconStateTests: XCTestCase {
 
     func testPreviousEpoch() {
-        var state = BeaconChain.getInitialBeaconState(
-            genesisValidatorDeposits: [Deposit](),
-            genesisTime: 0,
-            latestEth1Data: Eth1Data(depositRoot: ZERO_HASH, blockHash: ZERO_HASH)
-        )
-
+        var state = getState()
         XCTAssertEqual(GENESIS_EPOCH, state.previousEpoch)
 
         state.slot = GENESIS_SLOT * 2
@@ -17,13 +12,16 @@ final class BeaconStateTests: XCTestCase {
     }
 
     func testCurrentEpoch() {
-        var state = BeaconChain.getInitialBeaconState(
+        var state = getState()
+        state.slot = GENESIS_SLOT
+        XCTAssertEqual(GENESIS_EPOCH, state.currentEpoch)
+    }
+
+    private func getState() -> BeaconState {
+        return BeaconChain.getInitialBeaconState(
             genesisValidatorDeposits: [Deposit](),
             genesisTime: 0,
             latestEth1Data: Eth1Data(depositRoot: ZERO_HASH, blockHash: ZERO_HASH)
         )
-
-        state.slot = GENESIS_SLOT
-        XCTAssertEqual(GENESIS_EPOCH, state.currentEpoch)
     }
 }
