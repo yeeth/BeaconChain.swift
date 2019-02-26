@@ -153,10 +153,9 @@ extension BeaconChain {
         let slotStartShard = (shufflingStartShard + committeesPerSlot * offset) % SHARD_COUNT
 
         return (0..<committeesPerSlot).map {
-            i in
             return (
-                shuffling[Int(committeesPerSlot * offset + i)],
-                (slotStartShard + i) % SHARD_COUNT
+                shuffling[Int(committeesPerSlot * offset + $0)],
+                (slotStartShard + $0) % SHARD_COUNT
             )
         }
     }
