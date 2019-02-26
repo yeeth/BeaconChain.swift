@@ -12,4 +12,16 @@ extension Array where Element == Validator {
             return nil
         }
     }
+
+    func shuffling(seed: Bytes32, epoch: Epoch) -> [[ValidatorIndex]] {
+        let activeValidatorIndices = activeIndices(epoch: epoch)
+
+        let shuffledActiveValidatorIndices = activeValidatorIndices.map {
+            activeValidatorIndices[BeaconChain.getPermutedIndex(index: Int($0), listSize: activeValidatorIndices.count, seed: seed)]
+        }
+
+        return shuffledActiveValidatorIndices.split(
+            count: BeaconChain.getEpochCommitteeCount(activeValidatorCount: activeValidatorIndices.count)
+        )
+    }
 }
