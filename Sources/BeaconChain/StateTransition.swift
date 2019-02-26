@@ -160,7 +160,7 @@ extension StateTransition {
             assert(attestation.custodyBitfield == Data(repeating: 0, count: 32))
             assert(attestation.aggregationBitfield != Data(repeating: 0, count: 32))
 
-            let crosslinkCommittee = BeaconChain.crosslinkCommittees(state: state, atSlot: attestation.data.slot).filter {
+            let crosslinkCommittee = BeaconChain.crosslinkCommittees(state, at: attestation.data.slot).filter {
                 $0.1 == attestation.data.shard
             }.first?.0
 
@@ -511,7 +511,7 @@ extension StateTransition {
     ) {
 
         for slot in previousEpoch.startSlot()..<nextEpoch.startSlot() {
-            let crosslinkCommitteesAtSlot = BeaconChain.crosslinkCommittees(state: state, atSlot: slot)
+            let crosslinkCommitteesAtSlot = BeaconChain.crosslinkCommittees(state, at: slot)
 
             for (_, (crosslinkCommittee, shard)) in crosslinkCommitteesAtSlot.enumerated() {
 
@@ -631,7 +631,7 @@ extension StateTransition {
         }
 
         for slot in previousEpoch.startSlot()..<currentEpoch.startSlot() {
-            let crosslinkCommitteesAtSlot = BeaconChain.crosslinkCommittees(state: state, atSlot: slot)
+            let crosslinkCommitteesAtSlot = BeaconChain.crosslinkCommittees(state, at: slot)
 
             for (_, (crosslinkCommittee, shard)) in crosslinkCommitteesAtSlot.enumerated() {
 
