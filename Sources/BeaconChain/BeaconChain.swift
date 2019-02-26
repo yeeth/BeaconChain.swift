@@ -35,7 +35,7 @@ extension BeaconChain {
 
 extension BeaconChain {
 
-    // @todo consider moving to Array+Validator
+    // @todo consider moving to Array+Validator & check this shit
     static func getPermutedIndex(index i: Int, listSize: Int, seed: Bytes32) -> Int {
         assert(i < listSize)
         assert(listSize < 2**40)
