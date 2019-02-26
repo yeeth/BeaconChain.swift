@@ -335,7 +335,7 @@ extension StateTransition {
             return BeaconChain.getAttestationParticipants(state: state, attestationData: $0.data, bitfield: $0.aggregationBitfield)
         }
 
-        let currentEpochBoundaryAttestingBalance = (currentEpochBoundaryAttesterIndices as [ValidatorIndex]).totalBalance(state: state)
+        let currentEpochBoundaryAttestingBalance = currentEpochBoundaryAttesterIndices.totalBalance(state: state)
 
         let previousTotalBalance = state.validatorRegistry.activeIndices(epoch: previousEpoch).totalBalance(state: state)
 
@@ -357,7 +357,7 @@ extension StateTransition {
             return BeaconChain.getAttestationParticipants(state: state, attestationData: $0.data, bitfield: $0.aggregationBitfield)
         }
 
-        let previousEpochBoundaryAttestingBalance = (previousEpochBoundaryAttesterIndices as [ValidatorIndex]).totalBalance(state: state)
+        let previousEpochBoundaryAttestingBalance = previousEpochBoundaryAttesterIndices.totalBalance(state: state)
 
         let previousEpochHeadAttestations = previousEpochAttestations.filter {
             $0.data.beaconBlockRoot == BeaconChain.getBlockRoot(state: state, slot: $0.data.slot)
@@ -367,7 +367,7 @@ extension StateTransition {
             return BeaconChain.getAttestationParticipants(state: state, attestationData: $0.data, bitfield: $0.aggregationBitfield)
         }
 
-        let previousEpochHeadAttestingBalance = (previousEpochHeadAttesterIndices as [ValidatorIndex]).totalBalance(state: state)
+        let previousEpochHeadAttestingBalance = previousEpochHeadAttesterIndices.totalBalance(state: state)
 
         eth1data(state: &state, nextEpoch: nextEpoch)
 
