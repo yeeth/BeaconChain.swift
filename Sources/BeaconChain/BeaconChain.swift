@@ -242,10 +242,6 @@ extension BeaconChain {
         return min(state.validatorBalances[Int(index)], MAX_DEPOSIT_AMOUNT)
     }
 
-    static func getDomain(fork: Fork, epoch: Epoch, domainType: Domain) -> UInt64 {
-        return fork.version(epoch: epoch) * 2 ** 32 + domainType.rawValue
-    }
-
     static func getBitfieldBit(bitfield: Data, i: Int) -> Int {
         return Int((bitfield[i / 8] >> (i % 8))) % 2
     }
@@ -319,7 +315,7 @@ extension BeaconChain {
                 hashTreeRoot(AttestationDataAndCustodyBit(data: slashableAttestation.data, custodyBit: true)),
             ],
             signature: slashableAttestation.aggregateSignature,
-            domain: getDomain(fork: state.fork, epoch: slashableAttestation.data.slot.toEpoch(), domainType: Domain.ATTESTATION)
+            domain: state.fork.domain(epoch: slashableAttestation.data.slot.toEpoch(), type: .ATTESTATION)
         )
     }
 
@@ -413,7 +409,7 @@ extension BeaconChain {
             pubkey: depositInput.pubkey,
             message: BeaconChain.signedRoot(depositInput, field: "proofOfPossession"),
             signature: depositInput.proofOfPossession,
-            domain: BeaconChain.getDomain(fork: state.fork, epoch: BeaconChain.getCurrentEpoch(state: state), domainType: Domain.DEPOSIT)
+            domain: state.fork.domain(epoch: BeaconChain.getCurrentEpoch(state: state), type: .DEPOSIT)
         )
 
         if !proofIsValid {

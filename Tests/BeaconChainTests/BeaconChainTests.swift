@@ -57,21 +57,6 @@ final class BeaconChainTests: XCTestCase {
 //        )
 //    }
 
-    func testGetDomainVersion() {
-        let data = Fork(previousVersion: 2, currentVersion: 3, epoch: 10)
-        let constant = 2**32
-
-        XCTAssertEqual(
-            BeaconChain.getDomain(fork: data, epoch: 9, domainType: Domain.PROPOSAL),
-            Epoch((2*constant)+2)
-        )
-
-        XCTAssertEqual(
-            BeaconChain.getDomain(fork: data, epoch: 11, domainType: Domain.EXIT),
-            Epoch((3*constant)+3)
-        )
-    }
-
     func testInitiateValidatorExit() {
         var state = BeaconChain.genesisState(
             genesisTime: 0,
