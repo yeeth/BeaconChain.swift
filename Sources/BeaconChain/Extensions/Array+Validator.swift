@@ -15,13 +15,14 @@ extension Array where Element == Validator {
 
     func shuffling(seed: Bytes32, epoch: Epoch) -> [[ValidatorIndex]] {
         let activeValidatorIndices = activeIndices(epoch: epoch)
+        let size = activeValidatorIndices.count
 
         let shuffledActiveValidatorIndices = activeValidatorIndices.map {
-            activeValidatorIndices[BeaconChain.getPermutedIndex(index: Int($0), listSize: activeValidatorIndices.count, seed: seed)]
+            activeValidatorIndices[BeaconChain.getPermutedIndex(index: Int($0), listSize: size, seed: seed)]
         }
 
         return shuffledActiveValidatorIndices.split(
-            count: BeaconChain.getEpochCommitteeCount(activeValidatorCount: activeValidatorIndices.count)
+            count: BeaconChain.getEpochCommitteeCount(activeValidatorCount: size)
         )
     }
 }
