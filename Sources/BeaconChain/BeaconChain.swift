@@ -119,17 +119,18 @@ extension BeaconChain {
         var shufflingEpoch: UInt64!
         var shufflingStartShard: UInt64!
 
-        if epoch == currentEpoch {
+        switch epoch {
+        case currentEpoch:
             committeesPerEpoch = getCurrentEpochCommitteeCount(state: state)
             seed = state.currentShufflingSeed
             shufflingEpoch = state.currentShufflingEpoch
             shufflingStartShard = state.currentShufflingStartShard
-        } else if epoch == previousEpoch {
+        case previousEpoch:
             committeesPerEpoch = getPreviousEpochCommitteeCount(state: state)
             seed = state.previousShufflingSeed
             shufflingEpoch = state.previousShufflingEpoch
             shufflingStartShard = state.previousShufflingStartShard
-        } else if epoch == nextEpoch {
+        case nextEpoch:
             let currentCommitteesPerEpoch = getCurrentEpochCommitteeCount(state: state)
             committeesPerEpoch = getNextEpochCommitteeCount(state: state)
             shufflingEpoch = nextEpoch
@@ -144,6 +145,8 @@ extension BeaconChain {
                 seed = state.currentShufflingSeed
                 shufflingStartShard = state.currentShufflingStartShard
             }
+        default:
+            break
         }
 
         let shuffling = getShuffling(seed: seed, validators: state.validatorRegistry, epoch: shufflingEpoch)
@@ -153,10 +156,9 @@ extension BeaconChain {
         let slotStartShard = (shufflingStartShard + committeesPerSlot * offset) % SHARD_COUNT
 
         return (0..<committeesPerSlot).map {
-            i in
             return (
-                shuffling[Int(committeesPerSlot * offset + i)],
-                (slotStartShard + i) % SHARD_COUNT
+                shuffling[Int(committeesPerSlot * offset + $0)],
+                (slotStartShard + $0) % SHARD_COUNT
             )
         }
     }
@@ -194,7 +196,7 @@ extension BeaconChain {
     }
 
     static func getBeaconProposerIndex(state: BeaconState, slot: Slot) -> ValidatorIndex {
-        let (firstCommittee, _) = getCrosslinkCommitteesAtSlot(state: state, slot: slot)[0]
+        let firstCommittee = getCrosslinkCommitteesAtSlot(state: state, slot: slot)[0].0
         return firstCommittee[Int(slot) % firstCommittee.count]
     }
 
@@ -238,14 +240,6 @@ extension BeaconChain {
 
     static func getEffectiveBalance(state: BeaconState, index: ValidatorIndex) -> Gwei {
         return min(state.validatorBalances[Int(index)], MAX_DEPOSIT_AMOUNT)
-    }
-
-    static func getForkVersion(fork: Fork, epoch: Epoch) -> UInt64 {
-        if epoch < fork.epoch {
-            return fork.previousVersion
-        }
-
-        return fork.currentVersion
     }
 
     static func getBitfieldBit(bitfield: Data, i: Int) -> Int {
@@ -321,7 +315,7 @@ extension BeaconChain {
                 hashTreeRoot(AttestationDataAndCustodyBit(data: slashableAttestation.data, custodyBit: true)),
             ],
             signature: slashableAttestation.aggregateSignature,
-            domain: getDomain(fork: state.fork, epoch: slashableAttestation.data.slot.toEpoch(), domainType: Domain.ATTESTATION)
+            domain: state.fork.domain(epoch: slashableAttestation.data.slot.toEpoch(), type: .ATTESTATION)
         )
     }
 
@@ -415,7 +409,7 @@ extension BeaconChain {
             pubkey: depositInput.pubkey,
             message: BeaconChain.signedRoot(depositInput, field: "proofOfPossession"),
             signature: depositInput.proofOfPossession,
-            domain: BeaconChain.getDomain(fork: state.fork, epoch: BeaconChain.getCurrentEpoch(state: state), domainType: Domain.DEPOSIT)
+            domain: state.fork.domain(epoch: BeaconChain.getCurrentEpoch(state: state), type: .DEPOSIT)
         )
 
         if !proofIsValid {

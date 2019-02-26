@@ -43,11 +43,7 @@ extension StateTransition {
                 pubkey: proposer.pubkey,
                 message: BeaconChain.signedRoot(proposal, field: "signature"),
                 signature: proposal.signature,
-                domain: BeaconChain.getDomain(
-                    fork: state.fork,
-                    epoch: BeaconChain.getCurrentEpoch(state: state),
-                    domainType: Domain.PROPOSAL
-                )
+                domain: state.fork.domain(epoch: BeaconChain.getCurrentEpoch(state: state), type: .PROPOSAL)
             )
         )
     }
@@ -61,7 +57,7 @@ extension StateTransition {
                 pubkey: proposer.pubkey,
                 message: Data(bytes: &epoch, count: 32),
                 signature: block.randaoReveal,
-                domain: BeaconChain.getDomain(fork: state.fork, epoch: BeaconChain.getCurrentEpoch(state: state), domainType: Domain.RANDAO)
+                domain: state.fork.domain(epoch: BeaconChain.getCurrentEpoch(state: state), type: .RANDAO)
             )
         )
 
@@ -95,11 +91,7 @@ extension StateTransition {
                     pubkey: proposer.pubkey,
                     message: BeaconChain.signedRoot(proposerSlashing.proposal1, field: "signature"),
                     signature: proposerSlashing.proposal1.signature,
-                    domain: BeaconChain.getDomain(
-                        fork: state.fork,
-                        epoch: proposerSlashing.proposal1.slot.toEpoch(),
-                        domainType: Domain.PROPOSAL
-                    )
+                    domain: state.fork.domain(epoch: proposerSlashing.proposal1.slot.toEpoch(), type: .PROPOSAL)
                 )
             )
 
@@ -108,11 +100,7 @@ extension StateTransition {
                     pubkey: proposer.pubkey,
                     message: BeaconChain.signedRoot(proposerSlashing.proposal2, field: "signature"),
                     signature: proposerSlashing.proposal2.signature,
-                    domain: BeaconChain.getDomain(
-                        fork: state.fork,
-                        epoch: proposerSlashing.proposal2.slot.toEpoch(),
-                        domainType: Domain.PROPOSAL
-                    )
+                    domain: state.fork.domain(epoch:  proposerSlashing.proposal2.slot.toEpoch(), type: .PROPOSAL)
                 )
             )
 
@@ -213,11 +201,7 @@ extension StateTransition {
                         BeaconChain.hashTreeRoot(AttestationDataAndCustodyBit(data: attestation.data, custodyBit: true))
                     ],
                     signature: attestation.aggregateSignature,
-                    domain: BeaconChain.getDomain(
-                        fork: state.fork,
-                        epoch: attestation.data.slot.toEpoch(),
-                        domainType: Domain.ATTESTATION
-                    )
+                    domain: state.fork.domain(epoch: attestation.data.slot.toEpoch(), type: .ATTESTATION)
                 )
             )
 
@@ -273,7 +257,7 @@ extension StateTransition {
                     pubkey: validator.pubkey,
                     message: BeaconChain.signedRoot(exit, field: "signature"),
                     signature: exit.signature,
-                    domain: BeaconChain.getDomain(fork: state.fork, epoch: exit.epoch, domainType: Domain.EXIT)
+                    domain: state.fork.domain(epoch: exit.epoch, type: .EXIT)
                 )
             )
 
@@ -304,7 +288,7 @@ extension StateTransition {
                     pubkey: transfer.pubkey,
                     message: BeaconChain.signedRoot(transfer, field: "signature"),
                     signature: transfer.signature,
-                    domain: BeaconChain.getDomain(fork: state.fork, epoch: transfer.slot.toEpoch(), domainType: Domain.TRANSFER)
+                    domain: state.fork.domain(epoch: transfer.slot.toEpoch(), type: .TRANSFER)
                 )
             )
 
