@@ -102,9 +102,9 @@ extension BeaconChain {
         return getEpochCommitteeCount(activeValidatorCount: nextActiveValidators.count)
     }
 
-    static func getCrosslinkCommitteesAtSlot(
+    static func crosslinkCommittees(
         state: BeaconState,
-        slot: Slot,
+        atSlot slot: Slot,
         registryChange: Bool = false
     ) -> [([ValidatorIndex], Shard)] {
         let epoch = slot.toEpoch()
@@ -196,7 +196,7 @@ extension BeaconChain {
     }
 
     static func getBeaconProposerIndex(state: BeaconState, slot: Slot) -> ValidatorIndex {
-        let firstCommittee = getCrosslinkCommitteesAtSlot(state: state, slot: slot)[0].0
+        let firstCommittee = crosslinkCommittees(state: state, atSlot: slot)[0].0
         return firstCommittee[Int(slot) % firstCommittee.count]
     }
 
@@ -216,7 +216,7 @@ extension BeaconChain {
         attestationData: AttestationData,
         bitfield: Data
     ) -> [ValidatorIndex] {
-        let crosslinkCommittees = getCrosslinkCommitteesAtSlot(state: state, slot: attestationData.slot)
+        let crosslinkCommittees = self.crosslinkCommittees(state: state, atSlot: attestationData.slot)
 
         assert(crosslinkCommittees.map({ return $0.1 }).contains(attestationData.shard))
 
