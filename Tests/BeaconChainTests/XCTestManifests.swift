@@ -10,6 +10,7 @@ public func allTests() -> [XCTestCaseEntry] {
         testCase(SlotTests.allTests),
         testCase(EpochTests.allTests),
         testCase(ValidatorTests.allTests),
+        testCase(BeaconStateTests.allTests),
         testCase(ForkTests.allTests),
 //        testCase(StateTransitionTests.allTests)
     ]
