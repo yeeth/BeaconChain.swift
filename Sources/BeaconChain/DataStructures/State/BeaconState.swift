@@ -1,6 +1,15 @@
 import Foundation
 
 struct BeaconState {
+
+    var previousEpoch: UInt64 {
+        return max(currentEpoch - 1, GENESIS_EPOCH)
+    }
+
+    var currentEpoch: UInt64 {
+        return slot.toEpoch()
+    }
+
     var slot: UInt64
     let genesisTime: UInt64
     let fork: Fork
