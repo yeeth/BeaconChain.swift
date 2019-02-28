@@ -261,7 +261,7 @@ extension StateTransition {
                 )
             )
 
-            BeaconChain.initiateValidatorExit(state: &state, index: exit.validatorIndex)
+            state.validatorRegistry[Int(exit.validatorIndex)].initiatedExit = true
         }
     }
 
@@ -698,7 +698,7 @@ extension StateTransition {
                 break
             }
 
-            BeaconChain.prepareValidatorForWithdrawal(state: &state, index: ValidatorIndex(i))
+            state.validatorRegistry[i].prepareForWithdrawal(state: state)
         }
     }
 
@@ -717,7 +717,7 @@ extension StateTransition {
                     break
                 }
 
-                BeaconChain.activateValidator(state: &state, index: ValidatorIndex(i), genesis: false)
+                state.validatorRegistry[i].activate(state: state, genesis: false)
             }
         }
 
@@ -729,7 +729,7 @@ extension StateTransition {
                     break
                 }
 
-                BeaconChain.exitValidator(state: &state, index: ValidatorIndex(i))
+                state.validatorRegistry[i].exit(state: state)
             }
         }
 
@@ -745,7 +745,7 @@ extension StateTransition {
     static func processEjections(state: inout BeaconState) {
         for i in state.validatorRegistry.activeIndices(epoch: BeaconChain.getCurrentEpoch(state: state)) {
             if state.validatorBalances[Int(i)] < EJECTION_BALANCE {
-                BeaconChain.exitValidator(state: &state, index: i)
+                state.validatorRegistry[Int(i)].exit(state: state)
             }
         }
     }

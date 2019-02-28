@@ -349,7 +349,7 @@ extension BeaconChain {
 
         for (i, _) in state.validatorRegistry.enumerated() {
             if getEffectiveBalance(state: state, index: ValidatorIndex(i)) >= MAX_DEPOSIT_AMOUNT {
-                activateValidator(state: &state, index: ValidatorIndex(i), genesis: true)
+                state.validatorRegistry[i].activate(state: state, genesis: true)
             }
         }
 
@@ -442,27 +442,9 @@ extension BeaconChain {
 
 extension BeaconChain {
 
-    static func activateValidator(state: inout BeaconState, index: ValidatorIndex, genesis: Bool) {
-        state.validatorRegistry[Int(index)].activationEpoch = genesis ? GENESIS_EPOCH : getCurrentEpoch(state: state).delayedActivationExitEpoch()
-    }
-
-    static func initiateValidatorExit(state: inout BeaconState, index: ValidatorIndex) {
-        state.validatorRegistry[Int(index)].initiatedExit = true
-    }
-
-    static func exitValidator(state: inout BeaconState, index: ValidatorIndex) {
-        var validator = state.validatorRegistry[Int(index)]
-        if validator.exitEpoch <= getCurrentEpoch(state: state).delayedActivationExitEpoch() {
-            return
-        }
-
-        validator.exitEpoch = getCurrentEpoch(state: state).delayedActivationExitEpoch()
-        state.validatorRegistry[Int(index)] = validator
-    }
-
     static func slashValidator(state: inout BeaconState, index: ValidatorIndex) {
         assert(state.slot < state.validatorRegistry[Int(index)].withdrawableEpoch.startSlot())
-        exitValidator(state: &state, index: index)
+        state.validatorRegistry[Int(index)].exit(state: state)
 
         state.latestSlashedBalances[Int(getCurrentEpoch(state: state) % LATEST_SLASHED_EXIT_LENGTH)] += getEffectiveBalance(state: state, index: index)
 
@@ -475,9 +457,5 @@ extension BeaconChain {
         let currentEpoch = getCurrentEpoch(state: state)
         state.validatorRegistry[Int(index)].slashed = true
         state.validatorRegistry[Int(index)].withdrawableEpoch = currentEpoch + LATEST_SLASHED_EXIT_LENGTH
-    }
-
-    static func prepareValidatorForWithdrawal(state: inout BeaconState, index: ValidatorIndex) {
-        state.validatorRegistry[Int(index)].withdrawableEpoch = getCurrentEpoch(state: state) + MIN_VALIDATOR_WITHDRAWABILITY_DELAY
     }
 }
