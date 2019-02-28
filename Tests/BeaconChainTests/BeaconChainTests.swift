@@ -56,31 +56,4 @@ final class BeaconChainTests: XCTestCase {
 //            )
 //        )
 //    }
-
-    func testInitiateValidatorExit() {
-        var state = BeaconChain.genesisState(
-            genesisTime: 0,
-            latestEth1Data: Eth1Data(depositRoot: Data(count: 32), blockHash: Data(count: 32)),
-            depositLength: 0
-        )
-
-        for _ in 0..<3 {
-            state.validatorRegistry.append(
-                Validator(
-                    pubkey: Data(count: 32),
-                    withdrawalCredentials: Data(count: 32),
-                    activationEpoch: 0,
-                    exitEpoch: 0,
-                    withdrawableEpoch: 0,
-                    initiatedExit: false,
-                    slashed: false
-                )
-            )
-        }
-
-        BeaconChain.initiateValidatorExit(state: &state, index: 2)
-
-        XCTAssertFalse(state.validatorRegistry[0].initiatedExit)
-        XCTAssertTrue(state.validatorRegistry[2].initiatedExit)
-    }
 }

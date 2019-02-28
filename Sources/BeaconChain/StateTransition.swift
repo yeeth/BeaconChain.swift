@@ -261,7 +261,7 @@ extension StateTransition {
                 )
             )
 
-            BeaconChain.initiateValidatorExit(state: &state, index: exit.validatorIndex)
+            state.validatorRegistry[Int(exit.validatorIndex)].initiatedExit = true
         }
     }
 
