@@ -43,7 +43,7 @@ extension StateTransition {
                 pubkey: proposer.pubkey,
                 message: BeaconChain.signedRoot(proposal, field: "signature"),
                 signature: proposal.signature,
-                domain: state.fork.domain(epoch: BeaconChain.getCurrentEpoch(state: state), type: .PROPOSAL)
+                domain: state.fork.domain(epoch: state.currentEpoch, type: .PROPOSAL)
             )
         )
     }
@@ -51,17 +51,17 @@ extension StateTransition {
     static func randao(state: inout BeaconState, block: BeaconBlock) {
         let proposer = state.validatorRegistry[Int(BeaconChain.getBeaconProposerIndex(state: state, slot: state.slot))]
 
-        var epoch = BeaconChain.getCurrentEpoch(state: state)
+        var epoch = state.currentEpoch
         assert(
             BLS.verify(
                 pubkey: proposer.pubkey,
                 message: Data(bytes: &epoch, count: 32),
                 signature: block.randaoReveal,
-                domain: state.fork.domain(epoch: BeaconChain.getCurrentEpoch(state: state), type: .RANDAO)
+                domain: state.fork.domain(epoch: state.currentEpoch, type: .RANDAO)
             )
         )
 
-        state.latestRandaoMixes[Int(BeaconChain.getCurrentEpoch(state: state) % LATEST_RANDAO_MIXES_LENGTH)] = BeaconChain.getRandaoMix(state: state, epoch: BeaconChain.getCurrentEpoch(state: state)) ^ BeaconChain.hash(block.randaoReveal)
+        state.latestRandaoMixes[Int(state.currentEpoch % LATEST_RANDAO_MIXES_LENGTH)] = BeaconChain.getRandaoMix(state: state, epoch: state.currentEpoch) ^ BeaconChain.hash(block.randaoReveal)
     }
 
     static func eth1data(state: inout BeaconState, block: BeaconBlock) {
@@ -145,7 +145,7 @@ extension StateTransition {
             assert(attestation.data.slot + MIN_ATTESTATION_INCLUSION_DELAY <= state.slot)
             assert(state.slot < attestation.data.slot + SLOTS_PER_EPOCH)
 
-            let e = (attestation.data.slot + 1).toEpoch() >= BeaconChain.getCurrentEpoch(state: state) ? state.justifiedEpoch : state.previousJustifiedEpoch
+            let e = (attestation.data.slot + 1).toEpoch() >= state.currentEpoch ? state.justifiedEpoch : state.previousJustifiedEpoch
             assert(attestation.data.justifiedEpoch == e)
             assert(attestation.data.justifiedBlockRoot == BeaconChain.getBlockRoot(state: state, slot: attestation.data.justifiedEpoch.startSlot()))
 
@@ -248,7 +248,7 @@ extension StateTransition {
         for exit in block.body.voluntaryExits {
             let validator = state.validatorRegistry[Int(exit.validatorIndex)]
 
-            let epoch = BeaconChain.getCurrentEpoch(state: state)
+            let epoch = state.currentEpoch
             assert(validator.exitEpoch > epoch.delayedActivationExitEpoch())
             assert(epoch >= exit.epoch)
 
@@ -278,7 +278,7 @@ extension StateTransition {
 
             assert(state.slot == transfer.slot)
             assert(
-                BeaconChain.getCurrentEpoch(state: state) >= state.validatorRegistry[Int(transfer.from)].withdrawableEpoch
+                state.currentEpoch >= state.validatorRegistry[Int(transfer.from)].withdrawableEpoch
                 || state.validatorRegistry[Int(transfer.from)].activationEpoch == FAR_FUTURE_EPOCH
             )
             assert(state.validatorRegistry[Int(transfer.from)].withdrawalCredentials == BLS_WITHDRAWAL_PREFIX_BYTE + BeaconChain.hash(transfer.pubkey).suffix(from: 1))
@@ -317,8 +317,8 @@ extension StateTransition {
     static func processEpoch(state: inout BeaconState) {
         assert(state.slot + 1 % SLOTS_PER_EPOCH == 0) // @todo not sure if this should be here
 
-        let currentEpoch = BeaconChain.getCurrentEpoch(state: state)
-        let previousEpoch = BeaconChain.getPreviousEpoch(state: state)
+        let currentEpoch = state.currentEpoch
+        let previousEpoch = state.previousEpoch
         let nextEpoch = currentEpoch + 1
 
         let currentTotalBalance = state.validatorRegistry.activeIndices(epoch: currentEpoch).totalBalance(state: state)
@@ -658,7 +658,7 @@ extension StateTransition {
     }
 
     static func processSlashing(state: inout BeaconState) {
-        let currentEpoch = BeaconChain.getCurrentEpoch(state: state)
+        let currentEpoch = state.currentEpoch
         let activeValidatorIndices = state.validatorRegistry.activeIndices(epoch: currentEpoch)
 
         let totalBalance = activeValidatorIndices.totalBalance(state: state)
@@ -678,7 +678,7 @@ extension StateTransition {
     }
 
     static func processExitQueue(state: inout BeaconState) {
-        let currentEpoch = BeaconChain.getCurrentEpoch(state: state)
+        let currentEpoch = state.currentEpoch
 
         var eligibleIndices = (0..<state.validatorRegistry.count).filter {
             let validator = state.validatorRegistry[$0]
@@ -703,7 +703,7 @@ extension StateTransition {
     }
 
     static func updateValidatorRegistry(state: inout BeaconState) {
-        let currentEpoch = BeaconChain.getCurrentEpoch(state: state)
+        let currentEpoch = state.currentEpoch
         let activeValidatorIndices = state.validatorRegistry.activeIndices(epoch: currentEpoch)
 
         let totalBalance = activeValidatorIndices.totalBalance(state: state)
@@ -743,7 +743,7 @@ extension StateTransition {
     }
 
     static func processEjections(state: inout BeaconState) {
-        for i in state.validatorRegistry.activeIndices(epoch: BeaconChain.getCurrentEpoch(state: state)) {
+        for i in state.validatorRegistry.activeIndices(epoch: state.currentEpoch) {
             if state.validatorBalances[Int(i)] < EJECTION_BALANCE {
                 BeaconChain.exitValidator(state: &state, index: i)
             }

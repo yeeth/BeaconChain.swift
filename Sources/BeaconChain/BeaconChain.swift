@@ -24,17 +24,6 @@ class BeaconChain {
 
 extension BeaconChain {
 
-    static func getPreviousEpoch(state: BeaconState) -> Epoch {
-        return max(getCurrentEpoch(state: state) - 1, GENESIS_EPOCH)
-    }
-
-    static func getCurrentEpoch(state: BeaconState) -> Epoch {
-        return state.slot.toEpoch()
-    }
-}
-
-extension BeaconChain {
-
     // @todo check this shit
     static func getPermutedIndex(index i: Int, listSize: Int, seed: Bytes32) -> Int {
         assert(i < listSize)
@@ -98,7 +87,7 @@ extension BeaconChain {
     }
 
     static func getNextEpochCommitteeCount(state: BeaconState) -> Int {
-        let nextActiveValidators = state.validatorRegistry.activeIndices(epoch: getCurrentEpoch(state: state) + 1)
+        let nextActiveValidators = state.validatorRegistry.activeIndices(epoch: state.currentEpoch + 1)
         return getEpochCommitteeCount(activeValidatorCount: nextActiveValidators.count)
     }
 
@@ -108,8 +97,8 @@ extension BeaconChain {
         registryChange: Bool = false
     ) -> [([ValidatorIndex], Shard)] {
         let epoch = slot.toEpoch()
-        let currentEpoch = getCurrentEpoch(state: state)
-        let previousEpoch = getPreviousEpoch(state: state)
+        let currentEpoch = state.currentEpoch
+        let previousEpoch = state.previousEpoch
         let nextEpoch = currentEpoch + 1
 
         assert(previousEpoch <= epoch && epoch <= nextEpoch)
@@ -173,13 +162,13 @@ extension BeaconChain {
     }
 
     static func getRandaoMix(state: BeaconState, epoch: Epoch) -> Bytes32 {
-        let currentEpoch = getCurrentEpoch(state: state)
+        let currentEpoch = state.currentEpoch
         assert(currentEpoch - LATEST_RANDAO_MIXES_LENGTH < epoch && epoch <= currentEpoch)
         return state.latestRandaoMixes[Int(epoch % LATEST_RANDAO_MIXES_LENGTH)]
     }
 
     static func getActiveIndexRoot(state: BeaconState, epoch: Epoch) -> Bytes32 {
-        let currentEpoch = getCurrentEpoch(state: state)
+        let currentEpoch = state.currentEpoch
         assert(currentEpoch - LATEST_ACTIVE_INDEX_ROOTS_LENGTH + ACTIVATION_EXIT_DELAY < epoch && epoch <= currentEpoch + ACTIVATION_EXIT_DELAY)
         return state.latestActiveIndexRoots[Int(epoch % LATEST_ACTIVE_INDEX_ROOTS_LENGTH)]
     }
@@ -409,7 +398,7 @@ extension BeaconChain {
             pubkey: depositInput.pubkey,
             message: BeaconChain.signedRoot(depositInput, field: "proofOfPossession"),
             signature: depositInput.proofOfPossession,
-            domain: state.fork.domain(epoch: BeaconChain.getCurrentEpoch(state: state), type: .DEPOSIT)
+            domain: state.fork.domain(epoch: state.currentEpoch, type: .DEPOSIT)
         )
 
         if !proofIsValid {
@@ -443,7 +432,7 @@ extension BeaconChain {
 extension BeaconChain {
 
     static func activateValidator(state: inout BeaconState, index: ValidatorIndex, genesis: Bool) {
-        state.validatorRegistry[Int(index)].activationEpoch = genesis ? GENESIS_EPOCH : getCurrentEpoch(state: state).delayedActivationExitEpoch()
+        state.validatorRegistry[Int(index)].activationEpoch = genesis ? GENESIS_EPOCH : state.currentEpoch.delayedActivationExitEpoch()
     }
 
     static func initiateValidatorExit(state: inout BeaconState, index: ValidatorIndex) {
@@ -452,11 +441,11 @@ extension BeaconChain {
 
     static func exitValidator(state: inout BeaconState, index: ValidatorIndex) {
         var validator = state.validatorRegistry[Int(index)]
-        if validator.exitEpoch <= getCurrentEpoch(state: state).delayedActivationExitEpoch() {
+        if validator.exitEpoch <= state.currentEpoch.delayedActivationExitEpoch() {
             return
         }
 
-        validator.exitEpoch = getCurrentEpoch(state: state).delayedActivationExitEpoch()
+        validator.exitEpoch = state.currentEpoch.delayedActivationExitEpoch()
         state.validatorRegistry[Int(index)] = validator
     }
 
@@ -464,7 +453,7 @@ extension BeaconChain {
         assert(state.slot < state.validatorRegistry[Int(index)].withdrawableEpoch.startSlot())
         exitValidator(state: &state, index: index)
 
-        state.latestSlashedBalances[Int(getCurrentEpoch(state: state) % LATEST_SLASHED_EXIT_LENGTH)] += getEffectiveBalance(state: state, index: index)
+        state.latestSlashedBalances[Int(state.currentEpoch % LATEST_SLASHED_EXIT_LENGTH)] += getEffectiveBalance(state: state, index: index)
 
         let whistleblowerIndex = getBeaconProposerIndex(state: state, slot: state.slot)
         let whistleblowerReward = getEffectiveBalance(state: state, index: index) / WHISTLEBLOWER_REWARD_QUOTIENT
@@ -472,12 +461,12 @@ extension BeaconChain {
         state.validatorBalances[Int(whistleblowerIndex)] += whistleblowerReward
         state.validatorBalances[Int(index)] -= whistleblowerReward
 
-        let currentEpoch = getCurrentEpoch(state: state)
+        let currentEpoch = state.currentEpoch
         state.validatorRegistry[Int(index)].slashed = true
         state.validatorRegistry[Int(index)].withdrawableEpoch = currentEpoch + LATEST_SLASHED_EXIT_LENGTH
     }
 
     static func prepareValidatorForWithdrawal(state: inout BeaconState, index: ValidatorIndex) {
-        state.validatorRegistry[Int(index)].withdrawableEpoch = getCurrentEpoch(state: state) + MIN_VALIDATOR_WITHDRAWABILITY_DELAY
+        state.validatorRegistry[Int(index)].withdrawableEpoch = state.currentEpoch + MIN_VALIDATOR_WITHDRAWABILITY_DELAY
     }
 }
