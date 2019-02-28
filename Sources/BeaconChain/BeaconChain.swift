@@ -446,19 +446,9 @@ extension BeaconChain {
         state.validatorRegistry[Int(index)].initiatedExit = true
     }
 
-    static func exitValidator(state: inout BeaconState, index: ValidatorIndex) {
-        var validator = state.validatorRegistry[Int(index)]
-        if validator.exitEpoch <= getCurrentEpoch(state: state).delayedActivationExitEpoch() {
-            return
-        }
-
-        validator.exitEpoch = getCurrentEpoch(state: state).delayedActivationExitEpoch()
-        state.validatorRegistry[Int(index)] = validator
-    }
-
     static func slashValidator(state: inout BeaconState, index: ValidatorIndex) {
         assert(state.slot < state.validatorRegistry[Int(index)].withdrawableEpoch.startSlot())
-        exitValidator(state: &state, index: index)
+        state.validatorRegistry[Int(index)].exit(state: state)
 
         state.latestSlashedBalances[Int(getCurrentEpoch(state: state) % LATEST_SLASHED_EXIT_LENGTH)] += getEffectiveBalance(state: state, index: index)
 

@@ -14,25 +14,30 @@ final class ValidatorTests: XCTestCase {
     func testActivate() {
         var state = BeaconChain.genesisState(
             genesisTime: 0,
-            latestEth1Data: Eth1Data(depositRoot: Data(count: 32), blockHash: Data(count: 32)),
+            latestEth1Data: Eth1Data(depositRoot: ZERO_HASH, blockHash: ZERO_HASH),
             depositLength: 0
         )
 
         state.slot = 10
-        var validator = Validator(
-            pubkey: Data(count: 32),
-            withdrawalCredentials: Data(count: 32),
-            activationEpoch: 0,
-            exitEpoch: 0,
-            withdrawableEpoch: 0,
-            initiatedExit: false,
-            slashed: false
-        )
+        var validator = createValidator(epoch: 1)
 
         validator.activate(state: state, genesis: false)
         XCTAssertEqual(validator.activationEpoch, 5)
     }
 
+    func testExitValidator() {
+        var state = BeaconChain.genesisState(
+            genesisTime: 0,
+            latestEth1Data: Eth1Data(depositRoot: ZERO_HASH, blockHash: ZERO_HASH),
+            depositLength: 0
+        )
+
+        state.slot = 100
+        var validator = createValidator(epoch: BeaconChain.getCurrentEpoch(state: state).delayedActivationExitEpoch())
+        validator.exit(state: state)
+
+        XCTAssertEqual(validator.exitEpoch, BeaconChain.getCurrentEpoch(state: state).delayedActivationExitEpoch())
+    }
 
     private func createValidator(epoch: Epoch) -> Validator {
         return Validator(

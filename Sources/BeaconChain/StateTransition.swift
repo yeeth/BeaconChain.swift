@@ -729,7 +729,7 @@ extension StateTransition {
                     break
                 }
 
-                BeaconChain.exitValidator(state: &state, index: ValidatorIndex(i))
+                state.validatorRegistry[i].exit(state: state)
             }
         }
 
@@ -745,7 +745,7 @@ extension StateTransition {
     static func processEjections(state: inout BeaconState) {
         for i in state.validatorRegistry.activeIndices(epoch: BeaconChain.getCurrentEpoch(state: state)) {
             if state.validatorBalances[Int(i)] < EJECTION_BALANCE {
-                BeaconChain.exitValidator(state: &state, index: i)
+                state.validatorRegistry[Int(i)].exit(state: state)
             }
         }
     }

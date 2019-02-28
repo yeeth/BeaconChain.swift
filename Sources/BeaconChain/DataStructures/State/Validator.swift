@@ -3,8 +3,8 @@ import Foundation
 struct Validator {
     let pubkey: Data
     let withdrawalCredentials: Data
-    var activationEpoch: UInt64
-    var exitEpoch: UInt64
+    private(set) var activationEpoch: UInt64
+    private(set) var exitEpoch: UInt64
     var withdrawableEpoch: UInt64
     var initiatedExit: Bool
     var slashed: Bool
