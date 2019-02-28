@@ -458,8 +458,4 @@ extension BeaconChain {
         state.validatorRegistry[Int(index)].slashed = true
         state.validatorRegistry[Int(index)].withdrawableEpoch = currentEpoch + LATEST_SLASHED_EXIT_LENGTH
     }
-
-    static func prepareValidatorForWithdrawal(state: inout BeaconState, index: ValidatorIndex) {
-        state.validatorRegistry[Int(index)].withdrawableEpoch = getCurrentEpoch(state: state) + MIN_VALIDATOR_WITHDRAWABILITY_DELAY
-    }
 }
