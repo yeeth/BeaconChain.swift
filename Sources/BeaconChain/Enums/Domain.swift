@@ -1,10 +1,10 @@
 import Foundation
 
 enum Domain: UInt64 {
-    case DEPOSIT
-    case ATTESTATION
-    case PROPOSAL
-    case EXIT
-    case RANDAO
-    case TRANSFER
+    case deposit
+    case attestation
+    case proposal
+    case exit
+    case randao
+    case transfer
 }

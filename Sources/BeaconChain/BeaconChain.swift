@@ -315,7 +315,7 @@ extension BeaconChain {
                 hashTreeRoot(AttestationDataAndCustodyBit(data: slashableAttestation.data, custodyBit: true)),
             ],
             signature: slashableAttestation.aggregateSignature,
-            domain: state.fork.domain(epoch: slashableAttestation.data.slot.toEpoch(), type: .ATTESTATION)
+            domain: state.fork.domain(epoch: slashableAttestation.data.slot.toEpoch(), type: .attestation)
         )
     }
 
@@ -409,7 +409,7 @@ extension BeaconChain {
             pubkey: depositInput.pubkey,
             message: BeaconChain.signedRoot(depositInput, field: "proofOfPossession"),
             signature: depositInput.proofOfPossession,
-            domain: state.fork.domain(epoch: BeaconChain.getCurrentEpoch(state: state), type: .DEPOSIT)
+            domain: state.fork.domain(epoch: BeaconChain.getCurrentEpoch(state: state), type: .deposit)
         )
 
         if !proofIsValid {

@@ -15,12 +15,12 @@ final class ForkTests: XCTestCase {
         let constant = 2**32
 
         XCTAssertEqual(
-            data.domain(epoch: 9, type: .PROPOSAL),
+            data.domain(epoch: 9, type: .proposal),
             Epoch((2*constant)+2)
         )
 
         XCTAssertEqual(
-            data.domain(epoch: 11, type: .EXIT),
+            data.domain(epoch: 11, type: .exit),
             Epoch((3*constant)+3)
         )
     }
