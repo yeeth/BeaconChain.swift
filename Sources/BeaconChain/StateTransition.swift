@@ -698,7 +698,7 @@ extension StateTransition {
                 break
             }
 
-            BeaconChain.prepareValidatorForWithdrawal(state: &state, index: ValidatorIndex(i))
+            state.validatorRegistry[i].prepareForWithdrawal(state: state)
         }
     }
 

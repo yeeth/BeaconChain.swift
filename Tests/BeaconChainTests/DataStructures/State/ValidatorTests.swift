@@ -39,6 +39,20 @@ final class ValidatorTests: XCTestCase {
         XCTAssertEqual(validator.exitEpoch, BeaconChain.getCurrentEpoch(state: state).delayedActivationExitEpoch())
     }
 
+    func testPrepareForWithdrawal() {
+        var state = BeaconChain.genesisState(
+            genesisTime: 0,
+            latestEth1Data: Eth1Data(depositRoot: ZERO_HASH, blockHash: ZERO_HASH),
+            depositLength: 0
+        )
+
+        state.slot = 0
+        var validator = createValidator(epoch: 1)
+        validator.prepareForWithdrawal(state: state)
+
+        XCTAssertEqual(validator.withdrawableEpoch, MIN_VALIDATOR_WITHDRAWABILITY_DELAY)
+    }
+
     private func createValidator(epoch: Epoch) -> Validator {
         return Validator(
             pubkey: ZERO_HASH,

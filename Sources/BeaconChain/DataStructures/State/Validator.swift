@@ -25,4 +25,8 @@ struct Validator {
 
         exitEpoch = BeaconChain.getCurrentEpoch(state: state).delayedActivationExitEpoch()
     }
+
+    mutating func prepareForWithdrawal(state: BeaconState) {
+        withdrawableEpoch = BeaconChain.getCurrentEpoch(state: state) + MIN_VALIDATOR_WITHDRAWABILITY_DELAY
+    }
 }
