@@ -84,30 +84,6 @@ final class BeaconChainTests: XCTestCase {
         XCTAssertTrue(state.validatorRegistry[2].initiatedExit)
     }
 
-    func testActivateValidator() {
-        var state = BeaconChain.genesisState(
-            genesisTime: 0,
-            latestEth1Data: Eth1Data(depositRoot: Data(count: 32), blockHash: Data(count: 32)),
-            depositLength: 0
-        )
-
-        state.slot = 10
-        state.validatorRegistry.append(
-            Validator(
-                pubkey: Data(count: 32),
-                withdrawalCredentials: Data(count: 32),
-                activationEpoch: 0,
-                exitEpoch: 0,
-                withdrawableEpoch: 0,
-                initiatedExit: false,
-                slashed: false
-            )
-        )
-
-        BeaconChain.activateValidator(state: &state, index: 0, genesis: false)
-        XCTAssertEqual(state.validatorRegistry[0].activationEpoch, 5)
-    }
-
 //    func testExitValidator() {
 //        var state = BeaconChain.genesisState(
 //            genesisTime: 0,

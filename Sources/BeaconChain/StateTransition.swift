@@ -717,7 +717,7 @@ extension StateTransition {
                     break
                 }
 
-                BeaconChain.activateValidator(state: &state, index: ValidatorIndex(i), genesis: false)
+                state.validatorRegistry[i].activate(state: state, genesis: false)
             }
         }
 

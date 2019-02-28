@@ -349,7 +349,7 @@ extension BeaconChain {
 
         for (i, _) in state.validatorRegistry.enumerated() {
             if getEffectiveBalance(state: state, index: ValidatorIndex(i)) >= MAX_DEPOSIT_AMOUNT {
-                activateValidator(state: &state, index: ValidatorIndex(i), genesis: true)
+                state.validatorRegistry[i].activate(state: state, genesis: true)
             }
         }
 
@@ -441,10 +441,6 @@ extension BeaconChain {
 }
 
 extension BeaconChain {
-
-    static func activateValidator(state: inout BeaconState, index: ValidatorIndex, genesis: Bool) {
-        state.validatorRegistry[Int(index)].activationEpoch = genesis ? GENESIS_EPOCH : getCurrentEpoch(state: state).delayedActivationExitEpoch()
-    }
 
     static func initiateValidatorExit(state: inout BeaconState, index: ValidatorIndex) {
         state.validatorRegistry[Int(index)].initiatedExit = true
