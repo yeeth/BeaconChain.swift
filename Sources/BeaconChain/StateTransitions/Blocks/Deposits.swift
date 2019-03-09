@@ -9,7 +9,7 @@ class Deposits: BlockTransitions {
             let serializedDepositData = Data(count: 64) // @todo when we have SSZ
 
             assert(
-                verifyMerkleBranch(
+                StateTransition.verifyMerkleBranch(
                     leaf: BeaconChain.hash(serializedDepositData),
                     branch: deposit.branch,
                     depth: Int(DEPOSIT_CONTRACT_TREE_DEPTH),
