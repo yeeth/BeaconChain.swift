@@ -25,8 +25,8 @@ extension StateTransition {
         proposerSlashings(state: &state, block: block)
         attesterSlashings(state: &state, block: block)
         attestations(state: &state, block: block)
-        deposits(state: &state, block: block)
-        voluntaryExits(state: &state, block: block)
+        Deposits.transition(state: &state, block: block)
+        VoluntaryExits.transition(state: &state, block: block)
         Transfers.transition(state: &state, block: block)
     }
 
@@ -215,54 +215,6 @@ extension StateTransition {
                     inclusionSlot: state.slot
                 )
             )
-        }
-    }
-
-    static func deposits(state: inout BeaconState, block: BeaconBlock) {
-        assert(block.body.deposits.count <= MAX_DEPOSITS)
-
-        for deposit in block.body.deposits {
-            let serializedDepositData = Data(count: 64) // @todo when we have SSZ
-
-            assert(
-                verifyMerkleBranch(
-                    leaf: BeaconChain.hash(serializedDepositData),
-                    branch: deposit.branch,
-                    depth: Int(DEPOSIT_CONTRACT_TREE_DEPTH),
-                    index: Int(deposit.index),
-                    root: state.latestEth1Data.depositRoot
-                )
-            )
-
-            BeaconChain.processDeposit(
-                state: &state,
-                deposit: deposit
-            )
-
-            state.depositIndex += 1
-        }
-    }
-
-    static func voluntaryExits(state: inout BeaconState, block: BeaconBlock) {
-        assert(block.body.voluntaryExits.count <= MAX_VOLUNTARY_EXITS)
-
-        for exit in block.body.voluntaryExits {
-            let validator = state.validatorRegistry[Int(exit.validatorIndex)]
-
-            let epoch = BeaconChain.getCurrentEpoch(state: state)
-            assert(validator.exitEpoch > epoch.delayedActivationExitEpoch())
-            assert(epoch >= exit.epoch)
-
-            assert(
-                BLS.verify(
-                    pubkey: validator.pubkey,
-                    message: BeaconChain.signedRoot(exit, field: "signature"),
-                    signature: exit.signature,
-                    domain: state.fork.domain(epoch: exit.epoch, type: .exit)
-                )
-            )
-
-            state.validatorRegistry[Int(exit.validatorIndex)].initiatedExit = true
         }
     }
 
