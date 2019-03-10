@@ -14,54 +14,70 @@ class StateTransition {
     }
 }
 
-extension StateTransition {
 
-    static func processBlock(state: inout BeaconState, block: BeaconBlock) {
-        assert(state.slot == block.slot)
-
-        blockSignature(state: &state, block: block)
-        randao(state: &state, block: block)
-        eth1data(state: &state, block: block)
-        proposerSlashings(state: &state, block: block)
-        attesterSlashings(state: &state, block: block)
-        attestations(state: &state, block: block)
-        deposits(state: &state, block: block)
-        voluntaryExits(state: &state, block: block)
+extension BeaconState {
+    
+    func verifySlot(for block: BeaconBlock) {
+        guard slot == block.slot else {
+            fatalError() // @todo Do we want assertion failures to crash in production? Create a custom `Never` function?
+        }
     }
-
-    static func blockSignature(state: inout BeaconState, block: BeaconBlock) {
-        let proposer = state.validatorRegistry[Int(BeaconChain.getBeaconProposerIndex(state: state, slot: state.slot))]
+    
+    func verifySignature(for block: BeaconBlock) {
+        let proposer = validatorRegistry[Int(BeaconChain.getBeaconProposerIndex(state: self, slot: slot))]
         let proposal = Proposal(
             slot: block.slot,
             shard: BEACON_CHAIN_SHARD_NUMBER,
             blockRoot: BeaconChain.signedRoot(block, field: "signature"),
             signature: block.signature
         )
-
+        
         assert(
             BLS.verify(
                 pubkey: proposer.pubkey,
                 message: BeaconChain.signedRoot(proposal, field: "signature"),
                 signature: proposal.signature,
-                domain: state.fork.domain(epoch: BeaconChain.getCurrentEpoch(state: state), type: .proposal)
+                domain: fork.domain(epoch: BeaconChain.getCurrentEpoch(state: self), type: .proposal)
             )
         )
     }
-
-    static func randao(state: inout BeaconState, block: BeaconBlock) {
-        let proposer = state.validatorRegistry[Int(BeaconChain.getBeaconProposerIndex(state: state, slot: state.slot))]
-
-        var epoch = BeaconChain.getCurrentEpoch(state: state)
+    
+    mutating func randao(for block: BeaconBlock) {
+        let proposer = validatorRegistry[Int(BeaconChain.getBeaconProposerIndex(state: self, slot: slot))]
+        
+        var epoch = BeaconChain.getCurrentEpoch(state: self)
         assert(
             BLS.verify(
                 pubkey: proposer.pubkey,
                 message: Data(bytes: &epoch, count: 32),
                 signature: block.randaoReveal,
-                domain: state.fork.domain(epoch: BeaconChain.getCurrentEpoch(state: state), type: .randao)
+                domain: fork.domain(epoch: BeaconChain.getCurrentEpoch(state: self), type: .randao)
             )
         )
+        
+        let epochIndex = Int(BeaconChain.getCurrentEpoch(state: self) % LATEST_RANDAO_MIXES_LENGTH)
+        
+        latestRandaoMixes[epochIndex] = BeaconChain.getRandaoMix(state: self, epoch: BeaconChain.getCurrentEpoch(state: self)) ^ BeaconChain.hash(block.randaoReveal)
+    }
+}
 
-        state.latestRandaoMixes[Int(BeaconChain.getCurrentEpoch(state: state) % LATEST_RANDAO_MIXES_LENGTH)] = BeaconChain.getRandaoMix(state: state, epoch: BeaconChain.getCurrentEpoch(state: state)) ^ BeaconChain.hash(block.randaoReveal)
+extension StateTransition {
+
+    static func processBlock(state: BeaconState, block: BeaconBlock) -> BeaconState {
+        var state = state
+        
+        state.verifySlot(for: block)
+        state.verifySignature(for: block)
+        state.randao(for: block)
+        
+        eth1data(state: &state, block: block)
+        proposerSlashings(state: &state, block: block)
+        attesterSlashings(state: &state, block: block)
+        attestations(state: &state, block: block)
+        deposits(state: &state, block: block)
+        voluntaryExits(state: &state, block: block)
+        
+        return state
     }
 
     static func eth1data(state: inout BeaconState, block: BeaconBlock) {
