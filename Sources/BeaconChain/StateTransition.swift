@@ -16,17 +16,69 @@ class StateTransition {
 
 extension StateTransition {
 
-    static func processBlock(state: inout BeaconState, block: BeaconBlock) {
-        assert(state.slot == block.slot)
-
-        blockSignature(state: &state, block: block)
-        randao(state: &state, block: block)
+    static func processBlock(_ state: BeaconState, block: BeaconBlock) -> BeaconState {
+        var state = state
+        
+        verifySlot(state, for: block)
+        verifySignature(state, for: block)
+        state = updateRandao(state, for: block)
+        
+        // @todo refactor these appropriately
         eth1data(state: &state, block: block)
         proposerSlashings(state: &state, block: block)
         attesterSlashings(state: &state, block: block)
         attestations(state: &state, block: block)
         deposits(state: &state, block: block)
         voluntaryExits(state: &state, block: block)
+        
+        return state
+    }
+    
+    static func verifySlot(_ state: BeaconState, for block: BeaconBlock) {
+        if state.slot != block.slot {
+            fatalError() // @todo do we want assertion failures to crash in production?
+        }
+    }
+    
+    static func verifySignature(_ state: BeaconState, for block: BeaconBlock) {
+        let proposer = state.validatorRegistry[Int(BeaconChain.getBeaconProposerIndex(state: state, slot: state.slot))]
+        let proposal = Proposal(
+            slot: block.slot,
+            shard: BEACON_CHAIN_SHARD_NUMBER,
+            blockRoot: BeaconChain.signedRoot(block, field: "signature"),
+            signature: block.signature
+        )
+        
+        assert(
+            BLS.verify(
+                pubkey: proposer.pubkey,
+                message: BeaconChain.signedRoot(proposal, field: "signature"),
+                signature: proposal.signature,
+                domain: state.fork.domain(epoch: BeaconChain.getCurrentEpoch(state: state), type: .proposal)
+            )
+        )
+    }
+    
+    static func updateRandao(_ state: BeaconState, for block: BeaconBlock) -> BeaconState {
+        var state = state
+        
+        let proposer = state.validatorRegistry[Int(BeaconChain.getBeaconProposerIndex(state: state, slot: state.slot))]
+        
+        var epoch = BeaconChain.getCurrentEpoch(state: state)
+        assert(
+            BLS.verify(
+                pubkey: proposer.pubkey,
+                message: Data(bytes: &epoch, count: 32),
+                signature: block.randaoReveal,
+                domain: state.fork.domain(epoch: BeaconChain.getCurrentEpoch(state: state), type: .randao)
+            )
+        )
+        
+        let randaoIndex = Int(BeaconChain.getCurrentEpoch(state: state) % LATEST_RANDAO_MIXES_LENGTH)
+        let newMix = BeaconChain.getRandaoMix(state: state, epoch: BeaconChain.getCurrentEpoch(state: state)) ^ BeaconChain.hash(block.randaoReveal)
+        state.latestRandaoMixes[randaoIndex] = newMix
+        
+        return state
     }
 
     static func blockSignature(state: inout BeaconState, block: BeaconBlock) {
