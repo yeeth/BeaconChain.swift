@@ -15,22 +15,22 @@ class StateFactory {
         )
 
         for deposit in genesisValidatorDeposits {
-            processDeposit(state: &state, deposit: deposit)
+            BeaconChain.processDeposit(state: &state, deposit: deposit)
         }
 
         for (i, _) in state.validatorRegistry.enumerated() {
-            if getEffectiveBalance(state: state, index: ValidatorIndex(i)) >= MAX_DEPOSIT_AMOUNT {
+            if BeaconChain.getEffectiveBalance(state: state, index: ValidatorIndex(i)) >= MAX_DEPOSIT_AMOUNT {
                 state.validatorRegistry[i].activate(state: state, genesis: true)
             }
         }
 
-        let genesisActiveIndexRoot = hashTreeRoot(state.validatorRegistry.activeIndices(epoch: GENESIS_EPOCH))
+        let genesisActiveIndexRoot = BeaconChain.hashTreeRoot(state.validatorRegistry.activeIndices(epoch: GENESIS_EPOCH))
 
         for i in 0..<LATEST_ACTIVE_INDEX_ROOTS_LENGTH {
             state.latestActiveIndexRoots[Int(i)] = genesisActiveIndexRoot
         }
 
-        state.currentShufflingSeed = generateSeed(state: state, epoch: GENESIS_EPOCH)
+        state.currentShufflingSeed = BeaconChain.generateSeed(state: state, epoch: GENESIS_EPOCH)
 
         return state
     }
