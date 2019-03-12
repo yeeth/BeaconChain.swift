@@ -141,7 +141,7 @@ extension StateTransition {
         assert(block.body.attestations.count <= MAX_ATTESTATIONS)
 
         for attestation in block.body.attestations {
-            assert(attestation.data.slot >= GENESIS_SLOT)
+            assert(attestation.data.slot >= InitialValues.GenesisSlot)
             assert(attestation.data.slot + MIN_ATTESTATION_INCLUSION_DELAY <= state.slot)
             assert(state.slot < attestation.data.slot + SLOTS_PER_EPOCH)
 
@@ -205,7 +205,7 @@ extension StateTransition {
                 )
             )
 
-            assert(attestation.data.crosslinkDataRoot == ZERO_HASH) // @todo remove in phase 1
+            assert(attestation.data.crosslinkDataRoot == InitialValues.ZeroHash) // @todo remove in phase 1
 
             state.latestAttestations.append(
                 PendingAttestation(
@@ -273,15 +273,15 @@ extension StateTransition {
             assert(state.validatorBalances[Int(transfer.from)] >= transfer.fee)
             assert(
                 state.validatorBalances[Int(transfer.from)] == transfer.amount + transfer.fee
-                || state.validatorBalances[Int(transfer.from)] >= transfer.amount + transfer.fee + MIN_DEPOSIT_AMOUNT
+                || state.validatorBalances[Int(transfer.from)] >= transfer.amount + transfer.fee + GWEIValues.MinDepositAmount
             )
 
             assert(state.slot == transfer.slot)
             assert(
                 BeaconChain.getCurrentEpoch(state: state) >= state.validatorRegistry[Int(transfer.from)].withdrawableEpoch
-                || state.validatorRegistry[Int(transfer.from)].activationEpoch == FAR_FUTURE_EPOCH
+                || state.validatorRegistry[Int(transfer.from)].activationEpoch == InitialValues.FarFutureEpoch
             )
-            assert(state.validatorRegistry[Int(transfer.from)].withdrawalCredentials == BLS_WITHDRAWAL_PREFIX_BYTE + BeaconChain.hash(transfer.pubkey).suffix(from: 1))
+            assert(state.validatorRegistry[Int(transfer.from)].withdrawalCredentials == InitialValues.BLSWithdrawalPrefixByte + BeaconChain.hash(transfer.pubkey).suffix(from: 1))
 
             assert(
                 BLS.verify(
@@ -682,7 +682,7 @@ extension StateTransition {
 
         var eligibleIndices = (0..<state.validatorRegistry.count).filter {
             let validator = state.validatorRegistry[$0]
-            if validator.withdrawableEpoch != FAR_FUTURE_EPOCH {
+            if validator.withdrawableEpoch != InitialValues.FarFutureEpoch {
                 return false
             } else {
                 return currentEpoch >= validator.exitEpoch + MIN_VALIDATOR_WITHDRAWABILITY_DELAY
@@ -707,11 +707,11 @@ extension StateTransition {
         let activeValidatorIndices = state.validatorRegistry.activeIndices(epoch: currentEpoch)
 
         let totalBalance = activeValidatorIndices.totalBalance(state: state)
-        let maxBalanceChurn = max(MAX_DEPOSIT_AMOUNT, totalBalance / (2 * MAX_BALANCE_CHURN_QUOTIENT))
+        let maxBalanceChurn = max(GWEIValues.MaxDepositAmount, totalBalance / (2 * MAX_BALANCE_CHURN_QUOTIENT))
 
         var balanceChurn = UInt64(0)
         for (i, v) in state.validatorRegistry.enumerated() {
-            if v.activationEpoch == FAR_FUTURE_EPOCH && state.validatorBalances[Int(i)] >= MAX_DEPOSIT_AMOUNT {
+            if v.activationEpoch == InitialValues.FarFutureEpoch && state.validatorBalances[Int(i)] >= GWEIValues.MaxDepositAmount {
                 balanceChurn += BeaconChain.getEffectiveBalance(state: state, index: ValidatorIndex(i))
                 if balanceChurn > maxBalanceChurn {
                     break
@@ -723,7 +723,7 @@ extension StateTransition {
 
         balanceChurn = 0
         for (i, v) in state.validatorRegistry.enumerated() {
-            if v.activationEpoch == FAR_FUTURE_EPOCH && v.initiatedExit {
+            if v.activationEpoch == InitialValues.FarFutureEpoch && v.initiatedExit {
                 balanceChurn += BeaconChain.getEffectiveBalance(state: state, index: ValidatorIndex(i))
                 if balanceChurn > maxBalanceChurn {
                     break
@@ -744,7 +744,7 @@ extension StateTransition {
 
     static func processEjections(state: inout BeaconState) {
         for i in state.validatorRegistry.activeIndices(epoch: BeaconChain.getCurrentEpoch(state: state)) {
-            if state.validatorBalances[Int(i)] < EJECTION_BALANCE {
+            if state.validatorBalances[Int(i)] < GWEIValues.EjectionBalance {
                 state.validatorRegistry[Int(i)].exit(state: state)
             }
         }

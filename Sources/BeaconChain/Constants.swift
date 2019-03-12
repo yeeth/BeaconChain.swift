@@ -13,21 +13,31 @@ let SHUFFLE_ROUND_COUNT = 90
 //let DEPOSIT_CONTRACT_ADDRESS =
 let DEPOSIT_CONTRACT_TREE_DEPTH = UInt64(2**5)
 
-// GWEI Values
-let MIN_DEPOSIT_AMOUNT = UInt64(2**0 * UInt64(1e9))
-let MAX_DEPOSIT_AMOUNT = UInt64(2**5 * UInt64(1e9))
-let FORK_CHOICE_BALANCE_INCREMENT = UInt64(2**0 * UInt64(1e9))
-let EJECTION_BALANCE = UInt64(2**4 * UInt64(1e9))
 
-// Initial Values
-let GENESIS_FORK_VERSION = UInt64(0)
-let GENESIS_SLOT = UInt64(2**32)
-let GENESIS_EPOCH = Slot(GENESIS_SLOT).toEpoch()
-let GENESIS_START_SHARD = UInt64(0)
-let FAR_FUTURE_EPOCH = UInt64.max
-let ZERO_HASH = Data(repeating: 0, count: 32) // @todo create type
-let EMPTY_SIGNATURE = Data(repeating: 0, count: 96)
-let BLS_WITHDRAWAL_PREFIX_BYTE = Data(repeating: 0, count: 1)
+
+// MARK: GWEI Values
+
+struct GWEIValues {
+    
+    static let MinDepositAmount = UInt64(2**0 * UInt64(1e9))
+    static let MaxDepositAmount = UInt64(2**5 * UInt64(1e9))
+    static let ForkChoiceBalanceIncremement = UInt64(2**0 * UInt64(1e9))
+    static let EjectionBalance = UInt64(2**4 * UInt64(1e9))
+}
+
+// MARK: Initial Values
+
+struct InitialValues {
+    
+    static let GenesisForkVersion = UInt64(0)
+    static let GenesisSlot = UInt64(2**32)
+    static let GenesisEpoch = Slot(GenesisSlot).toEpoch()
+    static let GenesisStartShard = UInt64(0)
+    static let FarFutureEpoch = UInt64.max
+    static let ZeroHash = Data(repeating: 0, count: 32) // @todo create type
+    static let EmptySignature = Data(repeating: 0, count: 96)
+    static let BLSWithdrawalPrefixByte = Data(repeating: 0, count: 1)
+}
 
 // Time parameters
 let SECONDS_PER_SLOT = UInt64(6)

@@ -25,7 +25,7 @@ class BeaconChain {
 extension BeaconChain {
 
     static func getPreviousEpoch(state: BeaconState) -> Epoch {
-        return max(getCurrentEpoch(state: state) - 1, GENESIS_EPOCH)
+        return max(getCurrentEpoch(state: state) - 1, InitialValues.GenesisEpoch)
     }
 
     static func getCurrentEpoch(state: BeaconState) -> Epoch {
@@ -239,7 +239,7 @@ extension BeaconChain {
     }
 
     static func getEffectiveBalance(state: BeaconState, index: ValidatorIndex) -> Gwei {
-        return min(state.validatorBalances[Int(index)], MAX_DEPOSIT_AMOUNT)
+        return min(state.validatorBalances[Int(index)], GWEIValues.MaxDepositAmount)
     }
 
     static func getBitfieldBit(bitfield: Data, i: Int) -> Int {
@@ -348,48 +348,48 @@ extension BeaconChain {
         }
 
         for (i, _) in state.validatorRegistry.enumerated() {
-            if getEffectiveBalance(state: state, index: ValidatorIndex(i)) >= MAX_DEPOSIT_AMOUNT {
+            if getEffectiveBalance(state: state, index: ValidatorIndex(i)) >= GWEIValues.MaxDepositAmount {
                 state.validatorRegistry[i].activate(state: state, genesis: true)
             }
         }
 
-        let genesisActiveIndexRoot = hashTreeRoot(state.validatorRegistry.activeIndices(epoch: GENESIS_EPOCH))
+        let genesisActiveIndexRoot = hashTreeRoot(state.validatorRegistry.activeIndices(epoch: InitialValues.GenesisEpoch))
 
         for i in 0..<LATEST_ACTIVE_INDEX_ROOTS_LENGTH {
             state.latestActiveIndexRoots[Int(i)] = genesisActiveIndexRoot
         }
 
-        state.currentShufflingSeed = generateSeed(state: state, epoch: GENESIS_EPOCH)
+        state.currentShufflingSeed = generateSeed(state: state, epoch: InitialValues.GenesisEpoch)
 
         return state
     }
 
     static func genesisState(genesisTime: UInt64, latestEth1Data: Eth1Data, depositLength: Int) -> BeaconState {
         return BeaconState(
-            slot: GENESIS_SLOT,
+            slot: InitialValues.GenesisSlot,
             genesisTime: genesisTime,
             fork: Fork(
-                previousVersion: GENESIS_FORK_VERSION,
-                currentVersion: GENESIS_FORK_VERSION,
-                epoch: GENESIS_EPOCH
+                previousVersion: InitialValues.GenesisForkVersion,
+                currentVersion: InitialValues.GenesisForkVersion,
+                epoch: InitialValues.GenesisEpoch
             ),
             validatorRegistry: [Validator](),
             validatorBalances: [UInt64](),
-            validatorRegistryUpdateEpoch: GENESIS_EPOCH,
-            latestRandaoMixes: [Data](repeating: EMPTY_SIGNATURE, count: Int(LATEST_RANDAO_MIXES_LENGTH)),
-            previousShufflingStartShard: GENESIS_START_SHARD,
-            currentShufflingStartShard: GENESIS_START_SHARD,
-            previousShufflingEpoch: GENESIS_EPOCH,
-            currentShufflingEpoch: GENESIS_EPOCH,
-            previousShufflingSeed: ZERO_HASH,
-            currentShufflingSeed: ZERO_HASH,
-            previousJustifiedEpoch: GENESIS_EPOCH,
-            justifiedEpoch: GENESIS_EPOCH,
+            validatorRegistryUpdateEpoch: InitialValues.GenesisEpoch,
+            latestRandaoMixes: [Data](repeating: InitialValues.EmptySignature, count: Int(LATEST_RANDAO_MIXES_LENGTH)),
+            previousShufflingStartShard: InitialValues.GenesisStartShard,
+            currentShufflingStartShard: InitialValues.GenesisStartShard,
+            previousShufflingEpoch: InitialValues.GenesisEpoch,
+            currentShufflingEpoch: InitialValues.GenesisEpoch,
+            previousShufflingSeed: InitialValues.ZeroHash,
+            currentShufflingSeed: InitialValues.ZeroHash,
+            previousJustifiedEpoch: InitialValues.GenesisEpoch,
+            justifiedEpoch: InitialValues.GenesisEpoch,
             justificationBitfield: 0,
-            finalizedEpoch: GENESIS_EPOCH,
-            latestCrosslinks: [Crosslink](repeating: Crosslink(epoch: GENESIS_EPOCH, crosslinkDataRoot: ZERO_HASH), count: Int(SHARD_COUNT)),
-            latestBlockRoots: [Data](repeating: ZERO_HASH, count: Int(LATEST_BLOCK_ROOTS_LENGTH)),
-            latestActiveIndexRoots: [Data](repeating: ZERO_HASH, count: Int(LATEST_ACTIVE_INDEX_ROOTS_LENGTH)),
+            finalizedEpoch: InitialValues.GenesisEpoch,
+            latestCrosslinks: [Crosslink](repeating: Crosslink(epoch: InitialValues.GenesisEpoch, crosslinkDataRoot: InitialValues.ZeroHash), count: Int(SHARD_COUNT)),
+            latestBlockRoots: [Data](repeating: InitialValues.ZeroHash, count: Int(LATEST_BLOCK_ROOTS_LENGTH)),
+            latestActiveIndexRoots: [Data](repeating: InitialValues.ZeroHash, count: Int(LATEST_ACTIVE_INDEX_ROOTS_LENGTH)),
             latestSlashedBalances: [UInt64](repeating: 0, count: Int(LATEST_SLASHED_EXIT_LENGTH)),
             latestAttestations: [PendingAttestation](),
             batchedBlockRoots: [Data](),
@@ -427,9 +427,9 @@ extension BeaconChain {
             let validator = Validator(
                 pubkey: pubkey,
                 withdrawalCredentials: withdrawalCredentials,
-                activationEpoch: FAR_FUTURE_EPOCH,
-                exitEpoch: FAR_FUTURE_EPOCH,
-                withdrawableEpoch: FAR_FUTURE_EPOCH,
+                activationEpoch: InitialValues.FarFutureEpoch,
+                exitEpoch: InitialValues.FarFutureEpoch,
+                withdrawableEpoch: InitialValues.FarFutureEpoch,
                 initiatedExit: false,
                 slashed: false
             )
