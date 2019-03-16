@@ -1,0 +1,16 @@
+{
+  "object": {
+    "pins": [
+      {
+        "package": "Hobbits",
+        "repositoryURL": "https://github.com/yeeth/Hobbits.swift.git",
+        "state": {
+          "branch": null,
+          "revision": "68bfb2beefa843f99feeade699d86db37f9ccbea",
+          "version": "1.0.0"
+        }
+      }
+    ]
+  },
+  "version": 1
+}
