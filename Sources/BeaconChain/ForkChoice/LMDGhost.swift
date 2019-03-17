@@ -15,7 +15,7 @@ class LMDGhost: ForkChoice {
             }
 
             head = children.max {
-                voteCount(store: store, state: startState, block: $0, attestationTargets: attestationTargets) < voteCount(store: store, state: startState, block: $1, attestationTargets: attestationTarget)
+                voteCount(store: store, state: startState, block: $0, attestationTargets: attestationTargets) < voteCount(store: store, state: startState, block: $1, attestationTargets: attestationTargets)
             }!
         }
     }
