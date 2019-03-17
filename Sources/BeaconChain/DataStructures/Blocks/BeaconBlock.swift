@@ -1,6 +1,6 @@
 import Foundation
 
-struct BeaconBlock {
+struct BeaconBlock: Comparable {
     let slot: UInt64
     let parentRoot: Data
     let stateRoot: Data
