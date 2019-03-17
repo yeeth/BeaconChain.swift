@@ -1,6 +1,6 @@
 import Foundation
 
-struct Attestation {
+public struct Attestation {
     let aggregationBitfield: Data
     let data: AttestationData
     let custodyBitfield: Data

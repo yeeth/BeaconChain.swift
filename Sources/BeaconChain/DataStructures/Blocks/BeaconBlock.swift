@@ -1,6 +1,6 @@
 import Foundation
 
-struct BeaconBlock {
+public struct BeaconBlock {
     let slot: UInt64
     let parentRoot: Data
     let stateRoot: Data
