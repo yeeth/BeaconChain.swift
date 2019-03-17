@@ -1,6 +1,6 @@
 import Foundation
 
-struct Proposal {
+struct Proposal: Equatable {
     let slot: UInt64
     let shard: UInt64
     let blockRoot: Data

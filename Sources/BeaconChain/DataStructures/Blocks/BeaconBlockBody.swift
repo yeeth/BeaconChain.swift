@@ -1,6 +1,6 @@
 import Foundation
 
-struct BeaconBlockBody {
+struct BeaconBlockBody: Equatable {
     let proposerSlashings: [ProposerSlashing]
     let attesterSlashings: [AttesterSlashing]
     let attestations: [Attestation]

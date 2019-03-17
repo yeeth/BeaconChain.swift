@@ -1,6 +1,6 @@
 import Foundation
 
-struct DepositInput {
+struct DepositInput: Equatable {
     let pubkey: Data
     let withdrawalCredentials: Data
     let proofOfPossession: Data
