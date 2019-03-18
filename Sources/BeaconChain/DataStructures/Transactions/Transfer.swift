@@ -1,6 +1,6 @@
 import Foundation
 
-struct Transfer {
+struct Transfer: Equatable {
     let from: UInt64
     let to: UInt64
     let amount: UInt64
