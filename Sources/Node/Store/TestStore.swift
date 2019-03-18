@@ -1,6 +1,6 @@
 import BeaconChain
 
-class TestStore {
+class TestStore: Store {
     func parent(_ block: BeaconBlock) -> BeaconBlock {
 
     }
