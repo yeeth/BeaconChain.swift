@@ -1,6 +1,6 @@
 import Foundation
 
-struct ProposerSlashing {
+struct ProposerSlashing: Equatable {
     let proposerIndex: UInt64
     let proposal1: Proposal
     let proposal2: Proposal

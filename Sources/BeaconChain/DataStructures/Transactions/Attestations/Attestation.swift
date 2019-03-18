@@ -1,6 +1,6 @@
 import Foundation
 
-public struct Attestation {
+public struct Attestation: Equatable {
     let aggregationBitfield: Data
     let data: AttestationData
     let custodyBitfield: Data

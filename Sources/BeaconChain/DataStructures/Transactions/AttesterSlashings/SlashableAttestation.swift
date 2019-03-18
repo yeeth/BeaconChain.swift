@@ -1,6 +1,6 @@
 import Foundation
 
-struct SlashableAttestation {
+struct SlashableAttestation: Equatable {
     let validatorIndices: [UInt64]
     let data: AttestationData
     let custodyBitfield: Data
