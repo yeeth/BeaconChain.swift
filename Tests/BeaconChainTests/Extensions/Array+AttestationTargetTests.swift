@@ -31,7 +31,7 @@ final class ArrayAttestationTargetTests: XCTestCase {
             signature: ZERO_HASH
         )
 
-        let store = MockStore(ancestor: block)
+        let store = MockStore()
 
         var badBlock = block
         badBlock.signature = EMPTY_SIGNATURE
