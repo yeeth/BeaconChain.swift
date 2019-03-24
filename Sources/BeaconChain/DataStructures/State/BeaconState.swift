@@ -33,3 +33,10 @@ struct BeaconState {
     var eth1DataVotes: [Eth1DataVote]
     var depositIndex: UInt64
 }
+
+extension BeaconState {
+
+    func effectiveBalance(_ index: ValidatorIndex) -> Gwei {
+        return min(validatorBalances[Int(index)], MAX_DEPOSIT_AMOUNT)
+    }
+}

@@ -33,7 +33,7 @@ class LMDGhost: ForkChoice {
             }
 
             if ancestor == block {
-                return BeaconChain.getEffectiveBalance(state: state, index: index) / FORK_CHOICE_BALANCE_INCREMENT
+                return state.effectiveBalance(index) / FORK_CHOICE_BALANCE_INCREMENT
             }
 
             return nil
