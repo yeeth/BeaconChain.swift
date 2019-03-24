@@ -1,9 +1,9 @@
 import Foundation
 
-typealias Slot = UInt64
+public typealias Slot = UInt64
 typealias Epoch = UInt64
 typealias Shard = UInt64
-typealias ValidatorIndex = UInt64
+public typealias ValidatorIndex = UInt64
 typealias Gwei = UInt64
 typealias Bytes32 = Data // @todo needs to be 32 fixed length data
 typealias BLSPubkey = Data // @todo needs to be 48 fixed length data
