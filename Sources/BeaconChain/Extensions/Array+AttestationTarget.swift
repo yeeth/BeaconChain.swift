@@ -6,7 +6,7 @@ extension Array where Element == AttestationTarget {
         return compactMap {
             (index, target) in
 
-            guard store.ancestor(block: target, slot: index) == block else {
+            guard store.ancestor(block: target, slot: target.slot) == block else {
                 return nil
             }
 

@@ -2,8 +2,6 @@ import BeaconChain
 
 class MockStore: Store {
 
-    var ancestor: BeaconBlock!
-
     func parent(_ block: BeaconBlock) -> BeaconBlock {
         return block
     }

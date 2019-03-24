@@ -10,12 +10,12 @@ final class ArrayAttestationTargetTests: XCTestCase {
             depositLength: 0
         )
 
-        state.validatorBalances.append(2000000000)
-        state.validatorBalances.append(2000000000)
+        state.validatorBalances.append(32000000000)
+        state.validatorBalances.append(32000000000)
+        state.validatorBalances.append(32000000000)
 
-        let store = MockStore()
-        store.ancestor = BeaconBlock(
-            slot: 0,
+        let block = BeaconBlock(
+            slot: GENESIS_SLOT,
             parentRoot: ZERO_HASH,
             stateRoot: ZERO_HASH,
             randaoReveal: ZERO_HASH,
@@ -31,14 +31,17 @@ final class ArrayAttestationTargetTests: XCTestCase {
             signature: ZERO_HASH
         )
 
-        var badBlock = store.ancestor
-        badBlock?.signature = EMPTY_SIGNATURE
+        let store = MockStore(ancestor: block)
+
+        var badBlock = block
+        badBlock.signature = EMPTY_SIGNATURE
 
         var targets = [AttestationTarget]()
-        targets.append((0, store.ancestor))
-        targets.append((1, badBlock!))
+        targets.append((0, block))
+        targets.append((1, badBlock))
+        targets.append((2, block))
 
-        XCTAssertEqual(2, targets.votes(store: store, state: state, block: store.ancestor))
+        XCTAssertEqual(64, targets.votes(store: store, state: state, block: block))
     }
 
 }
