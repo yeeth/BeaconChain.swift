@@ -1,6 +1,6 @@
 import Foundation
 
-protocol Store {
+public protocol Store {
 
     func parent(_ block: BeaconBlock) -> BeaconBlock
     func children(_ block: BeaconBlock) -> [BeaconBlock]
