@@ -442,7 +442,7 @@ extension BeaconChain {
 
 extension BeaconChain {
 
-    static func slash(_ state: inout BeaconState, index validator: ValidatorIndex) {
+    static func slash(_ state: inout BeaconState, validator index: ValidatorIndex) {
         assert(state.slot < state.validatorRegistry[Int(index)].withdrawableEpoch.startSlot())
         state.validatorRegistry[Int(index)].exit(state: state)
 
