@@ -2,7 +2,7 @@ import Foundation
 
 extension Array where Element == AttestationTarget {
 
-    func voteCount(store: Store, state: BeaconState, block: BeaconBlock) -> UInt64 {
+    func votes(store: Store, state: BeaconState, block: BeaconBlock) -> UInt64 {
         return compactMap {
                 (index, target) in
                 guard let ancestor = store.ancestor(block: target, slot: index) else {
