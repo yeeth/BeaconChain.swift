@@ -1,16 +1,16 @@
 import XCTest
 @testable import BeaconChain
 
-final class ArrayValidatorTests: XCTestCase {
+final class DictionaryValidatorTests: XCTestCase {
 
     func testActiveIndices() {
 
         let epoch = Epoch(10)
 
         let validators = [
-            createValidator(epoch: epoch),
-            createValidator(epoch: epoch),
-            createValidator(epoch: Epoch(12))
+            UInt64(0): createValidator(epoch: epoch),
+            1: createValidator(epoch: epoch),
+            2: createValidator(epoch: Epoch(12))
         ]
 
         XCTAssertEqual(validators.activeIndices(epoch: epoch), [ValidatorIndex(0), 1])

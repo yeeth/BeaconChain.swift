@@ -1,12 +1,12 @@
 import Foundation
 
-extension Array where Element == Validator {
+extension Dictionary where Key == UInt64, Value == Validator {
 
     func activeIndices(epoch: Epoch) -> [ValidatorIndex] {
-        return enumerated().compactMap {
+        return compactMap {
             (k, v) in
             if v.isActive(epoch: epoch) {
-                return ValidatorIndex(k)
+                return k
             }
 
             return nil

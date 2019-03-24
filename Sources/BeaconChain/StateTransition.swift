@@ -30,7 +30,7 @@ extension StateTransition {
     }
 
     static func blockSignature(state: inout BeaconState, block: BeaconBlock) {
-        let proposer = state.validatorRegistry[Int(BeaconChain.getBeaconProposerIndex(state: state, slot: state.slot))]
+        let proposer = state.validatorRegistry[BeaconChain.getBeaconProposerIndex(state: state, slot: state.slot)]
         let proposal = Proposal(
             slot: block.slot,
             shard: BEACON_CHAIN_SHARD_NUMBER,
@@ -49,7 +49,7 @@ extension StateTransition {
     }
 
     static func randao(state: inout BeaconState, block: BeaconBlock) {
-        let proposer = state.validatorRegistry[Int(BeaconChain.getBeaconProposerIndex(state: state, slot: state.slot))]
+        let proposer = state.validatorRegistry[BeaconChain.getBeaconProposerIndex(state: state, slot: state.slot)]
 
         var epoch = BeaconChain.getCurrentEpoch(state: state)
         assert(
@@ -79,7 +79,7 @@ extension StateTransition {
         assert(block.body.proposerSlashings.count <= MAX_PROPOSER_SLASHINGS)
 
         for proposerSlashing in block.body.proposerSlashings {
-            let proposer = state.validatorRegistry[Int(proposerSlashing.proposerIndex)]
+            let proposer = state.validatorRegistry[proposerSlashing.proposerIndex]
             // @todo none of these should be asserts
             assert(proposerSlashing.proposal1.slot == proposerSlashing.proposal2.slot)
             assert(proposerSlashing.proposal1.shard == proposerSlashing.proposal2.shard)
@@ -126,7 +126,7 @@ extension StateTransition {
 
             let slashableIndices = slashableAttestation1.validatorIndices.filter {
                 slashableAttestation2.validatorIndices.contains($0)
-                    && state.validatorRegistry[Int($0)].slashed == false
+                    && state.validatorRegistry[$0].slashed == false
             }
 
             assert(slashableIndices.count >= 1)
@@ -190,10 +190,10 @@ extension StateTransition {
                 BLS.verify(
                     pubkeys: [
                         BLS.aggregate(pubkeys: custodyBit0Participants.map {
-                            return state.validatorRegistry[Int($0)].pubkey
+                            return state.validatorRegistry[$0].pubkey
                         }),
                         BLS.aggregate(pubkeys: custodyBit1Participants.map {
-                            return state.validatorRegistry[Int($0)].pubkey
+                            return state.validatorRegistry[$0].pubkey
                         })
                     ],
                     messages: [
@@ -246,7 +246,7 @@ extension StateTransition {
         assert(block.body.voluntaryExits.count <= MAX_VOLUNTARY_EXITS)
 
         for exit in block.body.voluntaryExits {
-            let validator = state.validatorRegistry[Int(exit.validatorIndex)]
+            let validator = state.validatorRegistry[exit.validatorIndex]
 
             let epoch = BeaconChain.getCurrentEpoch(state: state)
             assert(validator.exitEpoch > epoch.delayedActivationExitEpoch())
@@ -261,7 +261,7 @@ extension StateTransition {
                 )
             )
 
-            state.validatorRegistry[Int(exit.validatorIndex)].initiatedExit = true
+            state.validatorRegistry[exit.validatorIndex].initiatedExit = true
         }
     }
 
@@ -278,10 +278,10 @@ extension StateTransition {
 
             assert(state.slot == transfer.slot)
             assert(
-                BeaconChain.getCurrentEpoch(state: state) >= state.validatorRegistry[Int(transfer.from)].withdrawableEpoch
-                || state.validatorRegistry[Int(transfer.from)].activationEpoch == FAR_FUTURE_EPOCH
+                BeaconChain.getCurrentEpoch(state: state) >= state.validatorRegistry[transfer.from].withdrawableEpoch
+                || state.validatorRegistry[transfer.from].activationEpoch == FAR_FUTURE_EPOCH
             )
-            assert(state.validatorRegistry[Int(transfer.from)].withdrawalCredentials == BLS_WITHDRAWAL_PREFIX_BYTE + BeaconChain.hash(transfer.pubkey).suffix(from: 1))
+            assert(state.validatorRegistry[transfer.from].withdrawalCredentials == BLS_WITHDRAWAL_PREFIX_BYTE + BeaconChain.hash(transfer.pubkey).suffix(from: 1))
 
             assert(
                 BLS.verify(
@@ -611,8 +611,8 @@ extension StateTransition {
 
             activeValidators.forEach({
                 index in
-                if state.validatorRegistry[Int(index)].slashed {
-                    state.validatorBalances[Int(index)] -= 2 * inactivityPenalty(state: state, index: index, epochsSinceFinality: epochsSinceFinality, baseRewardQuotient: baseRewardQuotient) + baseReward(state: state, index: index, baseRewardQuotient: baseRewardQuotient)
+                if state.validatorRegistry[index].slashed {
+                    state.validatorBalances[index] -= 2 * inactivityPenalty(state: state, index: index, epochsSinceFinality: epochsSinceFinality, baseRewardQuotient: baseRewardQuotient) + baseReward(state: state, index: index, baseRewardQuotient: baseRewardQuotient)
                 }
             })
 
@@ -744,8 +744,8 @@ extension StateTransition {
 
     static func processEjections(state: inout BeaconState) {
         for i in state.validatorRegistry.activeIndices(epoch: BeaconChain.getCurrentEpoch(state: state)) {
-            if state.validatorBalances[Int(i)] < EJECTION_BALANCE {
-                state.validatorRegistry[Int(i)].exit(state: state)
+            if state.validatorBalances[i] < EJECTION_BALANCE {
+                state.validatorRegistry[i].exit(state: state)
             }
         }
     }
