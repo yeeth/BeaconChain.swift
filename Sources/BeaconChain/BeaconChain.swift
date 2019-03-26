@@ -1,13 +1,14 @@
 import Foundation
-
+import CommonCrypto
 // @todo figure out better name
 // @todo refactor so this isn't all in one class
 
 class BeaconChain {
 
-    static func hash(_ data: Any) -> Data {
-        // @todo
-        return Data(count: 0)
+    static func hash(_ data: Data) -> Data {
+        var hash = [UInt8](repeating: 0, count: Int(CC_SHA256_DIGEST_LENGTH))
+        CC_SHA256(Array(data), CC_LONG(data.count), &hash)
+        return Data(bytes: &hash, count: hash.count)
     }
 
     static func hashTreeRoot(_ data: Any) -> Data {
