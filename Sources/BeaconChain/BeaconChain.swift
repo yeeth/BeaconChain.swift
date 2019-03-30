@@ -205,9 +205,16 @@ extension BeaconChain {
         )
     }
 
-    static func getBeaconProposerIndex(state: BeaconState, slot: Slot) -> ValidatorIndex {
-        let firstCommittee = crosslinkCommittees(state, at: slot)[0].0
-        return firstCommittee[Int(slot) % firstCommittee.count]
+    static func getBeaconProposerIndex(state: BeaconState, slot: Slot, registryChange: Bool = false) -> ValidatorIndex {
+        let epoch = slot.toEpoch()
+        let previousEpoch = getPreviousEpoch(state: state)
+        let nextEpoch = getCurrentEpoch(state: state) + 1
+
+        assert(previousEpoch <= epoch)
+        assert(epoch <= nextEpoch)
+
+        let firstCommittee = crosslinkCommittees(state, at: slot, registryChange: registryChange)[0].0
+        return firstCommittee[Int(epoch) % firstCommittee.count]
     }
 
     static func merkleRoot(values: [Bytes32]) -> Bytes32 {
