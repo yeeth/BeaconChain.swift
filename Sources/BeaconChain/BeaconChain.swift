@@ -341,7 +341,7 @@ extension BeaconChain {
     }
 
     static func isSurroundVote(_ left: AttestationData, _ right: AttestationData) -> Bool {
-        return left.justifiedEpoch < right.justifiedEpoch &&
+        return left.sourceEpoch < right.sourceEpoch &&
             right.slot.toEpoch() < left.slot.toEpoch()
     }
 }
