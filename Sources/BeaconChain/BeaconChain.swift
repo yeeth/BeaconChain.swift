@@ -25,7 +25,7 @@ class BeaconChain {
 extension BeaconChain {
 
     static func getPreviousEpoch(state: BeaconState) -> Epoch {
-        return max(getCurrentEpoch(state: state) - 1, GENESIS_EPOCH)
+        return getCurrentEpoch(state: state) - 1
     }
 
     static func getCurrentEpoch(state: BeaconState) -> Epoch {
@@ -131,18 +131,22 @@ extension BeaconChain {
             shufflingEpoch = state.previousShufflingEpoch
             shufflingStartShard = state.previousShufflingStartShard
         case nextEpoch:
-            let currentCommitteesPerEpoch = getCurrentEpochCommitteeCount(state: state)
-            committeesPerEpoch = getNextEpochCommitteeCount(state: state)
-            shufflingEpoch = nextEpoch
             let epochsSinceLastRegistryUpdate = currentEpoch - state.validatorRegistryUpdateEpoch
             if registryChange {
+                committeesPerEpoch = getNextEpochCommitteeCount(state: state)
                 seed = generateSeed(state: state, epoch: nextEpoch)
+                shufflingEpoch = nextEpoch
+                currentCommitteesPerEpoch = getCurrentEpochCommitteeCount(state: state)
                 shufflingStartShard = (state.currentShufflingStartShard + UInt64(currentCommitteesPerEpoch)) % SHARD_COUNT
             } else if epochsSinceLastRegistryUpdate > 1 && Int(epochsSinceLastRegistryUpdate).isPowerOfTwo() {
+                committeesPerEpoch = getNextEpochCommitteeCount(state: state)
                 seed = generateSeed(state: state, epoch: nextEpoch)
+                shufflingEpoch = nextEpoch
                 shufflingStartShard = state.currentShufflingStartShard
             } else {
+                committeesPerEpoch = getCurrentEpochCommitteeCount(state: state)
                 seed = state.currentShufflingSeed
+                shufflingEpoch = state.currentShufflingEpoch
                 shufflingStartShard = state.currentShufflingStartShard
             }
         default:
@@ -167,9 +171,15 @@ extension BeaconChain {
 extension BeaconChain {
 
     static func getBlockRoot(state: BeaconState, slot: Slot) -> Bytes32 {
-        assert(state.slot <= slot + LATEST_BLOCK_ROOTS_LENGTH)
+        assert(state.slot <= slot + SLOTS_PER_HISTORICAL_ROOT)
         assert(slot < state.slot)
-        return state.latestBlockRoots[Int(slot % LATEST_BLOCK_ROOTS_LENGTH)]
+        return state.latestBlockRoots[Int(slot % SLOTS_PER_HISTORICAL_ROOT)]
+    }
+
+    static func getStateRoot(state: BeaconState, slot: Slot) -> Bytes32 {
+        assert(state.slot <= slot + SLOTS_PER_HISTORICAL_ROOT)
+        assert(slot < state.slot)
+        return state.latestStateRoots[Int(slot % SLOTS_PER_HISTORICAL_ROOT)]
     }
 
     static func getRandaoMix(state: BeaconState, epoch: Epoch) -> Bytes32 {
