@@ -269,19 +269,19 @@ extension StateTransition {
         assert(block.body.transfers.count <= MAX_TRANSFERS)
 
         for transfer in block.body.transfers {
-            assert(state.validatorBalances[Int(transfer.from)] >= transfer.amount)
-            assert(state.validatorBalances[Int(transfer.from)] >= transfer.fee)
+            assert(state.validatorBalances[Int(transfer.sender)] >= transfer.amount)
+            assert(state.validatorBalances[Int(transfer.sender)] >= transfer.fee)
             assert(
-                state.validatorBalances[Int(transfer.from)] == transfer.amount + transfer.fee
-                || state.validatorBalances[Int(transfer.from)] >= transfer.amount + transfer.fee + MIN_DEPOSIT_AMOUNT
+                state.validatorBalances[Int(transfer.sender)] == transfer.amount + transfer.fee
+                || state.validatorBalances[Int(transfer.sender)] >= transfer.amount + transfer.fee + MIN_DEPOSIT_AMOUNT
             )
 
             assert(state.slot == transfer.slot)
             assert(
-                BeaconChain.getCurrentEpoch(state: state) >= state.validatorRegistry[Int(transfer.from)].withdrawableEpoch
-                || state.validatorRegistry[Int(transfer.from)].activationEpoch == FAR_FUTURE_EPOCH
+                BeaconChain.getCurrentEpoch(state: state) >= state.validatorRegistry[Int(transfer.sender)].withdrawableEpoch
+                || state.validatorRegistry[Int(transfer.sender)].activationEpoch == FAR_FUTURE_EPOCH
             )
-            assert(state.validatorRegistry[Int(transfer.from)].withdrawalCredentials == BLS_WITHDRAWAL_PREFIX_BYTE + BeaconChain.hash(transfer.pubkey).suffix(from: 1))
+            assert(state.validatorRegistry[Int(transfer.sender)].withdrawalCredentials == BLS_WITHDRAWAL_PREFIX_BYTE + BeaconChain.hash(transfer.pubkey).suffix(from: 1))
 
             assert(
                 BLS.verify(
@@ -292,8 +292,8 @@ extension StateTransition {
                 )
             )
 
-            state.validatorBalances[Int(transfer.from)] -= transfer.amount + transfer.fee
-            state.validatorBalances[Int(transfer.to)] += transfer.amount
+            state.validatorBalances[Int(transfer.sender)] -= transfer.amount + transfer.fee
+            state.validatorBalances[Int(transfer.recipient)] += transfer.amount
             state.validatorBalances[Int(BeaconChain.getBeaconProposerIndex(state: state, slot: state.slot))] += transfer.fee
         }
     }

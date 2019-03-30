@@ -17,17 +17,23 @@ struct BeaconState {
     var previousShufflingSeed: Data
     var currentShufflingSeed: Data
 
+    var previousEpochAttestations: [PendingAttestation]
+    var currentEpochAttestations: [PendingAttestation]
     var previousJustifiedEpoch: UInt64
-    var justifiedEpoch: UInt64
+    var currentJustifiedEpoch: UInt64
+    var previousJustifiedRoot: Data
+    var currentJustifiedRoot: Data
     var justificationBitfield: UInt64
     var finalizedEpoch: UInt64
+    var finalizedRoot: Data
 
     var latestCrosslinks: [Crosslink]
     var latestBlockRoots: [Data]
+    var latestStateRoots: [Data]
     var latestActiveIndexRoots: [Data]
     var latestSlashedBalances: [UInt64]
-    var latestAttestations: [PendingAttestation]
-    var batchedBlockRoots: [Data]
+    var latestBlockHeader: BeaconBlockHeader
+    var historicalRoots: [Data]
 
     var latestEth1Data: Eth1Data
     var eth1DataVotes: [Eth1DataVote]

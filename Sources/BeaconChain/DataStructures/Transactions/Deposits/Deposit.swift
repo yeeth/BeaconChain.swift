@@ -1,7 +1,7 @@
 import Foundation
 
 struct Deposit: Equatable {
-    let branch: [Data]
+    let proof: [Data]
     let index: UInt64
     let depositData: DepositData
 }

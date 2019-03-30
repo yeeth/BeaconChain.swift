@@ -16,7 +16,7 @@ final class ArrayAttestationTargetTests: XCTestCase {
 
         let block = BeaconBlock(
             slot: GENESIS_SLOT,
-            parentRoot: ZERO_HASH,
+            previousBlockRoot: ZERO_HASH,
             stateRoot: ZERO_HASH,
             randaoReveal: ZERO_HASH,
             eth1Data: state.latestEth1Data,
