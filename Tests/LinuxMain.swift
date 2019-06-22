@@ -2,6 +2,7 @@ import XCTest
 
 import BeaconChainTests
 
-var tests = [XCTest.XCTestCaseEntry]()
-tests += BeaconChainTests.allTests()
+var tests = [XCTestCaseEntry]()
+tests += BeaconChainTests.__allTests()
+
 XCTMain(tests)
