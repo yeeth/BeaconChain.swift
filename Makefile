@@ -1,4 +1,4 @@
-.PHONY: documentation test link xcode
+.PHONY: documentation test link xcode linuxmain
 
 test:
 	swift test
@@ -13,3 +13,5 @@ documentation:
 xcode:
 	swift package generate-xcodeproj
 
+linuxmain:
+	swift test --generate-linuxmain
