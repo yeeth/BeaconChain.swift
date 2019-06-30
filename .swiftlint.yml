@@ -1,0 +1,14 @@
+included:
+  - Sources
+  - Tests
+excluded:
+  - Tests/UBTests/stubs
+  - Tests/UBTests/XCTestManifests.swift
+file_name:
+  excluded:
+    - Package.swift
+    - LinuxMain.swift
+identifier_name:
+  excluded:
+    - id
+    - to
