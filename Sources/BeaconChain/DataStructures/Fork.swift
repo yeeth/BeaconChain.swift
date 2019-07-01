@@ -13,7 +13,7 @@ struct Fork {
         return currentVersion
     }
 
-//    func domain(epoch: Epoch, type: Domain) -> UInt64 {
-//        return version(epoch: epoch) * 2 ** 32 + type.rawValue
-//    }
+    func domain(epoch: Epoch, type: Domain) -> UInt64 {
+        return version(epoch: epoch) * 2 ** 32 + type.rawValue // @todo
+    }
 }

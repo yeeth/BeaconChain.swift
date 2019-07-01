@@ -224,7 +224,7 @@ extension StateTransition {
             let serializedDepositData = Data(count: 64) // @todo when we have SSZ
 
             assert(
-                verifyMerkleBranch(
+                isValidMerkleBranch(
                     leaf: BeaconChain.hash(serializedDepositData),
                     branch: deposit.branch,
                     depth: Int(DEPOSIT_CONTRACT_TREE_DEPTH),
@@ -298,7 +298,7 @@ extension StateTransition {
         }
     }
 
-    static func verifyMerkleBranch(leaf: Bytes32, branch: [Bytes32], depth: Int, index: Int, root: Bytes32) -> Bool {
+    static func isValidMerkleBranch(leaf: Bytes32, branch: [Bytes32], depth: Int, index: Int, root: Bytes32) -> Bool {
         var value = leaf
         for i in 0..<depth {
             if index / (2 ** i) % 2 == 1 {

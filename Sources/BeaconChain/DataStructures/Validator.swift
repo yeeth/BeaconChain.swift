@@ -6,12 +6,16 @@ struct Validator {
     let effectiveBalance: Gwei
     var slashed: Bool
     let activationEligibilityEpoch: Epoch
-    private(set) var activationEpoch: UInt64
-    private(set) var exitEpoch: UInt64
-    var withdrawableEpoch: UInt64
+    private(set) var activationEpoch: Epoch
+    private(set) var exitEpoch: Epoch
+    var withdrawableEpoch: Epoch
 
     func isActive(epoch: Epoch) -> Bool {
         return activationEpoch <= epoch && epoch < exitEpoch
+    }
+
+    func isSlashable(epoch: Epoch) -> Bool {
+        return !slashed && (activationEpoch <= epoch && epoch < withdrawableEpoch)
     }
 
     // @todo passing state kinda seems ugly
