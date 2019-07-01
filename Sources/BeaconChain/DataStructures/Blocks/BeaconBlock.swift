@@ -1,11 +1,9 @@
 import Foundation
 
 public struct BeaconBlock: Equatable {
-    let slot: UInt64
+    let slot: Slot
     let parentRoot: Data
     let stateRoot: Data
-    let randaoReveal: Data
-    let eth1Data: Eth1Data
     let body: BeaconBlockBody
-    var signature: Data
+    var signature: BLSSignature
 }

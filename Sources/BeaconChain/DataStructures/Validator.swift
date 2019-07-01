@@ -1,14 +1,15 @@
 import Foundation
 
 struct Validator {
-    let pubkey: Data
+    let pubkey: BLSPubkey
     let withdrawalCredentials: Data
+    let effectiveBalance: Gwei
+    var slashed: Bool
+    let activationEligibilityEpoch: Epoch
     private(set) var activationEpoch: UInt64
     private(set) var exitEpoch: UInt64
     var withdrawableEpoch: UInt64
-    var initiatedExit: Bool
-    var slashed: Bool
-    
+
     func isActive(epoch: Epoch) -> Bool {
         return activationEpoch <= epoch && epoch < exitEpoch
     }

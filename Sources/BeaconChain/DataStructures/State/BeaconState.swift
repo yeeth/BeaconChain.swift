@@ -1,35 +1,40 @@
 import Foundation
 
+// @todo sizes for types
+
 struct BeaconState {
-    var slot: UInt64
     let genesisTime: UInt64
+    var slot: Slot
     let fork: Fork
 
-    var validatorRegistry: [Validator]
-    var validatorBalances: [UInt64]
-    var validatorRegistryUpdateEpoch: UInt64
+    let latestBlockHeader: BeaconBlockHeader
+    let blockRoots: [Data]
+    let stateRoots: [Data]
+    let historicalRoots: [Data]
 
-    var latestRandaoMixes: [Data]
-    var previousShufflingStartShard: UInt64
-    let currentShufflingStartShard: UInt64
-    var previousShufflingEpoch: UInt64
-    var currentShufflingEpoch: UInt64
-    var previousShufflingSeed: Data
-    var currentShufflingSeed: Data
+    let eth1Data: Eth1Data
+    let eth1DataVotes: [Eth1Data]
+    let eth1DepositIndex: UInt64
 
-    var previousJustifiedEpoch: UInt64
-    var justifiedEpoch: UInt64
-    var justificationBitfield: UInt64
-    var finalizedEpoch: UInt64
+    let validators: [Validator]
+    let balances: [Gwei]
 
-    var latestCrosslinks: [Crosslink]
-    var latestBlockRoots: [Data]
-    var latestActiveIndexRoots: [Data]
-    var latestSlashedBalances: [UInt64]
-    var latestAttestations: [PendingAttestation]
-    var batchedBlockRoots: [Data]
+    let startShard: Shard
+    let randaoMixes: [Data]
+    let activeIndexRoots: [Data]
+    let compactCommitteesRoots: [Data]
 
-    var latestEth1Data: Eth1Data
-    var eth1DataVotes: [Eth1DataVote]
-    var depositIndex: UInt64
+    let slashings: [Gwei]
+
+    let previousEpochAttestations: [PendingAttestation]
+    let currentEpochAttestations: [PendingAttestation]
+
+    let previousCrosslinks: [Crosslink]
+    let currentCrosslinks: [Crosslink]
+
+    let justificationBits: [Bool] // @todo
+
+    let previousJustifiedCheckpoint: Checkpoint
+    let currentJustifiedCheckpoint: Checkpoint
+    let finalizedCheckpoint: Checkpoint
 }

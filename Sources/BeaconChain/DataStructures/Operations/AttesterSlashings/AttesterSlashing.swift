@@ -1,6 +1,6 @@
 import Foundation
 
 struct AttesterSlashing: Equatable {
-    let slashableAttestation1: SlashableAttestation
-    let slashableAttestation2: SlashableAttestation
+    let attestation1: IndexedAttestation
+    let attestation2: IndexedAttestation
 }

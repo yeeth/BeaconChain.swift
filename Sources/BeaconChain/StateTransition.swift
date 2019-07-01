@@ -200,7 +200,7 @@ extension StateTransition {
                         BeaconChain.hashTreeRoot(AttestationDataAndCustodyBit(data: attestation.data, custodyBit: false)),
                         BeaconChain.hashTreeRoot(AttestationDataAndCustodyBit(data: attestation.data, custodyBit: true))
                     ],
-                    signature: attestation.aggregateSignature,
+                    signature: attestation.signature,
                     domain: state.fork.domain(epoch: attestation.data.slot.toEpoch(), type: .attestation)
                 )
             )
