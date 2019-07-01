@@ -439,23 +439,3 @@ extension BeaconChain {
         }
     }
 }
-
-extension BeaconChain {
-
-    static func slashValidator(state: inout BeaconState, index: ValidatorIndex) {
-        assert(state.slot < state.validatorRegistry[Int(index)].withdrawableEpoch.startSlot())
-        state.validatorRegistry[Int(index)].exit(state: state)
-
-        state.latestSlashedBalances[Int(getCurrentEpoch(state: state) % LATEST_SLASHED_EXIT_LENGTH)] += getEffectiveBalance(state: state, index: index)
-
-        let whistleblowerIndex = getBeaconProposerIndex(state: state, slot: state.slot)
-        let whistleblowerReward = getEffectiveBalance(state: state, index: index) / WHISTLEBLOWER_REWARD_QUOTIENT
-
-        state.validatorBalances[Int(whistleblowerIndex)] += whistleblowerReward
-        state.validatorBalances[Int(index)] -= whistleblowerReward
-
-        let currentEpoch = getCurrentEpoch(state: state)
-        state.validatorRegistry[Int(index)].slashed = true
-        state.validatorRegistry[Int(index)].withdrawableEpoch = currentEpoch + LATEST_SLASHED_EXIT_LENGTH
-    }
-}
