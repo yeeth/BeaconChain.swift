@@ -15,3 +15,8 @@ let MIN_DEPOSIT_AMOUNT = Gwei(2**0 * 10**9)
 let MAX_EFFECTIVE_BALANCE = Gwei(2**5 * 10**9)
 let EJECTION_BALANCE = Gwei(2**4 * 10**9)
 let EFFECTIVE_BALANCE_INCREMENT = Gwei(2**0 * 10**9)
+
+// initial values
+let GENESIS_SLOT = Slot(0)
+let GENESIS_EPOCH = Epoch(0)
+let BLS_WITHDRAWAL_PREFIX = 0b00
