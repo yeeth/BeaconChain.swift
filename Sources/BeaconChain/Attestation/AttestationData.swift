@@ -12,6 +12,6 @@ public struct AttestationData {
     /// The checkpoint attempting to be justified (the current epoch and epoch boundary block).
     public let target: Checkpoint
 
-    /// The crosslink attemping to be formed for the assigned shard.
+    /// The crosslink attempting to be formed for the assigned shard.
     public let crosslink: Crosslink
 }
