@@ -14,7 +14,7 @@
     <a title="Deposit Structure Reference"></a>
     <header>
       <div class="content-wrapper">
-        <p><a href="../index.html"> Docs</a> (0% documented)</p>
+        <p><a href="../index.html"> Docs</a> (78% documented)</p>
         <p class="header-right"><a href="https://github.com/yeeth/BeaconChain.swift"><img src="../img/gh.png"/>View on GitHub</a></p>
       </div>
     </header>
@@ -61,22 +61,22 @@
                 <a href="../Structs/BeaconBlockHeader.html">BeaconBlockHeader</a>
               </li>
               <li class="nav-group-task">
-                <a href="../Structs.html#/Checkpoint">Checkpoint</a>
+                <a href="../Structs.html#/s:11BeaconChain10CheckpointV">Checkpoint</a>
               </li>
               <li class="nav-group-task">
-                <a href="../Structs.html#/Crosslink">Crosslink</a>
+                <a href="../Structs.html#/s:11BeaconChain9CrosslinkV">Crosslink</a>
               </li>
               <li class="nav-group-task">
                 <a href="../Structs/Deposit.html">Deposit</a>
               </li>
               <li class="nav-group-task">
-                <a href="../Structs.html#/DepositData">DepositData</a>
+                <a href="../Structs/DepositData.html">DepositData</a>
               </li>
               <li class="nav-group-task">
                 <a href="../Structs/Eth1Data.html">Eth1Data</a>
               </li>
               <li class="nav-group-task">
-                <a href="../Structs.html#/IndexedAttestation">IndexedAttestation</a>
+                <a href="../Structs.html#/s:11BeaconChain18IndexedAttestationV">IndexedAttestation</a>
               </li>
               <li class="nav-group-task">
                 <a href="../Structs/ProposerSlashing.html">ProposerSlashing</a>
@@ -93,34 +93,34 @@
             <a href="../Typealiases.html">Type Aliases</a>
             <ul class="nav-group-tasks">
               <li class="nav-group-task">
-                <a href="../Typealiases.html#/BLSPubKey">BLSPubKey</a>
+                <a href="../Typealiases.html#/s:11BeaconChain9BLSPubKeya">BLSPubKey</a>
               </li>
               <li class="nav-group-task">
-                <a href="../Typealiases.html#/BLSSignature">BLSSignature</a>
+                <a href="../Typealiases.html#/s:11BeaconChain12BLSSignaturea">BLSSignature</a>
               </li>
               <li class="nav-group-task">
-                <a href="../Typealiases.html#/Domain">Domain</a>
+                <a href="../Typealiases.html#/s:11BeaconChain6Domaina">Domain</a>
               </li>
               <li class="nav-group-task">
-                <a href="../Typealiases.html#/Epoch">Epoch</a>
+                <a href="../Typealiases.html#/s:11BeaconChain5Epocha">Epoch</a>
               </li>
               <li class="nav-group-task">
-                <a href="../Typealiases.html#/Gwei">Gwei</a>
+                <a href="../Typealiases.html#/s:11BeaconChain4Gweia">Gwei</a>
               </li>
               <li class="nav-group-task">
-                <a href="../Typealiases.html#/Hash">Hash</a>
+                <a href="../Typealiases.html#/s:11BeaconChain4Hasha">Hash</a>
               </li>
               <li class="nav-group-task">
-                <a href="../Typealiases.html#/Shard">Shard</a>
+                <a href="../Typealiases.html#/s:11BeaconChain5Sharda">Shard</a>
               </li>
               <li class="nav-group-task">
-                <a href="../Typealiases.html#/Slot">Slot</a>
+                <a href="../Typealiases.html#/s:11BeaconChain4Slota">Slot</a>
               </li>
               <li class="nav-group-task">
-                <a href="../Typealiases.html#/ValidatorIndex">ValidatorIndex</a>
+                <a href="../Typealiases.html#/s:11BeaconChain14ValidatorIndexa">ValidatorIndex</a>
               </li>
               <li class="nav-group-task">
-                <a href="../Typealiases.html#/Version">Version</a>
+                <a href="../Typealiases.html#/s:11BeaconChain7Versiona">Version</a>
               </li>
             </ul>
           </li>
@@ -130,6 +130,12 @@
         <section>
           <section class="section">
             <h1>Deposit</h1>
+              <div class="declaration">
+                <div class="language">
+                  <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">struct</span> <span class="kt">Deposit</span></code></pre>
+
+                </div>
+              </div>
             <p>Represents incoming validator deposits from the eth1 chain deposit contract.</p>
 
           </section>
@@ -139,9 +145,9 @@
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/"></a>
+                    <a name="/s:11BeaconChain7DepositV5proofSay10Foundation4DataVGvp"></a>
                     <a name="//apple_ref/swift/Property/proof" class="dashAnchor"></a>
-                    <a class="token" href="#/">proof</a>
+                    <a class="token" href="#/s:11BeaconChain7DepositV5proofSay10Foundation4DataVGvp">proof</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -152,15 +158,23 @@
                         <p>The merkle proof against the BeaconState current Eth1Data.root</p>
 
                       </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">let</span> <span class="nv">proof</span><span class="p">:</span> <span class="p">[</span><span class="kt"><a href="../Typealiases.html#/s:11BeaconChain4Hasha">Hash</a></span><span class="p">]</span></code></pre>
+
+                        </div>
+                      </div>
                     </section>
                   </div>
                 </li>
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/"></a>
+                    <a name="/s:11BeaconChain7DepositV4dataAA0C4DataVvp"></a>
                     <a name="//apple_ref/swift/Property/data" class="dashAnchor"></a>
-                    <a class="token" href="#/">data</a>
+                    <a class="token" href="#/s:11BeaconChain7DepositV4dataAA0C4DataVvp">data</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -170,6 +184,14 @@
                       <div class="abstract">
                         <p>The DepositData submit to the deposit contract to be verified using the proof against the deposit root.</p>
 
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">let</span> <span class="nv">data</span><span class="p">:</span> <span class="kt"><a href="../Structs/DepositData.html">DepositData</a></span></code></pre>
+
+                        </div>
                       </div>
                     </section>
                   </div>

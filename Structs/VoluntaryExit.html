@@ -14,7 +14,7 @@
     <a title="VoluntaryExit Structure Reference"></a>
     <header>
       <div class="content-wrapper">
-        <p><a href="../index.html"> Docs</a> (0% documented)</p>
+        <p><a href="../index.html"> Docs</a> (78% documented)</p>
         <p class="header-right"><a href="https://github.com/yeeth/BeaconChain.swift"><img src="../img/gh.png"/>View on GitHub</a></p>
       </div>
     </header>
@@ -61,22 +61,22 @@
                 <a href="../Structs/BeaconBlockHeader.html">BeaconBlockHeader</a>
               </li>
               <li class="nav-group-task">
-                <a href="../Structs.html#/Checkpoint">Checkpoint</a>
+                <a href="../Structs.html#/s:11BeaconChain10CheckpointV">Checkpoint</a>
               </li>
               <li class="nav-group-task">
-                <a href="../Structs.html#/Crosslink">Crosslink</a>
+                <a href="../Structs.html#/s:11BeaconChain9CrosslinkV">Crosslink</a>
               </li>
               <li class="nav-group-task">
                 <a href="../Structs/Deposit.html">Deposit</a>
               </li>
               <li class="nav-group-task">
-                <a href="../Structs.html#/DepositData">DepositData</a>
+                <a href="../Structs/DepositData.html">DepositData</a>
               </li>
               <li class="nav-group-task">
                 <a href="../Structs/Eth1Data.html">Eth1Data</a>
               </li>
               <li class="nav-group-task">
-                <a href="../Structs.html#/IndexedAttestation">IndexedAttestation</a>
+                <a href="../Structs.html#/s:11BeaconChain18IndexedAttestationV">IndexedAttestation</a>
               </li>
               <li class="nav-group-task">
                 <a href="../Structs/ProposerSlashing.html">ProposerSlashing</a>
@@ -93,34 +93,34 @@
             <a href="../Typealiases.html">Type Aliases</a>
             <ul class="nav-group-tasks">
               <li class="nav-group-task">
-                <a href="../Typealiases.html#/BLSPubKey">BLSPubKey</a>
+                <a href="../Typealiases.html#/s:11BeaconChain9BLSPubKeya">BLSPubKey</a>
               </li>
               <li class="nav-group-task">
-                <a href="../Typealiases.html#/BLSSignature">BLSSignature</a>
+                <a href="../Typealiases.html#/s:11BeaconChain12BLSSignaturea">BLSSignature</a>
               </li>
               <li class="nav-group-task">
-                <a href="../Typealiases.html#/Domain">Domain</a>
+                <a href="../Typealiases.html#/s:11BeaconChain6Domaina">Domain</a>
               </li>
               <li class="nav-group-task">
-                <a href="../Typealiases.html#/Epoch">Epoch</a>
+                <a href="../Typealiases.html#/s:11BeaconChain5Epocha">Epoch</a>
               </li>
               <li class="nav-group-task">
-                <a href="../Typealiases.html#/Gwei">Gwei</a>
+                <a href="../Typealiases.html#/s:11BeaconChain4Gweia">Gwei</a>
               </li>
               <li class="nav-group-task">
-                <a href="../Typealiases.html#/Hash">Hash</a>
+                <a href="../Typealiases.html#/s:11BeaconChain4Hasha">Hash</a>
               </li>
               <li class="nav-group-task">
-                <a href="../Typealiases.html#/Shard">Shard</a>
+                <a href="../Typealiases.html#/s:11BeaconChain5Sharda">Shard</a>
               </li>
               <li class="nav-group-task">
-                <a href="../Typealiases.html#/Slot">Slot</a>
+                <a href="../Typealiases.html#/s:11BeaconChain4Slota">Slot</a>
               </li>
               <li class="nav-group-task">
-                <a href="../Typealiases.html#/ValidatorIndex">ValidatorIndex</a>
+                <a href="../Typealiases.html#/s:11BeaconChain14ValidatorIndexa">ValidatorIndex</a>
               </li>
               <li class="nav-group-task">
-                <a href="../Typealiases.html#/Version">Version</a>
+                <a href="../Typealiases.html#/s:11BeaconChain7Versiona">Version</a>
               </li>
             </ul>
           </li>
@@ -130,6 +130,12 @@
         <section>
           <section class="section">
             <h1>VoluntaryExit</h1>
+              <div class="declaration">
+                <div class="language">
+                  <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">struct</span> <span class="kt">VoluntaryExit</span></code></pre>
+
+                </div>
+              </div>
             <p>Message type that allows a validator to voluntarily exit validation duties.</p>
 
           </section>
@@ -139,9 +145,9 @@
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/"></a>
+                    <a name="/s:11BeaconChain13VoluntaryExitV5epochs6UInt64Vvp"></a>
                     <a name="//apple_ref/swift/Property/epoch" class="dashAnchor"></a>
-                    <a class="token" href="#/">epoch</a>
+                    <a class="token" href="#/s:11BeaconChain13VoluntaryExitV5epochs6UInt64Vvp">epoch</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -152,15 +158,23 @@
                         <p>Minimum epoch at which this exit can be included on chain. Helps prevent accidental/nefarious use in chain reorgs/forks.</p>
 
                       </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">let</span> <span class="nv">epoch</span><span class="p">:</span> <span class="kt"><a href="../Typealiases.html#/s:11BeaconChain5Epocha">Epoch</a></span></code></pre>
+
+                        </div>
+                      </div>
                     </section>
                   </div>
                 </li>
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/"></a>
+                    <a name="/s:11BeaconChain13VoluntaryExitV14validatorIndexs6UInt64Vvp"></a>
                     <a name="//apple_ref/swift/Property/validatorIndex" class="dashAnchor"></a>
-                    <a class="token" href="#/">validatorIndex</a>
+                    <a class="token" href="#/s:11BeaconChain13VoluntaryExitV14validatorIndexs6UInt64Vvp">validatorIndex</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -171,15 +185,23 @@
                         <p>Index of validator exiting.</p>
 
                       </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">let</span> <span class="nv">validatorIndex</span><span class="p">:</span> <span class="kt"><a href="../Typealiases.html#/s:11BeaconChain14ValidatorIndexa">ValidatorIndex</a></span></code></pre>
+
+                        </div>
+                      </div>
                     </section>
                   </div>
                 </li>
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/"></a>
+                    <a name="/s:11BeaconChain13VoluntaryExitV9signature10Foundation4DataVvp"></a>
                     <a name="//apple_ref/swift/Property/signature" class="dashAnchor"></a>
-                    <a class="token" href="#/">signature</a>
+                    <a class="token" href="#/s:11BeaconChain13VoluntaryExitV9signature10Foundation4DataVvp">signature</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -189,6 +211,14 @@
                       <div class="abstract">
                         <p>Signature of the <code>VoluntaryExit</code> by the pubkey associated with the</p>
 
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">let</span> <span class="nv">signature</span><span class="p">:</span> <span class="kt"><a href="../Typealiases.html#/s:11BeaconChain12BLSSignaturea">BLSSignature</a></span></code></pre>
+
+                        </div>
                       </div>
                     </section>
                   </div>

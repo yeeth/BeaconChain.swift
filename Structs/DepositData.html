@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <title>Eth1Data Structure Reference</title>
+    <title>DepositData Structure Reference</title>
     <link rel="stylesheet" type="text/css" href="../css/jazzy.css" />
     <link rel="stylesheet" type="text/css" href="../css/highlight.css" />
     <meta charset='utf-8'>
@@ -10,8 +10,8 @@
     
   </head>
   <body>
-    <a name="//apple_ref/swift/Struct/Eth1Data" class="dashAnchor"></a>
-    <a title="Eth1Data Structure Reference"></a>
+    <a name="//apple_ref/swift/Struct/DepositData" class="dashAnchor"></a>
+    <a title="DepositData Structure Reference"></a>
     <header>
       <div class="content-wrapper">
         <p><a href="../index.html"> Docs</a> (78% documented)</p>
@@ -22,7 +22,7 @@
       <p id="breadcrumbs">
         <a href="../index.html"> Reference</a>
         <img id="carat" src="../img/carat.png" />
-        Eth1Data Structure Reference
+        DepositData Structure Reference
       </p>
     </div>
     <div class="content-wrapper">
@@ -129,14 +129,14 @@
       <article class="main-content">
         <section>
           <section class="section">
-            <h1>Eth1Data</h1>
+            <h1>DepositData</h1>
               <div class="declaration">
                 <div class="language">
-                  <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">struct</span> <span class="kt">Eth1Data</span></code></pre>
+                  <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">struct</span> <span class="kt">DepositData</span></code></pre>
 
                 </div>
               </div>
-            <p>A vote on recent data the Eth1 chain.</p>
+            <p>The DepositData submit to the deposit contract to be verified using the proof against the deposit root.</p>
 
           </section>
           <section class="section task-group-section">
@@ -145,9 +145,9 @@
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:11BeaconChain8Eth1DataV11depositRoot10Foundation0D0Vvp"></a>
-                    <a name="//apple_ref/swift/Property/depositRoot" class="dashAnchor"></a>
-                    <a class="token" href="#/s:11BeaconChain8Eth1DataV11depositRoot10Foundation0D0Vvp">depositRoot</a>
+                    <a name="/s:11BeaconChain11DepositDataV6pubkey10Foundation0D0Vvp"></a>
+                    <a name="//apple_ref/swift/Property/pubkey" class="dashAnchor"></a>
+                    <a class="token" href="#/s:11BeaconChain11DepositDataV6pubkey10Foundation0D0Vvp">pubkey</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -155,14 +155,14 @@
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>The SSZ List hash_tree_root of the deposits in the deposit contract.</p>
+                        <p>BLS12-381 pubkey to be used to sign messages by the validator.</p>
 
                       </div>
                       <div class="declaration">
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">let</span> <span class="nv">depositRoot</span><span class="p">:</span> <span class="kt"><a href="../Typealiases.html#/s:11BeaconChain4Hasha">Hash</a></span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">let</span> <span class="nv">pubkey</span><span class="p">:</span> <span class="kt"><a href="../Typealiases.html#/s:11BeaconChain9BLSPubKeya">BLSPubKey</a></span></code></pre>
 
                         </div>
                       </div>
@@ -172,9 +172,9 @@
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:11BeaconChain8Eth1DataV12depositCounts6UInt64Vvp"></a>
-                    <a name="//apple_ref/swift/Property/depositCount" class="dashAnchor"></a>
-                    <a class="token" href="#/s:11BeaconChain8Eth1DataV12depositCounts6UInt64Vvp">depositCount</a>
+                    <a name="/s:11BeaconChain11DepositDataV21withdrawalCredentials10Foundation0D0Vvp"></a>
+                    <a name="//apple_ref/swift/Property/withdrawalCredentials" class="dashAnchor"></a>
+                    <a class="token" href="#/s:11BeaconChain11DepositDataV21withdrawalCredentials10Foundation0D0Vvp">withdrawalCredentials</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -182,14 +182,15 @@
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>The number of deposits that have occured thusfar.</p>
+                        <p>The hash of an offline pubkey to be used to withdraw the staked funds after exiting.
+This key is not used actively in validation and can be kept in cold storage.</p>
 
                       </div>
                       <div class="declaration">
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">let</span> <span class="nv">depositCount</span><span class="p">:</span> <span class="kt">UInt64</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">let</span> <span class="nv">withdrawalCredentials</span><span class="p">:</span> <span class="kt"><a href="../Typealiases.html#/s:11BeaconChain4Hasha">Hash</a></span></code></pre>
 
                         </div>
                       </div>
@@ -199,9 +200,9 @@
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:11BeaconChain8Eth1DataV9blockHash10Foundation0D0Vvp"></a>
-                    <a name="//apple_ref/swift/Property/blockHash" class="dashAnchor"></a>
-                    <a class="token" href="#/s:11BeaconChain8Eth1DataV9blockHash10Foundation0D0Vvp">blockHash</a>
+                    <a name="/s:11BeaconChain11DepositDataV6amounts6UInt64Vvp"></a>
+                    <a name="//apple_ref/swift/Property/amount" class="dashAnchor"></a>
+                    <a class="token" href="#/s:11BeaconChain11DepositDataV6amounts6UInt64Vvp">amount</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -209,16 +210,41 @@
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>The eth1 block hash that contained the deposit_root.  This block_hash
-might be used for finalization of the Eth1 chain in the future (similar to how the FFG contract was going to
-be used to finalize the eth1 chain).</p>
+                        <p>Amount in Gwei that was deposited.</p>
 
                       </div>
                       <div class="declaration">
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">let</span> <span class="nv">blockHash</span><span class="p">:</span> <span class="kt"><a href="../Typealiases.html#/s:11BeaconChain4Hasha">Hash</a></span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">let</span> <span class="nv">amount</span><span class="p">:</span> <span class="kt"><a href="../Typealiases.html#/s:11BeaconChain4Gweia">Gwei</a></span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:11BeaconChain11DepositDataV9signature10Foundation0D0Vvp"></a>
+                    <a name="//apple_ref/swift/Property/signature" class="dashAnchor"></a>
+                    <a class="token" href="#/s:11BeaconChain11DepositDataV9signature10Foundation0D0Vvp">signature</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>This is used as a one-time “proof of custody” required for securely using BLS keys.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">let</span> <span class="nv">signature</span><span class="p">:</span> <span class="kt"><a href="../Typealiases.html#/s:11BeaconChain12BLSSignaturea">BLSSignature</a></span></code></pre>
 
                         </div>
                       </div>

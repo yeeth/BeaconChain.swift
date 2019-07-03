@@ -14,7 +14,7 @@
     <a title="ProposerSlashing Structure Reference"></a>
     <header>
       <div class="content-wrapper">
-        <p><a href="../index.html"> Docs</a> (0% documented)</p>
+        <p><a href="../index.html"> Docs</a> (78% documented)</p>
         <p class="header-right"><a href="https://github.com/yeeth/BeaconChain.swift"><img src="../img/gh.png"/>View on GitHub</a></p>
       </div>
     </header>
@@ -61,22 +61,22 @@
                 <a href="../Structs/BeaconBlockHeader.html">BeaconBlockHeader</a>
               </li>
               <li class="nav-group-task">
-                <a href="../Structs.html#/Checkpoint">Checkpoint</a>
+                <a href="../Structs.html#/s:11BeaconChain10CheckpointV">Checkpoint</a>
               </li>
               <li class="nav-group-task">
-                <a href="../Structs.html#/Crosslink">Crosslink</a>
+                <a href="../Structs.html#/s:11BeaconChain9CrosslinkV">Crosslink</a>
               </li>
               <li class="nav-group-task">
                 <a href="../Structs/Deposit.html">Deposit</a>
               </li>
               <li class="nav-group-task">
-                <a href="../Structs.html#/DepositData">DepositData</a>
+                <a href="../Structs/DepositData.html">DepositData</a>
               </li>
               <li class="nav-group-task">
                 <a href="../Structs/Eth1Data.html">Eth1Data</a>
               </li>
               <li class="nav-group-task">
-                <a href="../Structs.html#/IndexedAttestation">IndexedAttestation</a>
+                <a href="../Structs.html#/s:11BeaconChain18IndexedAttestationV">IndexedAttestation</a>
               </li>
               <li class="nav-group-task">
                 <a href="../Structs/ProposerSlashing.html">ProposerSlashing</a>
@@ -93,34 +93,34 @@
             <a href="../Typealiases.html">Type Aliases</a>
             <ul class="nav-group-tasks">
               <li class="nav-group-task">
-                <a href="../Typealiases.html#/BLSPubKey">BLSPubKey</a>
+                <a href="../Typealiases.html#/s:11BeaconChain9BLSPubKeya">BLSPubKey</a>
               </li>
               <li class="nav-group-task">
-                <a href="../Typealiases.html#/BLSSignature">BLSSignature</a>
+                <a href="../Typealiases.html#/s:11BeaconChain12BLSSignaturea">BLSSignature</a>
               </li>
               <li class="nav-group-task">
-                <a href="../Typealiases.html#/Domain">Domain</a>
+                <a href="../Typealiases.html#/s:11BeaconChain6Domaina">Domain</a>
               </li>
               <li class="nav-group-task">
-                <a href="../Typealiases.html#/Epoch">Epoch</a>
+                <a href="../Typealiases.html#/s:11BeaconChain5Epocha">Epoch</a>
               </li>
               <li class="nav-group-task">
-                <a href="../Typealiases.html#/Gwei">Gwei</a>
+                <a href="../Typealiases.html#/s:11BeaconChain4Gweia">Gwei</a>
               </li>
               <li class="nav-group-task">
-                <a href="../Typealiases.html#/Hash">Hash</a>
+                <a href="../Typealiases.html#/s:11BeaconChain4Hasha">Hash</a>
               </li>
               <li class="nav-group-task">
-                <a href="../Typealiases.html#/Shard">Shard</a>
+                <a href="../Typealiases.html#/s:11BeaconChain5Sharda">Shard</a>
               </li>
               <li class="nav-group-task">
-                <a href="../Typealiases.html#/Slot">Slot</a>
+                <a href="../Typealiases.html#/s:11BeaconChain4Slota">Slot</a>
               </li>
               <li class="nav-group-task">
-                <a href="../Typealiases.html#/ValidatorIndex">ValidatorIndex</a>
+                <a href="../Typealiases.html#/s:11BeaconChain14ValidatorIndexa">ValidatorIndex</a>
               </li>
               <li class="nav-group-task">
-                <a href="../Typealiases.html#/Version">Version</a>
+                <a href="../Typealiases.html#/s:11BeaconChain7Versiona">Version</a>
               </li>
             </ul>
           </li>
@@ -130,6 +130,12 @@
         <section>
           <section class="section">
             <h1>ProposerSlashing</h1>
+              <div class="declaration">
+                <div class="language">
+                  <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">struct</span> <span class="kt">ProposerSlashing</span></code></pre>
+
+                </div>
+              </div>
             <p>Beacon block proposers can be slashed if they signed two different beacon blocks for the same epoch.
 ProposerSlashing contains proof that such a slashable offense has occurred.</p>
 
@@ -140,9 +146,9 @@ ProposerSlashing contains proof that such a slashable offense has occurred.</p>
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/"></a>
+                    <a name="/s:11BeaconChain16ProposerSlashingV13proposerIndexs6UInt64Vvp"></a>
                     <a name="//apple_ref/swift/Property/proposerIndex" class="dashAnchor"></a>
-                    <a class="token" href="#/">proposerIndex</a>
+                    <a class="token" href="#/s:11BeaconChain16ProposerSlashingV13proposerIndexs6UInt64Vvp">proposerIndex</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -150,8 +156,16 @@ ProposerSlashing contains proof that such a slashable offense has occurred.</p>
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p><code><a href="../Typealiases.html#/ValidatorIndex">ValidatorIndex</a></code> of the validator to be slashed for double proposing.</p>
+                        <p><code><a href="../Typealiases.html#/s:11BeaconChain14ValidatorIndexa">ValidatorIndex</a></code> of the validator to be slashed for double proposing.</p>
 
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">let</span> <span class="nv">proposerIndex</span><span class="p">:</span> <span class="kt"><a href="../Typealiases.html#/s:11BeaconChain14ValidatorIndexa">ValidatorIndex</a></span></code></pre>
+
+                        </div>
                       </div>
                     </section>
                   </div>
@@ -159,9 +173,9 @@ ProposerSlashing contains proof that such a slashable offense has occurred.</p>
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/"></a>
+                    <a name="/s:11BeaconChain16ProposerSlashingV7header1AA0A11BlockHeaderVvp"></a>
                     <a name="//apple_ref/swift/Property/header1" class="dashAnchor"></a>
-                    <a class="token" href="#/">header1</a>
+                    <a class="token" href="#/s:11BeaconChain16ProposerSlashingV7header1AA0A11BlockHeaderVvp">header1</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -172,15 +186,23 @@ ProposerSlashing contains proof that such a slashable offense has occurred.</p>
                         <p>The header of the first of the two slashable beacon blocks.</p>
 
                       </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">let</span> <span class="nv">header1</span><span class="p">:</span> <span class="kt"><a href="../Structs/BeaconBlockHeader.html">BeaconBlockHeader</a></span></code></pre>
+
+                        </div>
+                      </div>
                     </section>
                   </div>
                 </li>
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/"></a>
+                    <a name="/s:11BeaconChain16ProposerSlashingV7header2AA0A11BlockHeaderVvp"></a>
                     <a name="//apple_ref/swift/Property/header2" class="dashAnchor"></a>
-                    <a class="token" href="#/">header2</a>
+                    <a class="token" href="#/s:11BeaconChain16ProposerSlashingV7header2AA0A11BlockHeaderVvp">header2</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -190,6 +212,14 @@ ProposerSlashing contains proof that such a slashable offense has occurred.</p>
                       <div class="abstract">
                         <p>The header of the second of the two slashable beacon blocks.</p>
 
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">let</span> <span class="nv">header2</span><span class="p">:</span> <span class="kt"><a href="../Structs/BeaconBlockHeader.html">BeaconBlockHeader</a></span></code></pre>
+
+                        </div>
                       </div>
                     </section>
                   </div>
