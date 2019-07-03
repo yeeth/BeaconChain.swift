@@ -1,13 +1,21 @@
 import Foundation
 
-struct BeaconBlockBody {
-    let randaoReveal: BLSSignature
-    let eth1Data: Eth1Data
-    let graffiti: Data
-    let proposerSlashings: [ProposerSlashing]
-    let attesterSlashings: [AttesterSlashing]
-    let attestations: [Attestation]
-    let deposits: [Deposit]
-    let voluntaryExits: [VoluntaryExit]
-    let transfers: [Transfer]
+public struct BeaconBlockBody {
+
+    /// The signature of the current epoch (by the block proposer) and,
+    /// when mixed in with the other validators’ reveals, consitutes the seed for randomness.
+    public let randaoReveal: BLSSignature
+
+    /// A vote on recent data the Eth1 chain.
+    public let eth1Data: Eth1Data
+
+    /// This is a space for validators to decorate as they choose. It has no define in-protocol use.
+    public let graffiti: Data
+
+    public let proposerSlashings: [ProposerSlashing]
+    public let attesterSlashings: [AttesterSlashing]
+    public let attestations: [Attestation]
+    public let deposits: [Deposit]
+    public let voluntaryExits: [VoluntaryExit]
+    public let transfers: [Transfer]
 }

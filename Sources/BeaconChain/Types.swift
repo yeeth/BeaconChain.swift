@@ -1,12 +1,12 @@
 import Foundation
 
-typealias Slot = UInt64
-typealias Epoch = UInt64
-typealias Shard = UInt64
-typealias ValidatorIndex = UInt64
-typealias Gwei = UInt64
-typealias Hash = Data
-typealias Version = UInt32
-typealias Domain = UInt64
-typealias BLSPubKey = Data
-typealias BLSSignature = Data
+public typealias Slot = UInt64
+public typealias Epoch = UInt64
+public typealias Shard = UInt64
+public typealias ValidatorIndex = UInt64
+public typealias Gwei = UInt64
+public typealias Hash = Data
+public typealias Version = UInt32
+public typealias Domain = UInt64
+public typealias BLSPubKey = Data
+public typealias BLSSignature = Data

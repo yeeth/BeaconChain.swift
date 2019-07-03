@@ -1,6 +1,6 @@
 import Foundation
 
-struct Checkpoint {
+public struct Checkpoint {
     let epoch: Epoch
     let root: Hash
 }

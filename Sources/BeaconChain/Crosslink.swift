@@ -1,6 +1,6 @@
 import Foundation
 
-struct Crosslink {
+public struct Crosslink {
     let shard: Shard
     let parentRoot: Hash
     let startEpoch: Epoch

@@ -1,6 +1,7 @@
 import Foundation
 
-struct AttestationDataAndCustodyBit {
-    let data: AttestationData
-    let custodyBit: Bool // @todo probably not the best?
+/// The actual message signed by validators.
+public struct AttestationDataAndCustodyBit {
+    public let data: AttestationData
+    public let custodyBit: Bool // @todo probably not the best?
 }
