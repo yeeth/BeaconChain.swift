@@ -1,6 +1,6 @@
 import Foundation
 
-struct BeaconChain {
+struct BeaconState {
     let genesisTime: UInt64
     let slot: Slot
     let fork: Fork
