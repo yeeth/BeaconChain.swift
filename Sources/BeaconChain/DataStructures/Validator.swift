@@ -1,7 +1,7 @@
 import Foundation
 
 /// A validator is an entity that participates in the consensus of the Ethereum 2.0 protocol.
-struct Validator {
+public struct Validator {
 
     let pubkey: BLSPubKey
     let withdrawalCredentials: Hash
