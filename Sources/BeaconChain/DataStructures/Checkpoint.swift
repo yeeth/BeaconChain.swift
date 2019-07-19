@@ -1,6 +1,6 @@
 import Foundation
 
-public struct Checkpoint {
+public struct Checkpoint: Equatable {
     let epoch: Epoch
     let root: Hash
 }

@@ -1,6 +1,6 @@
 import Foundation
 
-public struct Crosslink {
+public struct Crosslink: Equatable {
     let shard: Shard
     let parentRoot: Hash
     let startEpoch: Epoch
