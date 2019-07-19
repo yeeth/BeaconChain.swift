@@ -11,6 +11,7 @@ class PowerTests: XCTestCase {
         (2, 3, 8),
         (2, 4, 16)
     ]
+    // swiftlint:enable large_tuple
 
     func testPowerForInt() {
         for test in tests {
