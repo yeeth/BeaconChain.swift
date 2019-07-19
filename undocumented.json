@@ -1,84 +1,84 @@
 {
   "warnings": [
     {
-      "file": "/Users/deaneigenmann/Documents/BeaconChain.swift/Sources/BeaconChain/Attestation/AttestationDataAndCustodyBit.swift",
+      "file": "/Users/deaneigenmann/Documents/BeaconChain.swift/Sources/BeaconChain/DataStructures/Attestation/AttestationDataAndCustodyBit.swift",
       "line": 5,
       "symbol": "AttestationDataAndCustodyBit.data",
       "symbol_kind": "source.lang.swift.decl.var.instance",
       "warning": "undocumented"
     },
     {
-      "file": "/Users/deaneigenmann/Documents/BeaconChain.swift/Sources/BeaconChain/Attestation/AttestationDataAndCustodyBit.swift",
+      "file": "/Users/deaneigenmann/Documents/BeaconChain.swift/Sources/BeaconChain/DataStructures/Attestation/AttestationDataAndCustodyBit.swift",
       "line": 6,
       "symbol": "AttestationDataAndCustodyBit.custodyBit",
       "symbol_kind": "source.lang.swift.decl.var.instance",
       "warning": "undocumented"
     },
     {
-      "file": "/Users/deaneigenmann/Documents/BeaconChain.swift/Sources/BeaconChain/Attestation/IndexedAttestation.swift",
+      "file": "/Users/deaneigenmann/Documents/BeaconChain.swift/Sources/BeaconChain/DataStructures/Attestation/IndexedAttestation.swift",
       "line": 3,
       "symbol": "IndexedAttestation",
       "symbol_kind": "source.lang.swift.decl.struct",
       "warning": "undocumented"
     },
     {
-      "file": "/Users/deaneigenmann/Documents/BeaconChain.swift/Sources/BeaconChain/BeaconBlock/BeaconBlockBody.swift",
+      "file": "/Users/deaneigenmann/Documents/BeaconChain.swift/Sources/BeaconChain/DataStructures/BeaconBlock/BeaconBlockBody.swift",
       "line": 3,
       "symbol": "BeaconBlockBody",
       "symbol_kind": "source.lang.swift.decl.struct",
       "warning": "undocumented"
     },
     {
-      "file": "/Users/deaneigenmann/Documents/BeaconChain.swift/Sources/BeaconChain/BeaconBlock/BeaconBlockBody.swift",
+      "file": "/Users/deaneigenmann/Documents/BeaconChain.swift/Sources/BeaconChain/DataStructures/BeaconBlock/BeaconBlockBody.swift",
       "line": 15,
       "symbol": "BeaconBlockBody.proposerSlashings",
       "symbol_kind": "source.lang.swift.decl.var.instance",
       "warning": "undocumented"
     },
     {
-      "file": "/Users/deaneigenmann/Documents/BeaconChain.swift/Sources/BeaconChain/BeaconBlock/BeaconBlockBody.swift",
+      "file": "/Users/deaneigenmann/Documents/BeaconChain.swift/Sources/BeaconChain/DataStructures/BeaconBlock/BeaconBlockBody.swift",
       "line": 16,
       "symbol": "BeaconBlockBody.attesterSlashings",
       "symbol_kind": "source.lang.swift.decl.var.instance",
       "warning": "undocumented"
     },
     {
-      "file": "/Users/deaneigenmann/Documents/BeaconChain.swift/Sources/BeaconChain/BeaconBlock/BeaconBlockBody.swift",
+      "file": "/Users/deaneigenmann/Documents/BeaconChain.swift/Sources/BeaconChain/DataStructures/BeaconBlock/BeaconBlockBody.swift",
       "line": 17,
       "symbol": "BeaconBlockBody.attestations",
       "symbol_kind": "source.lang.swift.decl.var.instance",
       "warning": "undocumented"
     },
     {
-      "file": "/Users/deaneigenmann/Documents/BeaconChain.swift/Sources/BeaconChain/BeaconBlock/BeaconBlockBody.swift",
+      "file": "/Users/deaneigenmann/Documents/BeaconChain.swift/Sources/BeaconChain/DataStructures/BeaconBlock/BeaconBlockBody.swift",
       "line": 18,
       "symbol": "BeaconBlockBody.deposits",
       "symbol_kind": "source.lang.swift.decl.var.instance",
       "warning": "undocumented"
     },
     {
-      "file": "/Users/deaneigenmann/Documents/BeaconChain.swift/Sources/BeaconChain/BeaconBlock/BeaconBlockBody.swift",
+      "file": "/Users/deaneigenmann/Documents/BeaconChain.swift/Sources/BeaconChain/DataStructures/BeaconBlock/BeaconBlockBody.swift",
       "line": 19,
       "symbol": "BeaconBlockBody.voluntaryExits",
       "symbol_kind": "source.lang.swift.decl.var.instance",
       "warning": "undocumented"
     },
     {
-      "file": "/Users/deaneigenmann/Documents/BeaconChain.swift/Sources/BeaconChain/BeaconBlock/BeaconBlockBody.swift",
+      "file": "/Users/deaneigenmann/Documents/BeaconChain.swift/Sources/BeaconChain/DataStructures/BeaconBlock/BeaconBlockBody.swift",
       "line": 20,
       "symbol": "BeaconBlockBody.transfers",
       "symbol_kind": "source.lang.swift.decl.var.instance",
       "warning": "undocumented"
     },
     {
-      "file": "/Users/deaneigenmann/Documents/BeaconChain.swift/Sources/BeaconChain/Checkpoint.swift",
+      "file": "/Users/deaneigenmann/Documents/BeaconChain.swift/Sources/BeaconChain/DataStructures/Checkpoint.swift",
       "line": 3,
       "symbol": "Checkpoint",
       "symbol_kind": "source.lang.swift.decl.struct",
       "warning": "undocumented"
     },
     {
-      "file": "/Users/deaneigenmann/Documents/BeaconChain.swift/Sources/BeaconChain/Crosslink.swift",
+      "file": "/Users/deaneigenmann/Documents/BeaconChain.swift/Sources/BeaconChain/DataStructures/Crosslink.swift",
       "line": 3,
       "symbol": "Crosslink",
       "symbol_kind": "source.lang.swift.decl.struct",
