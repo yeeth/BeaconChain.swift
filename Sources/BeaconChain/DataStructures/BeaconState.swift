@@ -52,22 +52,24 @@ struct BeaconState {
         }
 
         return BLS.verify(
-                pubkeys: BLS.aggregate(
-                        pubkeys: bit0Indices.map { (i) in
-                            return validators[Int(i)].pubkey
-                        }
+            pubkeys: [
+                BLS.aggregate(
+                    pubkeys: bit0Indices.map { (i) in
+                        return validators[Int(i)].pubkey
+                    }
                 ),
                 BLS.aggregate(
-                        pubkeys: bit1Indices.map { (i) in
-                            return validators[Int(i)].pubkey
-                        }
+                    pubkeys: bit1Indices.map { (i) in
+                        return validators[Int(i)].pubkey
+                    }
                 ),
-                hashes: [
-                    SSZ.hashTreeRoot(AttestationDataAndCustodyBit(data: attestation.data, custodyBit: false)),
-                    SSZ.hashTreeRoot(AttestationDataAndCustodyBit(data: attestation.data, custodyBit: true)),
-                ],
-                signature: attestation.signature,
-                domain: getDomain(type: DomainType.attestation, epoch: attestation.data.target.epoch)
+            ],
+            hashes: [
+                SSZ.hashTreeRoot(AttestationDataAndCustodyBit(data: attestation.data, custodyBit: false)),
+                SSZ.hashTreeRoot(AttestationDataAndCustodyBit(data: attestation.data, custodyBit: true)),
+            ],
+            signature: attestation.signature,
+            domain: getDomain(type: DomainType.attestation, epoch: attestation.data.target.epoch)
         )
     }
 
