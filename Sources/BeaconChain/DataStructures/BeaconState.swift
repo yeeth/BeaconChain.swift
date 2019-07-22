@@ -32,7 +32,6 @@ struct BeaconState {
     /// - Parameters:
     ///     - indexedAttestation: The attestation to check.
     func isValid(indexedAttestation attestation: IndexedAttestation) -> Bool {
-
         let bit0Indices = attestation.custodyBit0Indices
         let bit1Indices = attestation.custodyBit1Indices
 

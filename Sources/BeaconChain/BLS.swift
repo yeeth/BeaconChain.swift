@@ -4,11 +4,11 @@ import Foundation
 
 class BLS {
 
-    static func verify(pubkey: Data, hash: Hash, signature: Data, domain: UInt64) -> Bool {
+    static func verify(pubkey: Data, hash: Hash, signature: Data, domain: Domain) -> Bool {
         return false
     }
 
-    static func verify(pubkeys: [Data], hashes: [Hash], signature: Data, domain: UInt64) -> Bool {
+    static func verify(pubkeys: [Data], hashes: [Hash], signature: Data, domain: Domain) -> Bool {
         return false
     }
 
