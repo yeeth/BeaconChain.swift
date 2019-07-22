@@ -73,6 +73,28 @@ struct BeaconState {
         )
     }
 
+    /// Check if ``leaf`` at ``index`` verifies against the Merkle ``root`` and ``branch``.
+    ///
+    /// - Parameters
+    ///     - leaf: The leaf to check for.
+    ///     - branch: The merkle branch.
+    ///     - depth: The depth of the tree.
+    ///     - index: The index of the leaf.
+    ///     - root: The merkle root.
+    static func isValidMerkleBranch(leaf: Hash, branch: [Hash], depth: Int, index: Int, root: Hash) -> Bool {
+        var value = leaf
+
+        for i in stride(from: 0, through: depth, by: 1) {
+            if index / (2**i) % 2 == 0 {
+                value = SSZ.hash(value + branch[i])
+            } else {
+                value = SSZ.hash(branch[i] + value)
+            }
+        }
+
+        return value == root
+    }
+
     func getDomain(type: DomainType, epoch: Epoch) -> Domain {
 
     }
