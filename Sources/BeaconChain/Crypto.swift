@@ -4,15 +4,15 @@ import Foundation
 
 class SSZ {
 
-    func hash(_ data: Data) -> Hash {
+    static func hash(_ data: Data) -> Hash {
         fatalError("not yet implemented")
     }
 
-    func hashTreeRoot(_ data: Data) -> Hash {
+    static func hashTreeRoot(_ data: Any) -> Hash {
         fatalError("not yet implemented")
     }
 
-    func signingRoot(_ data: Any) -> Hash {
+    static func signingRoot(_ data: Any) -> Hash {
         fatalError("not yet implemented")
     }
 }
