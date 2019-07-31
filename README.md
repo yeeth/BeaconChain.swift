@@ -11,5 +11,5 @@ Ethereum 2.0 beacon chain implementation based on the official [specification](h
 In order to generate an xcode project, run:
 
 ```
-swift package generate-xcodeproj
+make xcode
 ```
