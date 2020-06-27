@@ -5,8 +5,8 @@ struct BeaconState {
     let genesisTime: UInt64
     let fork: Fork
 
-    var validatorRegistry: [Validator]
-    var validatorBalances: [UInt64]
+    var validatorRegistry: [UInt64: Validator]
+    var validatorBalances: [UInt64: UInt64]
     var validatorRegistryUpdateEpoch: UInt64
 
     var latestRandaoMixes: [Data]

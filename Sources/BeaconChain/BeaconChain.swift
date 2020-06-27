@@ -239,7 +239,7 @@ extension BeaconChain {
     }
 
     static func getEffectiveBalance(state: BeaconState, index: ValidatorIndex) -> Gwei {
-        return min(state.validatorBalances[Int(index)], MAX_DEPOSIT_AMOUNT)
+        return min(state.validatorBalances[index], MAX_DEPOSIT_AMOUNT)
     }
 
     static func getBitfieldBit(bitfield: Data, i: Int) -> Int {
@@ -443,19 +443,19 @@ extension BeaconChain {
 extension BeaconChain {
 
     static func slashValidator(state: inout BeaconState, index: ValidatorIndex) {
-        assert(state.slot < state.validatorRegistry[Int(index)].withdrawableEpoch.startSlot())
-        state.validatorRegistry[Int(index)].exit(state: state)
+        assert(state.slot < state.validatorRegistry[index].withdrawableEpoch.startSlot())
+        state.validatorRegistry[index].exit(state: state)
 
         state.latestSlashedBalances[Int(getCurrentEpoch(state: state) % LATEST_SLASHED_EXIT_LENGTH)] += getEffectiveBalance(state: state, index: index)
 
         let whistleblowerIndex = getBeaconProposerIndex(state: state, slot: state.slot)
         let whistleblowerReward = getEffectiveBalance(state: state, index: index) / WHISTLEBLOWER_REWARD_QUOTIENT
 
-        state.validatorBalances[Int(whistleblowerIndex)] += whistleblowerReward
-        state.validatorBalances[Int(index)] -= whistleblowerReward
+        state.validatorBalances[whistleblowerIndex] += whistleblowerReward
+        state.validatorBalances[index] -= whistleblowerReward
 
         let currentEpoch = getCurrentEpoch(state: state)
-        state.validatorRegistry[Int(index)].slashed = true
-        state.validatorRegistry[Int(index)].withdrawableEpoch = currentEpoch + LATEST_SLASHED_EXIT_LENGTH
+        state.validatorRegistry[index].slashed = true
+        state.validatorRegistry[index].withdrawableEpoch = currentEpoch + LATEST_SLASHED_EXIT_LENGTH
     }
 }
