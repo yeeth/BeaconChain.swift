@@ -15,7 +15,7 @@ struct Validator {
 
     // @todo passing state kinda seems ugly
     mutating func activate(state: BeaconState, genesis: Bool) {
-        activationEpoch = genesis ? GENESIS_EPOCH : BeaconChain.getCurrentEpoch(state: state).delayedActivationExitEpoch()
+        activationEpoch = genesis ? InitialValues.GenesisEpoch : BeaconChain.getCurrentEpoch(state: state).delayedActivationExitEpoch()
     }
 
     mutating func exit(state: BeaconState) {
