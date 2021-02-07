@@ -104,7 +104,7 @@ extension StateTransition {
                 )
             )
 
-            BeaconChain.slashValidator(state: &state, index: proposerSlashing.proposerIndex)
+            BeaconChain.slash(&state, validator: proposerSlashing.proposerIndex)
         }
     }
 
@@ -132,7 +132,7 @@ extension StateTransition {
             assert(slashableIndices.count >= 1)
 
             for i in slashableIndices {
-                BeaconChain.slashValidator(state: &state, index: i)
+                BeaconChain.slash(&state, validator: i)
             }
         }
     }
