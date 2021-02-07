@@ -1,16 +1,18 @@
 import Foundation
 
+// @todo this will be in a seperate library
+
 class BLS {
 
-    static func verify(pubkey: Data, message: Data, signature: Data, domain: UInt64) -> Bool {
-        return true
+    static func verify(pubkey: Data, hash: Hash, signature: Data, domain: Domain) -> Bool {
+        return false
     }
 
-    static func verify(pubkeys: [Data], messages: [Data], signature: Data, domain: UInt64) -> Bool {
-        return true
+    static func verify(pubkeys: [Data], hashes: [Hash], signature: Data, domain: Domain) -> Bool {
+        return false
     }
 
     static func aggregate(pubkeys: [Data]) -> Data {
-        return Data(count: 32)
+        fatalError("not yet implemented")
     }
 }

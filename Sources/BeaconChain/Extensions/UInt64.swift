@@ -2,9 +2,8 @@ import Foundation
 
 extension UInt64 {
 
+    /// Return the largest integer ``x`` such that ``x**2 <= n``.
     func sqrt() -> UInt64 {
-        assert(self >= 0)
-
         var x = self
         var y = (x + 1) / 2
 

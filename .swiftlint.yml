@@ -3,11 +3,14 @@ included:
   - Tests
 excluded:
   - Tests/BeaconChainTests/XCTestManifests.swift
+  - Tests/LinuxMain.swift
 file_name:
   excluded:
     - Package.swift
-    - LinuxMain.swift
 identifier_name:
   excluded:
     - id
     - to
+    - x
+    - y
+    - i
