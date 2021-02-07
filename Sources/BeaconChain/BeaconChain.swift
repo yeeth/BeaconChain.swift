@@ -238,10 +238,6 @@ extension BeaconChain {
         }
     }
 
-    static func getEffectiveBalance(state: BeaconState, index: ValidatorIndex) -> Gwei {
-        return min(state.validatorBalances[Int(index)], MAX_DEPOSIT_AMOUNT)
-    }
-
     static func getBitfieldBit(bitfield: Data, i: Int) -> Int {
         return Int((bitfield[i / 8] >> (i % 8))) % 2
     }
@@ -348,7 +344,7 @@ extension BeaconChain {
         }
 
         for (i, _) in state.validatorRegistry.enumerated() {
-            if getEffectiveBalance(state: state, index: ValidatorIndex(i)) >= MAX_DEPOSIT_AMOUNT {
+            if state.effectiveBalance(ValidatorIndex(i)) >= MAX_DEPOSIT_AMOUNT {
                 state.validatorRegistry[i].activate(state: state, genesis: true)
             }
         }
@@ -446,10 +442,10 @@ extension BeaconChain {
         assert(state.slot < state.validatorRegistry[Int(index)].withdrawableEpoch.startSlot())
         state.validatorRegistry[Int(index)].exit(state: state)
 
-        state.latestSlashedBalances[Int(getCurrentEpoch(state: state) % LATEST_SLASHED_EXIT_LENGTH)] += getEffectiveBalance(state: state, index: index)
+        state.latestSlashedBalances[Int(getCurrentEpoch(state: state) % LATEST_SLASHED_EXIT_LENGTH)] += state.effectiveBalance(index)
 
         let whistleblowerIndex = getBeaconProposerIndex(state: state, slot: state.slot)
-        let whistleblowerReward = getEffectiveBalance(state: state, index: index) / WHISTLEBLOWER_REWARD_QUOTIENT
+        let whistleblowerReward = state.effectiveBalance(index) / WHISTLEBLOWER_REWARD_QUOTIENT
 
         state.validatorBalances[Int(whistleblowerIndex)] += whistleblowerReward
         state.validatorBalances[Int(index)] -= whistleblowerReward

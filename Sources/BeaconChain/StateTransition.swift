@@ -672,7 +672,7 @@ extension StateTransition {
             let totalAtStart = state.latestSlashedBalances[Int((epochIndex + 1) % LATEST_SLASHED_EXIT_LENGTH)]
             let totalAtEnd = state.latestSlashedBalances[Int(epochIndex)]
             let totalPenalties = totalAtEnd - totalAtStart
-            let penalty = BeaconChain.getEffectiveBalance(state: state, index: ValidatorIndex(i)) * min(totalPenalties * 3, totalBalance) / totalBalance
+            let penalty = state.effectiveBalance(ValidatorIndex(i)) * min(totalPenalties * 3, totalBalance) / totalBalance
             state.validatorBalances[i] -= penalty
         }
     }
@@ -712,7 +712,7 @@ extension StateTransition {
         var balanceChurn = UInt64(0)
         for (i, v) in state.validatorRegistry.enumerated() {
             if v.activationEpoch == FAR_FUTURE_EPOCH && state.validatorBalances[Int(i)] >= MAX_DEPOSIT_AMOUNT {
-                balanceChurn += BeaconChain.getEffectiveBalance(state: state, index: ValidatorIndex(i))
+                balanceChurn += state.effectiveBalance(ValidatorIndex(i))
                 if balanceChurn > maxBalanceChurn {
                     break
                 }
@@ -724,7 +724,7 @@ extension StateTransition {
         balanceChurn = 0
         for (i, v) in state.validatorRegistry.enumerated() {
             if v.activationEpoch == FAR_FUTURE_EPOCH && v.initiatedExit {
-                balanceChurn += BeaconChain.getEffectiveBalance(state: state, index: ValidatorIndex(i))
+                balanceChurn += state.effectiveBalance(ValidatorIndex(i))
                 if balanceChurn > maxBalanceChurn {
                     break
                 }
@@ -817,7 +817,7 @@ extension StateTransition {
     }
 
     private static func baseReward(state: BeaconState, index: ValidatorIndex, baseRewardQuotient: UInt64) -> UInt64 {
-        return BeaconChain.getEffectiveBalance(state: state, index: index) / baseRewardQuotient / 5
+        return state.effectiveBalance(index) / baseRewardQuotient / 5
     }
 
     private static func inactivityPenalty(
@@ -826,7 +826,7 @@ extension StateTransition {
         epochsSinceFinality: UInt64,
         baseRewardQuotient: UInt64
     ) -> UInt64 {
-        return baseReward(state: state, index: index, baseRewardQuotient: baseRewardQuotient) + BeaconChain.getEffectiveBalance(state: state, index: index) * epochsSinceFinality / INACTIVITY_PENALTY_QUOTIENT / 2
+        return baseReward(state: state, index: index, baseRewardQuotient: baseRewardQuotient) + state.effectiveBalance(index) * epochsSinceFinality / INACTIVITY_PENALTY_QUOTIENT / 2
     }
 
     private static func attestingValidators(

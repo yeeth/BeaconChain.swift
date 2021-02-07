@@ -10,7 +10,7 @@ extension Array where Element == AttestationTarget {
                 return nil
             }
 
-            return BeaconChain.getEffectiveBalance(state: state, index: index) / FORK_CHOICE_BALANCE_INCREMENT
+            return state.effectiveBalance(index) / FORK_CHOICE_BALANCE_INCREMENT
         }
         .reduce(0, +)
     }
