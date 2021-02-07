@@ -200,17 +200,6 @@ extension BeaconChain {
         return firstCommittee[Int(slot) % firstCommittee.count]
     }
 
-    static func merkleRoot(values: [Bytes32]) -> Bytes32 {
-        var o = [Data](repeating: Data(repeating: 0, count: 1), count: values.count - 1)
-        o.append(contentsOf: values)
-
-        for i in stride(from: values.count - 1, through: 0, by: -1) {
-            o[i] = hash(o[i * 2] + o[i * 2 + 1])
-        }
-
-        return o[1]
-    }
-
     static func getAttestationParticipants(
         state: BeaconState,
         attestationData: AttestationData,
