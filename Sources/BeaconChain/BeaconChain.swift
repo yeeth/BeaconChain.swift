@@ -35,7 +35,7 @@ extension BeaconChain {
 
 extension BeaconChain {
 
-    // @todo check this shit
+    // @todo consider moving to Array+Validator & check this shit
     static func getPermutedIndex(index i: Int, listSize: Int, seed: Bytes32) -> Int {
         assert(i < listSize)
         assert(listSize < 2**40)
@@ -60,16 +60,6 @@ extension BeaconChain {
         }
 
         return index
-    }
-
-    static func getShuffling(seed: Bytes32, validators: [Validator], epoch: Epoch) -> [[ValidatorIndex]] {
-        let activeValidatorIndices = validators.activeIndices(epoch: epoch)
-
-        let shuffledActiveValidatorIndices = activeValidatorIndices.map {
-            activeValidatorIndices[getPermutedIndex(index: Int($0), listSize: activeValidatorIndices.count, seed: seed)]
-        }
-
-        return shuffledActiveValidatorIndices.split(count: getEpochCommitteeCount(activeValidatorCount: activeValidatorIndices.count))
     }
 }
 
@@ -149,7 +139,7 @@ extension BeaconChain {
             break
         }
 
-        let shuffling = getShuffling(seed: seed, validators: state.validatorRegistry, epoch: shufflingEpoch)
+        let shuffling =  state.validatorRegistry.shuffling(seed: seed, epoch: shufflingEpoch)
 
         let offset = slot % SLOTS_PER_EPOCH
         let committeesPerSlot = UInt64(committeesPerEpoch) / SLOTS_PER_EPOCH
